@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NBTI 恢復動力學如何造成傳統量測系統性低估劣化，以及 OTF、ultra-fast I-V 量測方法。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 3 · 恢復與量測陷阱">
+<meta property="og:description" content="為什麼移除應力的瞬間訊號就開始回復，量測方法怎麼因應。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 3 · 恢復與量測陷阱 · NBTI/PBTI</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html" aria-current="page"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-spec.html"><span class="n">4</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:60%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 3 / 4 · 恢復動力學與量測陷阱</p>
+<h1>移除應力的瞬間，訊號已經開始回復</h1>
+<p class="lede">這是 NBTI 最麻煩的地方：一部分界面態會被鈍化回復、一部分被侷限的電荷會被釋放，
+ΔV<sub>t</sub> 在<b>對數時間尺度</b>上快速回彈，接著趨緩。傳統量測方法會系統性低估真實劣化量。</p>
+
+<h2>為什麼傳統量測會踩到這個陷阱</h2>
+<p>傳統做法是「先移除應力偏壓、再切到量測模式量 I-V」。這個切換本身需要時間 —— 通常毫秒到秒級 ——
+而這段時間已經足以讓恢復吃掉可觀的訊號量。<b>應力時間越短，這個誤差佔的比例越大</b>，
+因為短時間應力點量到的 ΔV<sub>t</sub> 本來就小，恢復掉的那一小塊相對影響更劇烈。</p>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0">你以為量到的是「劣化量」，量到的其實是「劣化量 − 量測延遲期間已經回復掉的量」。
+這不是雜訊，是<b>系統性偏誤</b>，而且偏誤大小隨量測方法本身變化，不是元件的物理性質。</p></div>
+
+<h2>業界怎麼解決：OTF 與 ultra-fast I-V</h2>
+<table>
+<thead><tr><th class="nw">方法</th><th>做法</th><th>解決了什麼</th></tr></thead>
+<tbody>
+<tr><td class="nw">On-the-fly（OTF）</td><td>不中斷應力，直接在應力偏壓下即時量測（利用應力偏壓本身推算 V<sub>t</sub> 變化）</td>
+ <td>完全避開「移除應力→切換→量測」這段恢復窗口</td></tr>
+<tr><td class="nw">Ultra-fast I-V</td><td>把量測本身壓縮到微秒級，仍然是移除應力後量測，但盡量縮短恢復發生的時間窗</td>
+ <td>大幅縮小（但不是完全消除）恢復造成的低估</td></tr>
+</tbody></table>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼「應力時間越短，量測陷阱誤差比例越大」？</summary>
+<div class="a">恢復掉的訊號量在早期應力階段跟總劣化量相比，佔的比例通常比後期更高
+（恢復動力學本身也接近對數時間律，跟劣化的冪次律時間常數不同步）。
+早期應力點的 ΔV<sub>t</sub> 絕對值本來就小，同樣的恢復量佔的相對比例就被放大，
+使得早期數據點看起來比真實情況「乾淨」很多、n 值擬合結果因此被扭曲。</div></details>
+<details><summary>如果不管恢復陷阱，直接用傳統量測的數據去外推 10 年壽命，會高估還是低估風險？</summary>
+<div class="a"><b>低估風險（過度樂觀）</b>。因為傳統量測系統性低估了真實 ΔV<sub>t</sub>，
+外推出來的失效時間會比實際更長、允許的判準門檻在等效意義上被放寬了。
+這跟階段 2 提到「不要把理論 n 值當通用常數」是同一個工程教訓的不同面向：
+<b>模型參數的準確性，前提是量測方法本身要先站得住腳</b>。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-2-mechanism.html"><div class="d">← 上一課 · 階段 2</div><div class="t">機制與 R-D 模型</div></a><a class="next" href="nbti-4-spec.html"><div class="d">下一課 · 階段 4 →</div><div class="t">判準與防治</div></a></div>
+<div class="foot"><b>模型範圍</b>：R-D 時間律採擴散限制段的冪次律外觀，未實作完整反應-擴散耦合微分方程；恢復動力學僅作文字說明，無可調曲線工具；PBTI（nMOS 電子穿隧機制）未展開，僅並列標題。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Stage 3 / 4 · Recovery Dynamics & Measurement Traps</p>
+<h1>The instant stress is removed, the signal has already started recovering</h1>
+<p class="lede">This is NBTI's trickiest aspect: some interface traps get passivated and recover, and some trapped charge gets released,
+so ΔV<sub>t</sub> snaps back quickly on a <b>logarithmic time scale</b> and then levels off. Conventional measurement methods systematically underestimate the true degradation.</p>
+
+<h2>Why conventional measurement falls into this trap</h2>
+<p>The conventional approach is "remove the stress bias first, then switch to measurement mode to measure I-V." That switch itself takes time — typically milliseconds to seconds —
+and that's already enough time for recovery to eat up a significant amount of signal. <b>The shorter the stress time, the larger this error's proportional impact</b>,
+because the ΔV<sub>t</sub> measured at an early stress point is already small, so the same amount recovered has a proportionally bigger effect.</p>
+
+<div class="key"><div class="t">The key intuition</div>
+<p style="margin:0">You think you're measuring "the amount of degradation," but you're actually measuring "the amount of degradation minus whatever already recovered during the measurement delay."
+This isn't noise — it's a <b>systematic bias</b>, and the size of the bias changes with the measurement method itself, not with the device's physics.</p></div>
+
+<h2>How industry deals with it: OTF and ultra-fast I-V</h2>
+<table>
+<thead><tr><th class="nw">Method</th><th>Approach</th><th>What it fixes</th></tr></thead>
+<tbody>
+<tr><td class="nw">On-the-fly (OTF)</td><td>Never interrupts the stress — measures live under the stress bias itself (using the stress bias itself to infer the V<sub>t</sub> change)</td>
+ <td>Completely avoids the "remove stress → switch → measure" recovery window</td></tr>
+<tr><td class="nw">Ultra-fast I-V</td><td>Compresses the measurement itself down to microseconds — still measures after removing stress, but minimizes the time window in which recovery can happen</td>
+ <td>Substantially shrinks (but doesn't fully eliminate) the underestimate caused by recovery</td></tr>
+</tbody></table>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why does "the shorter the stress time, the bigger the measurement-trap error's proportional impact"?</summary>
+<div class="a">The amount of signal recovered, compared to the total degradation, is usually a bigger fraction early in the stress than it is later
+(recovery dynamics themselves are close to a logarithmic time law, out of step with degradation's power-law time constant).
+The absolute ΔV<sub>t</sub> at an early stress point is already small, so the same amount of recovery represents a proportionally larger fraction —
+making early data points look far "cleaner" than reality, which distorts the fitted n value.</div></details>
+<details><summary>If you ignore the recovery trap and extrapolate a 10-year lifetime directly from conventionally measured data, does that overestimate or underestimate the risk?</summary>
+<div class="a"><b>It underestimates the risk (overly optimistic)</b>. Because conventional measurement systematically underestimates the true ΔV<sub>t</sub>,
+the extrapolated failure time comes out longer than it really is, and the allowed pass/fail threshold is effectively loosened.
+This is a different facet of the same engineering lesson Stage 2 raised — "don't treat the theoretical n value as a universal constant":
+<b>a model parameter's accuracy is only as good as the measurement method it was extracted with.</b></div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-2-mechanism.html"><div class="d">← Previous · Stage 2</div><div class="t">Mechanism & the R-D Model</div></a><a class="next" href="nbti-4-spec.html"><div class="d">Next · Stage 4 →</div><div class="t">Criteria & Mitigation</div></a></div>
+<div class="foot"><b>Model scope</b>: the R-D time law uses the power-law appearance of the diffusion-limited regime, without implementing the full reaction-diffusion coupled differential equations; recovery dynamics are described in text only, with no tunable curve tool; PBTI (the nMOS electron-tunneling mechanism) is not expanded — only its heading is listed alongside NBTI's. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

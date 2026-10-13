@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 2：滲流模型 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 2：滲流模型 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html" aria-current="page"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:29%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 2 / 7</p>
+<h1>滲流模型：看缺陷連成一條路</h1>
+<p class="lede">這一頁不是動畫示意圖 —— 是<b>真的在你瀏覽器裡跑的蒙地卡羅模擬</b>。
+我們只放進三個假設，然後 Weibull 分布、β ≈ t<sub>ox</sub>/a₀、面積縮放律，會自己長出來，不是套公式套出來的。</p>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 2 / 7</p>
+<h1>Percolation model: watch defects connect into a path</h1>
+<p class="lede">This page isn't an animated illustration — it's <b>a real Monte Carlo simulation running in your browser</b>.
+We feed in only three assumptions, and the Weibull distribution, β ≈ t<sub>ox</sub>/a₀, and the area-scaling law all emerge on their own — nothing is plugged in from a formula.</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="card"><h3 style="margin-top:0">整個模型只有三個假設</h3>
+<ol style="margin:0;padding-left:20px;line-height:2">
+<li>把氧化層切成邊長 <b>a₀ ≈ 1 nm</b> 的小格子 —— 這是一個缺陷「佔掉」的體積，跟階段 1 的那些小方格是同一個東西。
+    所以厚度 t<sub>ox</sub> 的氧化層有 <b>N = t<sub>ox</sub>/a₀ 層</b>。</li>
+<li>電流通過時，每個格子<b>以相同機率、獨立地</b>變成缺陷。缺陷密度隨時間線性增加。</li>
+<li>當缺陷<b>連成一條從上電極貫穿到下電極的通路</b>，崩潰發生。</li>
+</ol>
+<p class="note" style="margin:10px 0 0">沒有 Weibull、沒有 β、沒有面積律。這些全部是<b>結果</b>，不是輸入 —— 這正是這個模型有說服力的地方。</p></div>
+</div>
+<div lang="en">
+<div class="card"><h3 style="margin-top:0">The whole model is just three assumptions</h3>
+<ol style="margin:0;padding-left:20px;line-height:2">
+<li>Slice the oxide into small cells of side length <b>a₀ ≈ 1 nm</b> — the volume one defect "occupies," the same little squares from Stage 1.
+    So an oxide of thickness t<sub>ox</sub> has <b>N = t<sub>ox</sub>/a₀ layers</b>.</li>
+<li>As current flows, each cell turns into a defect <b>independently, with equal probability</b>. Defect density increases linearly with time.</li>
+<li>Breakdown happens the instant defects <b>connect into a path from the top electrode all the way to the bottom electrode</b>.</li>
+</ol>
+<p class="note" style="margin:10px 0 0">No Weibull, no β, no area law were put in. All of those are <b>outputs</b>, not inputs — that's exactly what makes this model convincing.</p></div>
+</div>
+
+<div lang="zh-Hant">
+<h2>實驗一：跑幾百顆虛擬電容，看分布自己長出來</h2>
+<p>每顆電容都是同樣的材料、同樣的厚度、同樣的應力。唯一的差別是<b>缺陷長在哪裡是隨機的</b>。
+按開始，右邊的 Weibull 圖會一點一點被填出來。</p>
+</div>
+<div lang="en">
+<h2>Experiment 1: run hundreds of virtual capacitors and watch the distribution emerge</h2>
+<p>Every capacitor has the same material, the same thickness, the same stress. The only difference is <b>where defects happen to appear</b>.
+Hit start and watch the Weibull plot on the right fill in point by point.</p>
+</div>
+
+<div class="card">
+<div class="ctrls" style="margin-bottom:14px">
+<div class="ctrl"><label><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub>（= 幾層格子）</span><span lang="en">Oxide thickness t<sub>ox</sub> (= number of lattice layers)</span></label>
+  <div class="row"><input type="range" id="rN" min="2" max="6" step="1" value="4"><span class="val" id="vN"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">電容面積（格子寬度 W）</span><span lang="en">Capacitor area (lattice width W)</span></label>
+  <div class="row"><input type="range" id="rW" min="30" max="200" step="10" value="60"><span class="val" id="vW"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">要跑幾顆電容</span><span lang="en">Number of capacitors to run</span></label>
+  <div class="row"><input type="range" id="rM" min="50" max="600" step="50" value="300"><span class="val" id="vM"></span></div></div>
+</div>
+<div class="tools">
+  <button id="go2">▶ 開始模擬</button>
+  <button id="rs2"><span lang="zh-Hant">↺ 重置</span><span lang="en">↺ Reset</span></button>
+</div>
+<div class="two" style="gap:14px">
+  <div><div class="cap"><span lang="zh-Hant">最近一顆崩潰的電容（紅色是貫穿路徑）</span><span lang="en">Most recently broken-down capacitor (red = breakdown path)</span></div><div id="mc1"></div></div>
+  <div><div class="cap"><span lang="zh-Hant">Weibull 圖：每一點是一顆電容</span><span lang="en">Weibull plot: each point is one capacitor</span></div><div id="wb1"></div></div>
+</div>
+<div class="tiles" style="margin-top:14px">
+  <div class="tile"><div class="k"><span lang="zh-Hant">已完成</span><span lang="en">Completed</span></div><div class="v" id="tDone">0</div><div class="u"><span lang="zh-Hant">顆</span><span lang="en">devices</span></div></div>
+  <div class="tile hl"><div class="k"><span lang="zh-Hant">模擬量到的 Weibull 斜率 β</span><span lang="en">Simulated Weibull slope β</span></div><div class="v" id="tBeta">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">理論值 t<sub>ox</sub> / a₀</span><span lang="en">Theoretical value t<sub>ox</sub> / a₀</span></div><div class="v" id="tN">4</div></div>
+  <div class="tile"><div class="k">t<sub>63</sub>（<span lang="zh-Hant">缺陷密度</span><span lang="en">defect density</span>）</div><div class="v" id="tT63">—</div></div>
+</div>
+<div class="legend" id="lg2"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>發生了什麼？</b>我們從來沒有告訴程式「壽命服從 Weibull 分布」。
+但 300 個隨機樣本畫在 ln t – ln(−ln(1−F)) 座標上，<b>就是一條直線</b> —— 這正是 Weibull 分布的定義。
+而且那條線的斜率，就等於格子的層數。</div>
+
+<h2>實驗二：讓網頁自己量出 β 與 t<sub>ox</sub> 的關係</h2>
+<p>如果 β 真的等於層數，那我們把層數從 2 掃到 6，量到的 β 應該要跟著跑。按一下，讓它自己量。</p>
+</div>
+<div lang="en">
+<div class="key"><b>What just happened?</b> We never told the program "lifetime follows a Weibull distribution."
+But plot 300 random samples on ln t – ln(−ln(1−F)) axes and <b>it's a straight line</b> — that's exactly the definition of a Weibull distribution.
+And the slope of that line equals the number of lattice layers.</div>
+
+<h2>Experiment 2: let the page measure the β–t<sub>ox</sub> relationship itself</h2>
+<p>If β really does equal the layer count, then sweeping the layer count from 2 to 6 should move the measured β right along with it. Click it and let it measure.</p>
+</div>
+
+<div class="card">
+<div class="tools"><button id="sweep"><span lang="zh-Hant">▶ 開始掃描（2 → 6 層）</span><span lang="en">▶ Start sweep (2 → 6 layers)</span></button><span id="swst" class="note" style="margin:0"></span></div>
+<table id="swtab"><thead><tr>
+<th class="nw"><span lang="zh-Hant">層數 N = t<sub>ox</sub>/a₀</span><span lang="en">Layers N = t<sub>ox</sub>/a₀</span></th>
+<th class="nw"><span lang="zh-Hant">對應 t<sub>ox</sub></span><span lang="en">Corresponding t<sub>ox</sub></span></th>
+<th class="nw"><span lang="zh-Hant">模擬量到的 β</span><span lang="en">Simulated β</span></th>
+<th><span lang="zh-Hant">意義</span><span lang="en">What it means</span></th>
+</tr></thead><tbody id="swbody">
+<tr><td class="nw">2</td><td class="nw">2 nm</td><td class="nw" id="sw2">—</td><td><span lang="zh-Hant">極薄氧化層，分布非常散</span><span lang="en">Ultra-thin oxide, distribution very wide</span></td></tr>
+<tr><td class="nw">3</td><td class="nw">3 nm</td><td class="nw" id="sw3">—</td><td><span lang="zh-Hant">先進製程常見</span><span lang="en">Common in advanced processes</span></td></tr>
+<tr><td class="nw">4</td><td class="nw">4 nm</td><td class="nw" id="sw4">—</td><td></td></tr>
+<tr><td class="nw">5</td><td class="nw">5 nm</td><td class="nw" id="sw5">—</td><td></td></tr>
+<tr><td class="nw">6</td><td class="nw">6 nm</td><td class="nw" id="sw6">—</td><td><span lang="zh-Hant">厚氧 I/O 元件，分布很集中</span><span lang="en">Thick-oxide I/O devices, distribution tight</span></td></tr>
+</tbody></table>
+<p class="note" lang="zh-Hant" style="margin:10px 0 0">模擬值會略高於 N（我們用面對面相鄰導通、路徑不能斜走）。
+不同文獻的滲流細節（3D 立方格點、允許斜向、缺陷尺寸分布）會讓係數略有出入，
+但<b>「β 隨 t<sub>ox</sub> 線性上升」這個結論是穩固的</b>。
+係數到底是多少，以及它為什麼在不同論文裡差了好幾倍，是<a href="tddb-3-trapsize.html">階段 3</a>的主題。</p>
+<p class="note" lang="en" style="margin:10px 0 0">The simulated value runs slightly above N (we only allow face-adjacent connections, no diagonal steps).
+Percolation details differ across the literature (3D cubic lattices, diagonal connections allowed, a distribution of defect sizes), which shifts the exact coefficient a bit,
+but <b>the conclusion "β rises linearly with t<sub>ox</sub>" is solid</b>.
+What that coefficient actually is, and why it differs several-fold between papers, is the subject of <a href="tddb-3-trapsize.html">Stage 3</a>.</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>這就是為什麼薄氧化層這麼難管。</b>
+t<sub>ox</sub> 從 6 nm 縮到 2 nm，β 從約 6 掉到約 2。
+β 小代表分布很散 —— <b>早夭的那一小撮元件，會比中位數早非常多壞掉</b>。
+而你要保證的不是中位數，是百萬分之一。下一頁我們就來算這個懲罰有多重。</div>
+
+<h2>實驗三：面積為什麼會吃掉壽命</h2>
+<p>一顆產品晶片的閘極總面積，可能是測試電容的一萬倍。
+面積大 = 骰子擲得多 = 只要<b>任何一處</b>先貫穿就整顆死。這叫<b>最弱環節（weakest link）</b>。</p>
+</div>
+<div lang="en">
+<div class="key"><b>This is exactly why thin oxides are so hard to manage.</b>
+As t<sub>ox</sub> shrinks from 6 nm to 2 nm, β drops from about 6 to about 2.
+A small β means a wide spread — <b>the small handful of early failures die far sooner than the median</b>.
+And what you have to guarantee isn't the median — it's one in a million. The next page works out exactly how heavy that penalty is.</div>
+
+<h2>Experiment 3: why area eats into lifetime</h2>
+<p>A product chip's total gate area can be ten thousand times that of a test capacitor.
+Bigger area = more dice rolled = the instant <b>any single spot</b> percolates through, the whole device is dead. This is called the <b>weakest-link</b> principle.</p>
+</div>
+
+<div class="card">
+<div class="tools"><button id="area"><span lang="zh-Hant">▶ 比較兩種面積（W=50 vs W=200）</span><span lang="en">▶ Compare two areas (W=50 vs W=200)</span></button><span id="arst" class="note" style="margin:0"></span></div>
+<div class="cmp" id="arcmp" style="display:none">
+  <div class="col"><div class="h"><span lang="zh-Hant">小面積 W = 50</span><span lang="en">Small area W = 50</span></div>
+    <div style="font-size:15px;line-height:1.9">t<sub>63</sub>（<span lang="zh-Hant">缺陷密度</span><span lang="en">defect density</span>）= <b id="arA">—</b></div></div>
+  <div class="col"><div class="h"><span lang="zh-Hant">大面積 W = 200（4 倍）</span><span lang="en">Large area W = 200 (4×)</span></div>
+    <div style="font-size:15px;line-height:1.9">t<sub>63</sub>（<span lang="zh-Hant">缺陷密度</span><span lang="en">defect density</span>）= <b id="arB">—</b></div></div>
+</div>
+<div class="plug" id="arplug" style="display:none"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>面積縮放律不是經驗公式，是滲流的算術後果。</b>
+把面積放大 A₂/A₁ 倍，等於同時擲 A₂/A₁ 組骰子；
+在 Weibull 分布下，最小值的分布仍是 Weibull，只是特徵壽命被壓成
+t<sub>63</sub>(A₂) = t<sub>63</sub>(A₁)·(A₁/A₂)<sup>1/β</sup>。
+<b>β 越小，這一刀砍得越深</b> —— 又是薄氧化層吃虧。</div>
+
+<h2>順便回答一個常見疑問</h2>
+<table><thead><tr><th class="nw">問題</th><th>答案</th></tr></thead><tbody>
+<tr><td class="nw">a₀ 為什麼是 1 nm？</td>
+<td>它是「一個缺陷在電性上等效佔掉多大空間」的尺度，不是原子半徑。
+<b>1.0 nm 是本教材為了讓數字好算而選的值，不是文獻共識</b> —— 實際上不同論文由 β–t<sub>ox</sub> 斜率反推出的
+a₀ 從 <b>0.4 nm 到 3 nm</b> 都有，因為每篇用的滲流幾何不同，a₀ 的定義也就不同。
+<a href="tddb-3-trapsize.html">階段 3</a> 專門處理這件事，並解釋為什麼這個分歧能讓 ppm 壽命差十個數量級。</td></tr>
+<tr><td class="nw">SBD 與 HBD 差在哪？</td>
+<td>第一條路徑形成時，通常只是<b>軟崩潰（SBD）</b> —— 漏電跳一階但電路還能動。
+之後焦耳熱把路徑燒寬，才變成<b>硬崩潰（HBD）</b>。薄氧化層的 SBD 到 HBD 之間可以差很久，
+所以「什麼叫失效」在薄氧製程是要定義的。</td></tr>
+<tr><td class="nw">為什麼不用「磨損」來想？</td>
+<td>磨損模型會預測所有元件在差不多的時間壞掉（β 很大，例如 20）。
+實測 β 只有 1～6（先進薄氧製程甚至低於 1），代表<b>主宰的是隨機性，不是累積損耗量</b>。</td></tr>
+</tbody></table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>模擬裡我們從來沒有輸入「Weibull 分布」，為什麼結果會是 Weibull？</summary><div class="a">因為 Weibull 分布正是「最弱環節 + 冪次型危險率」的數學後果。氧化層被切成大量獨立的小區塊，只要<b>任一</b>區塊先貫穿就整顆失效 —— 這是取最小值。而單一區塊在時間 t 前貫穿的機率 ≈ p(t)<sup>N</sup> ∝ t<sup>N</sup>（要 N 層都變成缺陷）。把「冪次型的個別機率」丟進「取最小值」，得到的就是 Weibull，且形狀參數 β = N。</div></details><details><summary>t<sub>ox</sub> 從 5 nm 縮到 2.5 nm，β 大約會怎麼變？這對規格意味著什麼？</summary><div class="a">β 會從約 5 掉到約 2.5（減半）。分布變散兩倍以上，1 ppm 壽命與 t<sub>63</sub> 的比值從 ~6% 掉到 ~0.1% 量級。意味著：<b>同樣的中位數壽命，薄氧化層能提供的 ppm 級保證少了兩個數量級以上。</b></div></details><details><summary>如果實測到某製程的 β 明顯低於 t<sub>ox</sub>/a₀（例如 t<sub>ox</sub>=4 nm 但 β=1.2），最可能是什麼原因？</summary><div class="a">有兩種可能，而且都不是「滲流模型錯了」。<b>第一種：陷阱生成冪次 m 小於 1。</b>
+本頁的模擬假設缺陷密度隨時間線性增加（等於 m = 1），但實測的 m 常是 0.3 左右，
+而完整的關係式是 β = m·t<sub>ox</sub>/a₀ —— 0.3 × 4 = 1.2，剛好就是量到的值（詳見
+<a href="tddb-3-trapsize.html">階段 3</a>）。<b>第二種：混進了外質失效（extrinsic failure）</b> —— 微粒、針孔、電漿損傷、antenna 效應造成的局部薄點。這些缺陷讓一小撮元件遠早於本質壽命就壞掉，在 Weibull 圖上表現為左下角翹起的「早夭尾巴」，整體擬合斜率被拉低。處理方式是<b>雙分布擬合</b>（extrinsic + intrinsic 分開），而不是硬套一條直線。</div></details><details><summary>為什麼滲流模型可以同時解釋 Weibull 分布、β–t<sub>ox</sub> 關係、以及面積縮放律？</summary><div class="a">因為這三件事都來自同一個假設：<b>缺陷隨機獨立生成 + 只要有一條貫穿路徑就失效</b>。分布形狀來自「取最小值」；β 來自「一條路徑要 N 個缺陷」；面積律來自「面積大＝獨立區塊多」。一個假設推出三個可獨立驗證的結論 —— 這就是好模型的樣子。</div></details></div>
+<div class="pager"><a class="prev" href="tddb-1-intuition.html"><div class="d">← 上一課 · 階段 1</div><div class="t">直覺</div></a><a class="next" href="tddb-3-trapsize.html"><div class="d">下一課 · 階段 3 →</div><div class="t">陷阱尺寸與 Weibull 斜率</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<div class="key"><b>The area-scaling law isn't an empirical formula — it's the arithmetic consequence of percolation.</b>
+Scale the area up by A₂/A₁ and it's the same as rolling A₂/A₁ sets of dice at once;
+under a Weibull distribution, the distribution of the minimum is still Weibull, just with its characteristic lifetime compressed to
+t<sub>63</sub>(A₂) = t<sub>63</sub>(A₁)·(A₁/A₂)<sup>1/β</sup>.
+<b>The smaller β is, the deeper this cut goes</b> — thin oxides lose out again.</div>
+
+<h2>A few common questions, answered</h2>
+<table><thead><tr><th class="nw">Question</th><th>Answer</th></tr></thead><tbody>
+<tr><td class="nw">Why is a₀ exactly 1 nm?</td>
+<td>It's the scale of "how much space one defect effectively occupies electrically," not an atomic radius.
+<b>1.0 nm is a value this coursework picked to keep the arithmetic clean — it is not a literature consensus.</b>
+Papers back-calculating a₀ from measured β–t<sub>ox</sub> slopes land anywhere from <b>0.4 nm to 3 nm</b>,
+because each uses a different percolation geometry and therefore a different definition of a₀.
+<a href="tddb-3-trapsize.html">Stage 3</a> is devoted to this, and to why that disagreement can move the ppm lifetime by ten orders of magnitude.</td></tr>
+<tr><td class="nw">What's the difference between SBD and HBD?</td>
+<td>When the first path forms, it's usually just a <b>soft breakdown (SBD)</b> — leakage jumps a step but the circuit still works.
+Joule heating later widens the path into a <b>hard breakdown (HBD)</b>. The gap between SBD and HBD can be quite long for thin oxides,
+so "what counts as failure" has to be explicitly defined for thin-oxide processes.</td></tr>
+<tr><td class="nw">Why not just think of it as "wear-out"?</td>
+<td>A wear-out model predicts all devices fail around the same time (a large β, say 20).
+Measured β is only 1–6 — and below 1 for advanced thin-oxide processes — which means <b>randomness dominates, not accumulated wear</b>.</td></tr>
+</tbody></table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>We never fed "Weibull distribution" into the simulation — why does the result come out Weibull anyway?</summary><div class="a">Because a Weibull distribution is exactly the mathematical consequence of "weakest link + power-law hazard rate." The oxide is sliced into many independent small blocks, and the instant <b>any one</b> block percolates through, the whole device fails — that's taking a minimum. A single block's probability of percolating before time t is ≈ p(t)<sup>N</sup> ∝ t<sup>N</sup> (all N layers need to become defects). Feed that "power-law individual probability" into "take the minimum," and out comes a Weibull distribution with shape parameter β = N.</div></details><details><summary>As t<sub>ox</sub> shrinks from 5 nm to 2.5 nm, roughly how does β change — and what does that mean for specs?</summary><div class="a">β drops from about 5 to about 2.5 (roughly halved). The distribution widens by more than 2×, and the ratio of 1-ppm lifetime to t<sub>63</sub> drops from the ~6% range to the ~0.1% range. In other words: <b>for the same median lifetime, a thin oxide can offer more than two orders of magnitude less ppm-level guarantee.</b></div></details><details><summary>If a measured process shows β noticeably lower than t<sub>ox</sub>/a₀ (say t<sub>ox</sub>=4 nm but β=1.2), what's the most likely cause?</summary><div class="a">There are two possibilities, and neither is "the percolation model is wrong." <b>First: the trap-generation exponent m is below 1.</b>
+This page's simulation assumes defect density grows linearly with time (i.e. m = 1), but measured m is often around 0.3,
+and the full relation is β = m·t<sub>ox</sub>/a₀ — 0.3 × 4 = 1.2, exactly the measured value (see
+<a href="tddb-3-trapsize.html">Stage 3</a>). <b>Second:</b> <b>extrinsic failures</b> have mixed in: particles, pinholes, plasma damage, or antenna-effect local thin spots. These defects make a small subset of devices fail far earlier than the intrinsic lifetime, showing up on a Weibull plot as an upturned "early-death tail" at the lower left, which drags the overall fitted slope down. The fix is <b>a two-population fit</b> (separating extrinsic from intrinsic), not forcing a single straight line through everything.</div></details><details><summary>Why can the percolation model explain the Weibull distribution, the β–t<sub>ox</sub> relationship, and the area-scaling law all at once?</summary><div class="a">Because all three come from the same assumption: <b>defects form randomly and independently, and a single percolating path is enough to fail the device</b>. Distribution shape comes from "taking a minimum"; β comes from "a path needs N defects"; the area law comes from "more area = more independent blocks." One assumption yields three independently verifiable conclusions — that's what a good model looks like.</div></details></div>
+<div class="pager"><a class="prev" href="tddb-1-intuition.html"><div class="d">← Previous · Stage 1</div><div class="t">Intuition</div></a><a class="next" href="tddb-3-trapsize.html"><div class="d">Next · Stage 3 →</div><div class="t">Trap Size & Weibull Slope</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+/* ---------- 滲流蒙地卡羅核心 ---------- */
+function runCap(W,N,keep){
+  const n=W*N, par=new Int32Array(n+2);
+  for(let i=0;i<n+2;i++)par[i]=i;
+  const TOP=n,BOT=n+1;
+  function f(x){while(par[x]!==x){par[x]=par[par[x]];x=par[x];}return x;}
+  function u(a,b){a=f(a);b=f(b);if(a!==b)par[a]=b;}
+  const occ=new Uint8Array(n), order=new Int32Array(n);
+  for(let i=0;i<n;i++)order[i]=i;
+  for(let i=n-1;i>0;i--){const j=(Math.random()*(i+1))|0;const t=order[i];order[i]=order[j];order[j]=t;}
+  const D=[[1,0],[-1,0],[0,1],[0,-1]];
+  let k=0;
+  for(;k<n;k++){
+    const id=order[k], x=id%W, y=(id/W)|0;
+    occ[id]=1;
+    if(y===0)u(id,TOP);
+    if(y===N-1)u(id,BOT);
+    for(let d=0;d<4;d++){const nx=x+D[d][0],ny=y+D[d][1];
+      if(nx<0||nx>=W||ny<0||ny>=N)continue;
+      const j=ny*W+nx; if(occ[j])u(id,j);}
+    if(f(TOP)===f(BOT))break;
+  }
+  const cnt=Math.min(k+1,n);
+  if(!keep) return {p:cnt/n};
+  /* 回溯貫穿路徑：從頂層任一與 BOT 同群的缺陷做 BFS */
+  const root=f(TOP), prev=new Int32Array(n).fill(-1), q=[]; let head=0, start=-1;
+  for(let x=0;x<W;x++) if(occ[x]&&f(x)===root){q.push(x);prev[x]=x;}
+  while(head<q.length){const id=q[head++]; const x=id%W,y=(id/W)|0;
+    if(y===N-1){start=id;break;}
+    for(let d=0;d<4;d++){const nx=x+D[d][0],ny=y+D[d][1];
+      if(nx<0||nx>=W||ny<0||ny>=N)continue;
+      const j=ny*W+nx; if(occ[j]&&prev[j]<0){prev[j]=id;q.push(j);}}}
+  const path=[];
+  if(start>=0){let c=start;for(let g=0;g<n;g++){path.push(c);if(prev[c]===c)break;c=prev[c];}}
+  return {p:cnt/n, occ:occ, path:path, W:W, N:N};
+}
+/* 中位數秩 + 最小平方擬合 Weibull 斜率 */
+function fitBeta(ts){
+  const M=ts.length; if(M<8)return null;
+  const s=ts.slice().sort((a,b)=>a-b);
+  let sx=0,sy=0,sxx=0,sxy=0;
+  for(let i=0;i<M;i++){
+    const F=(i+0.7)/(M+0.4);
+    const x=Math.log(s[i]), y=Math.log(-Math.log(1-F));
+    sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;}
+  const b=(M*sxy-sx*sy)/(M*sxx-sx*sx);
+  const a=(sy-b*sx)/M;
+  return {beta:b, eta:Math.exp(-a/b), sorted:s};
+}
+
+/* ---------- 狀態 ---------- */
+const S2={N:4,W:60,M:300,ts:[],last:null,run:false,raf:0};
+function relabelGo2(){
+  var t;
+  if(S2.ts.length>=S2.M) t=L('✓ 完成（按重置再跑）','✓ Done (click reset to run again)');
+  else if(S2.run) t=L('⏸ 暫停','⏸ Pause');
+  else if(S2.ts.length>0) t=L('▶ 繼續','▶ Continue');
+  else t=L('▶ 開始模擬','▶ Start simulation');
+  $('go2').textContent=t;
+}
+function reset2(){S2.ts=[];S2.last=null;S2.run=false;relabelGo2();draw2();}
+
+/* ---------- 繪圖：電容格點 ---------- */
+function drawCap(){
+  const box=$('mc1'), Wpx=box.clientWidth||420, ch=Math.max(7,Math.min(16,220/S2.N));
+  const cw=Wpx/S2.W, H=S2.N*ch+46;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('虛擬電容的缺陷分布與貫穿路徑','Defect distribution and breakdown path for a virtual capacitor'));
+  const y0=22;
+  svg.appendChild(el('rect',{x:0,y:y0-9,width:Wpx,height:7,fill:css('--poly')||css('--ink2'),rx:2}));
+  svg.appendChild(el('rect',{x:0,y:y0+S2.N*ch+2,width:Wpx,height:7,fill:css('--sub')||css('--ink2'),rx:2}));
+  svg.appendChild(txt(2,y0-13,L('閘極（上電極）','Gate (top electrode)'),{fs:10}));
+  svg.appendChild(txt(2,y0+S2.N*ch+20,L('基板（下電極）','Substrate (bottom electrode)'),{fs:10}));
+  svg.appendChild(el('rect',{x:0,y:y0,width:Wpx,height:S2.N*ch,fill:css('--plane'),
+    stroke:css('--grid'),'stroke-width':1}));
+  const L2=S2.last;
+  if(L2&&L2.occ){
+    const g=el('g',{});
+    for(let y=0;y<L2.N;y++)for(let x=0;x<L2.W;x++){
+      if(!L2.occ[y*L2.W+x])continue;
+      g.appendChild(el('rect',{x:(x*cw).toFixed(2),y:(y0+y*ch).toFixed(2),
+        width:Math.max(cw-0.5,0.8).toFixed(2),height:(ch-0.6).toFixed(2),
+        fill:css('--h'),opacity:.55,rx:1}));}
+    svg.appendChild(g);
+    const gp=el('g',{});
+    L2.path.forEach(function(id){const x=id%L2.W,y=(id/L2.W)|0;
+      gp.appendChild(el('rect',{x:(x*cw).toFixed(2),y:(y0+y*ch).toFixed(2),
+        width:Math.max(cw-0.5,1).toFixed(2),height:(ch-0.6).toFixed(2),fill:css('--crit'),rx:1}));});
+    svg.appendChild(gp);
+  }else{
+    svg.appendChild(txt(Wpx/2,y0+S2.N*ch/2,L('按「開始模擬」','Click "Start simulation"'),{ta:'middle',db:'middle',fs:12}));
+  }
+  box.innerHTML='';box.appendChild(svg);
+}
+/* ---------- 繪圖：Weibull ---------- */
+function drawWb(){
+  const box=$('wb1'), Wpx=box.clientWidth||420, H=268, M={l:54,r:14,t:12,b:40};
+  const iw=Wpx-M.l-M.r, ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('Weibull 機率圖','Weibull probability plot'));
+  const fit=fitBeta(S2.ts);
+  const ylo=-5.2, yhi=1.8;
+  let xlo=-2.2,xhi=0.2;
+  if(fit){const s=fit.sorted; xlo=Math.log(s[0])-0.25; xhi=Math.log(s[s.length-1])+0.25;
+    if(xhi-xlo<0.5){const c=(xhi+xlo)/2;xlo=c-0.25;xhi=c+0.25;}}
+  const X=v=>M.l+(v-xlo)/(xhi-xlo)*iw, Y=v=>M.t+ih-(v-ylo)/(yhi-ylo)*ih;
+  [0.001,0.01,0.1,0.5,0.9,0.99].forEach(function(F){
+    const y=Y(Math.log(-Math.log(1-F)));
+    if(y<M.t||y>M.t+ih)return;
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-7,y,(F*100)+'%',{ta:'end',db:'middle',fs:10}));});
+  ticks(xlo,xhi,5).forEach(function(v){const x=X(v);if(x<M.l-1||x>M.l+iw+1)return;
+    svg.appendChild(txt(x,M.t+ih+15,v.toFixed(1),{ta:'middle',fs:10}));});
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('ln( 崩潰時間 )　→','ln( breakdown time )　→'),{ta:'middle',fs:11}));
+  svg.appendChild(txt(13,M.t+ih/2,L('累積失效率 F','Cumulative failure rate F'),{ta:'middle',fs:11,rot:-90}));
+  if(fit){
+    const s=fit.sorted, M2=s.length;
+    for(let i=0;i<M2;i++){
+      const F=(i+0.7)/(M2+0.4);
+      svg.appendChild(el('circle',{cx:X(Math.log(s[i])).toFixed(1),cy:Y(Math.log(-Math.log(1-F))).toFixed(1),
+        r:2,fill:css('--e'),opacity:.55}));}
+    const a=Math.log(fit.eta);
+    let x1=xlo,x2=xhi;
+    const yA=fit.beta*(x1-a), yB=fit.beta*(x2-a);
+    if(yA<ylo)x1=ylo/fit.beta+a; if(yB>yhi)x2=yhi/fit.beta+a;
+    const p1=[x1,fit.beta*(x1-a)], p2=[x2,fit.beta*(x2-a)];
+    svg.appendChild(el('line',{x1:X(p1[0]),y1:Y(p1[1]),x2:X(p2[0]),y2:Y(p2[1]),
+      stroke:css('--crit'),'stroke-width':2,'stroke-dasharray':'6 4'}));
+    svg.appendChild(txt(M.l+iw-6,M.t+12,L('擬合斜率 β = ','Fitted slope β = ')+fit.beta.toFixed(2),
+      {ta:'end',fs:12,fw:700,fill:css('--crit')}));
+  }else{
+    svg.appendChild(txt(M.l+iw/2,M.t+ih/2,L('至少要 8 顆才畫得出來','Need at least 8 devices to plot'),{ta:'middle',db:'middle',fs:12}));
+  }
+  box.innerHTML='';box.appendChild(svg);
+}
+function stats2(){
+  const fit=fitBeta(S2.ts);
+  $('tDone').textContent=S2.ts.length;
+  $('tBeta').textContent=fit?fit.beta.toFixed(2):'—';
+  $('tN').textContent=S2.N;
+  $('tT63').textContent=fit?fit.eta.toFixed(3):'—';
+}
+function draw2(){drawCap();drawWb();stats2();}
+
+function tick2(){
+  if(!S2.run)return;
+  const budget=Math.max(1,Math.round(2200/(S2.W*S2.N)));
+  for(let i=0;i<budget&&S2.ts.length<S2.M;i++){
+    const keep=(i===budget-1)||(S2.ts.length===S2.M-1);
+    const r=runCap(S2.W,S2.N,keep);
+    if(keep)S2.last=r;
+    S2.ts.push(r.p);}
+  draw2();
+  if(S2.ts.length>=S2.M){S2.run=false;relabelGo2();return;}
+  S2.raf=requestAnimationFrame(tick2);
+}
+$('go2').addEventListener('click',function(){
+  if(S2.ts.length>=S2.M){reset2();}
+  S2.run=!S2.run;relabelGo2();
+  if(S2.run)tick2();});
+$('rs2').addEventListener('click',reset2);
+function bind2(id,vid,fn,fmt){$(id).addEventListener('input',function(e){
+  fn(parseFloat(e.target.value));$(vid).textContent=fmt();reset2();});}
+bind2('rN','vN',v=>S2.N=v,()=>S2.N+' '+L('層','layers')+' ('+S2.N.toFixed(1)+' nm)');
+bind2('rW','vW',v=>S2.W=v,()=>'W = '+S2.W);
+bind2('rM','vM',v=>S2.M=v,()=>S2.M+' '+L('顆','devices'));
+function refreshCtrlVals2(){
+  $('vN').textContent=S2.N+' '+L('層','layers')+' ('+S2.N.toFixed(1)+' nm)';
+  $('vW').textContent='W = '+S2.W;
+  $('vM').textContent=S2.M+' '+L('顆','devices');
+}
+refreshCtrlVals2();
+function refreshLegend2(){
+  $('lg2').innerHTML='<span><i class="sw dot" style="background:'+css('--h')+'"></i>'+L('缺陷','defect')+'</span>'+
+    '<span><i class="sw dot" style="background:'+css('--crit')+'"></i>'+L('貫穿路徑','breakdown path')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--crit')+'"></i>'+L('Weibull 擬合線','Weibull fit line')+'</span>';
+}
+refreshLegend2();
+
+/* ---------- 掃描 β vs N ---------- */
+$('sweep').addEventListener('click',function(){
+  const btn=this; btn.disabled=true;
+  const Ns=[2,3,4,5,6]; let i=0;
+  (function step(){
+    if(i>=Ns.length){$('swst').textContent=L('掃描完成 —— β 幾乎就是層數。','Sweep complete — β is essentially the layer count.');btn.disabled=false;return;}
+    const N=Ns[i];$('swst').textContent=L('正在跑 N = '+N+' …','Running N = '+N+' …');
+    setTimeout(function(){
+      const ts=[];for(let k=0;k<300;k++)ts.push(runCap(60,N,false).p);
+      const f=fitBeta(ts);
+      $('sw'+N).innerHTML='<b style="color:var(--crit)">'+f.beta.toFixed(2)+'</b>';
+      i++;step();},20);
+  })();
+});
+/* ---------- 面積比較 ---------- */
+$('area').addEventListener('click',function(){
+  const btn=this;btn.disabled=true;$('arst').textContent=L('計算中 …','Calculating …');
+  setTimeout(function(){
+    const N=4;
+    const A=[],B=[];
+    for(let k=0;k<500;k++){A.push(runCap(50,N,false).p);B.push(runCap(200,N,false).p);}
+    const fa=fitBeta(A), fb=fitBeta(B);
+    $('arA').textContent=fa.eta.toFixed(4);
+    $('arB').textContent=fb.eta.toFixed(4);
+    const ratio=fb.eta/fa.eta, pred=Math.pow(50/200,1/fa.beta);
+    $('arcmp').style.display='';
+    $('arplug').style.display='';
+    $('arplug').innerHTML=L(
+      '面積放大 <span class="num">4</span> 倍 → t<sub>63</sub> 變成 <span class="num">'+ratio.toFixed(3)+'</span> 倍<br>'+
+      '縮放律預測 (A₁/A₂)<sup>1/β</sup> = (1/4)<sup>1/'+fa.beta.toFixed(2)+'</sup> = <span class="num">'+pred.toFixed(3)+'</span><br>'+
+      '<b>模擬與公式吻合 —— 面積律不是外加的假設，是滲流自己的算術。</b>',
+      'Area increases <span class="num">4</span>× → t<sub>63</sub> becomes <span class="num">'+ratio.toFixed(3)+'</span>×<br>'+
+      'Scaling-law prediction (A₁/A₂)<sup>1/β</sup> = (1/4)<sup>1/'+fa.beta.toFixed(2)+'</sup> = <span class="num">'+pred.toFixed(3)+'</span><br>'+
+      '<b>Simulation matches the formula — the area law isn\'t a bolted-on assumption, it\'s percolation\'s own arithmetic.</b>'
+    );
+    $('arst').textContent='';btn.disabled=false;},20);
+});
+window.__rebuild=function(){ relabelGo2(); refreshCtrlVals2(); refreshLegend2(); draw2(); };
+relabelGo2();
+draw2();
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

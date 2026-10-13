@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 2：物理機制 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 2：物理機制 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html" aria-current="page"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:29%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 2 / 7 · 物理機制</p>
+<h1>五個步驟，看損傷怎麼發生</h1>
+<p class="lede">上一頁講的是「一顆電子的故事」。這一頁把它放回真實的元件結構裡，
+一步一步看：電場在哪裡變強、哪裡開始出事、缺陷留在哪。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>汲極電壓夠高時，通道靠近汲極的一段會「夾止」（pinch-off）。
+所有多出來的電壓幾乎全部落在這一小段上 —— <b>強電場就集中在那裡，損傷也就只發生在那裡</b>。
+這是 HCI 最重要的一個特徵：它是<b>局部</b>的。</p></div>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 2 / 7 · Mechanism</p>
+<h1>Five steps: watching the damage happen</h1>
+<p class="lede">The last page told "one electron's story." This page puts it back into the real device structure,
+walking through step by step: where the field gets strong, where trouble starts, where the defects end up.</p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<p>Once the drain voltage is high enough, the stretch of channel near the drain "pinches off."
+Almost all of the extra voltage drops across this one short stretch — <b>that's where the strong field concentrates, and that's the only place damage happens</b>.
+This is HCI's single most important trait: it's <b>local</b>.</p></div>
+</div>
+
+<div class="stepbar" id="steps"></div>
+<div class="card" style="padding:12px 14px">
+  <div class="legend" id="legV"></div>
+  <div id="viz"></div>
+</div>
+<div class="steptext" id="stext"></div>
+<div class="tiles" id="tiles" style="margin-top:14px"></div>
+
+<div class="tools" style="margin-top:16px">
+  <button class="tg" id="playBtn" aria-pressed="true">⏸ <span lang="zh-Hant">暫停動畫</span><span lang="en">Pause animation</span></button>
+  <button class="tg" id="resetBtn"><span lang="zh-Hant">清除累積的缺陷</span><span lang="en">Clear accumulated defects</span></button>
+  <span class="note" style="margin-left:6px"><span lang="zh-Hant">粒子的產生率由物理模型即時決定，不是預錄的動畫。</span><span lang="en">Particle generation rates come from the live physical model — this isn't a pre-recorded animation.</span></span>
+</div>
+
+<div lang="zh-Hant">
+<h2>四種熱載子注入模式</h2>
+<p>同樣是「熱載子」，依照 V<sub>G</sub> 與 V<sub>D</sub> 的組合，主導的機制不一樣。
+初學階段先記住前兩種就夠了 —— 它們涵蓋絕大多數實際應力條件。</p>
+<table>
+<thead><tr><th class="nw">模式</th><th class="nw">偏壓條件</th><th>發生什麼</th><th class="nw">何時最重要</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>DAHC</b><br><span class="note">汲極崩潰熱載子</span></td>
+  <td class="nw">V<sub>G</sub> ≈ V<sub>D</sub>/2</td>
+  <td>通道電流與峰值電場的乘積最大，撞擊游離最劇烈，電子電洞對大量產生，界面態生成最快。I<sub>sub</sub> 在此達到峰值。</td>
+  <td class="nw">厚氧 / 長通道 NMOS 的 worst case；<b>JESD28 的標準應力條件</b></td></tr>
+<tr><td class="nw"><b>CHE</b><br><span class="note">通道熱電子</span></td>
+  <td class="nw">V<sub>G</sub> ≈ V<sub>D</sub></td>
+  <td>氧化層電場把熱電子往閘極拉，注入效率最高。I<sub>G</sub> 在此達到峰值。</td>
+  <td class="nw">薄氧 / 短通道元件；量測上以 I<sub>G</sub> 為 monitor</td></tr>
+<tr><td class="nw"><b>SHE</b><br><span class="note">基板熱電子</span></td>
+  <td class="nw">加基板偏壓</td>
+  <td>載子從基板被空乏區電場加速後注入。主要用於<b>特性分析</b>，不是自然工作條件。</td>
+  <td class="nw">實驗室的機制拆解</td></tr>
+<tr><td class="nw"><b>Off-state</b><br><span class="note">關閉狀態</span></td>
+  <td class="nw">V<sub>G</sub> ≈ 0、V<sub>D</sub> 高</td>
+  <td>通道關閉但閘極–汲極重疊區有很強的垂直場，發生能帶對能帶穿隧（GIDL）。<b>機制與前三者不同。</b></td>
+  <td class="nw">高壓 / I/O 元件、長時間待機的電路</td></tr>
+</tbody>
+</table>
+<p class="note">本教材的模型涵蓋 DAHC 與 CHE；SHE 與 off-state / GIDL 未納入 —— 所以把 V<sub>G</sub> 調到 0 時，模型只會顯示「幾乎沒有電流」，
+而真實元件在那裡仍有 GIDL 造成的退化。<b>知道模型的邊界，跟知道模型本身一樣重要。</b></p>
+
+<div class="key"><div class="t">最該帶走的一句話</div>
+<p style="margin:0">HCI 的損傷<b>集中在汲極端那幾十奈米</b>。
+這個「局部性」會直接影響後面的量測：線性區量測（I<sub>dlin</sub>）時損傷區正好卡在電流路徑上，非常敏感；
+飽和區量測（I<sub>dsat</sub>）時電流由源極端決定，就不敏感。同一顆元件，兩個指標的退化量可以差 3 到 10 倍。</p></div>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼步驟 1（線性區）幾乎不會有 HCI？</summary><div class="a">因為 V<sub>D</sub> &lt; V<sub>dsat</sub>，通道從源極到汲極都完整反轉，電壓平均分攤在整條通道上，<b>沒有任何一段的電場特別強</b>。沒有高場區就沒有熱載子。<br><br>這解釋了一件實務上很有用的事：類比開關在<b>導通期間</b>幾乎不產生 HCI，損傷幾乎全發生在開關<b>轉態</b>的那一瞬間 —— 那時 V<sub>D</sub> 還沒塌下來、通道卻已經開始導通。</div></details><details><summary>為什麼電洞會往基板跑，形成 I<sub>sub</sub>？</summary><div class="a">撞擊游離產生一對電子與電洞。電子被汲極的正電壓吸走（併入 I<sub>D</sub>），電洞則被推向電位最低的地方 —— 也就是接地的基板。<br><br>這件事在工程上非常好用：<b>I<sub>sub</sub> 是唯一能從外部直接量到的『高場強度指標』</b>。所以 HCI 的標準做法是掃 I<sub>sub</sub>–V<sub>G</sub> 找峰值，把它當作應力條件。</div></details><details><summary>界面態 N<sub>it</sub> 和氧化層裡的陷阱電荷有什麼不同？</summary><div class="a"><b>界面態</b>在 Si/SiO₂ 介面上，能量位置在矽的能隙裡，可以隨閘極電壓充放電 —— 它會同時造成 V<sub>t</sub> 漂移<b>和</b>遷移率下降（因為它散射通道裡的載子）。<br><br><b>氧化層陷阱電荷</b>在氧化層內部，是被捕獲的固定電荷 —— 主要造成 V<sub>t</sub> 平移。<br><br>兩者都會發生，但 NMOS 的 HCI 退化通常由界面態主導，這也是為什麼轉導 g<sub>m</sub> 的衰退是很靈敏的指標。</div></details><details><summary>為什麼說「損傷是局部的」這件事會影響量測？</summary><div class="a">因為損傷只在汲極端那一小塊。<b>線性區量測</b>（V<sub>D</sub> 很小）時整條通道均勻反轉，損傷區直接串在電流路徑上，等效於一段額外電阻 —— 極度敏感。<b>飽和區量測</b>（V<sub>G</sub>=V<sub>D</sub>=高壓）時電流由源極端的位障決定，汲極端本來就在夾止區、載子少 —— 相對不敏感。<br><br>進階技巧：把 source 和 drain 對調再量一次（reverse mode），讓損傷端變成 source，敏感度會再放大 —— 這是定位損傷位置的標準手法。</div></details></div>
+<div class="pager"><a class="prev" href="hci-1-intuition.html"><div class="d">← 上一課 · 階段 1</div><div class="t">直覺</div></a><a class="next" href="hci-3-model.html"><div class="d">下一課 · 階段 3 →</div><div class="t">物理模型</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<h2>Four hot-carrier injection modes</h2>
+<p>They're all "hot carriers," but which mechanism dominates depends on the V<sub>G</sub>/V<sub>D</sub> combination.
+At the beginner stage, the first two are enough to remember — they cover the vast majority of real stress conditions.</p>
+<table>
+<thead><tr><th class="nw">Mode</th><th class="nw">Bias condition</th><th>What happens</th><th class="nw">When it matters most</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>DAHC</b><br><span class="note">Drain avalanche hot carriers</span></td>
+  <td class="nw">V<sub>G</sub> ≈ V<sub>D</sub>/2</td>
+  <td>The product of channel current and peak field is maximized; impact ionization is most intense, generating the most electron-hole pairs and the fastest interface-trap growth. I<sub>sub</sub> peaks here.</td>
+  <td class="nw">Worst case for thick-oxide / long-channel NMOS; <b>JESD28's standard stress condition</b></td></tr>
+<tr><td class="nw"><b>CHE</b><br><span class="note">Channel hot electrons</span></td>
+  <td class="nw">V<sub>G</sub> ≈ V<sub>D</sub></td>
+  <td>The oxide field pulls hot electrons toward the gate most efficiently. I<sub>G</sub> peaks here.</td>
+  <td class="nw">Thin-oxide / short-channel devices; monitored via I<sub>G</sub> in practice</td></tr>
+<tr><td class="nw"><b>SHE</b><br><span class="note">Substrate hot electrons</span></td>
+  <td class="nw">Applied substrate bias</td>
+  <td>Carriers are accelerated by the depletion-region field from the substrate before injection. Mainly used for <b>characterization</b>, not a natural operating condition.</td>
+  <td class="nw">Lab-bench mechanism isolation</td></tr>
+<tr><td class="nw"><b>Off-state</b><br><span class="note">Off-state</span></td>
+  <td class="nw">V<sub>G</sub> ≈ 0, high V<sub>D</sub></td>
+  <td>The channel is off, but the gate-drain overlap region has a very strong vertical field, causing band-to-band tunneling (GIDL). <b>A different mechanism from the first three.</b></td>
+  <td class="nw">High-voltage / I/O devices, circuits idle for long periods</td></tr>
+</tbody>
+</table>
+<p class="note">This course's model covers DAHC and CHE; SHE and off-state / GIDL are not included — so when you turn V<sub>G</sub> down to 0, the model will simply show "almost no current,"
+while a real device would still be degrading there from GIDL. <b>Knowing a model's boundaries matters as much as knowing the model itself.</b></p>
+
+<div class="key"><div class="t">The one line to remember</div>
+<p style="margin:0">HCI damage is <b>concentrated in the tens of nanometers near the drain</b>.
+That "locality" directly shapes how you measure it afterward: a linear-region measurement (I<sub>dlin</sub>) puts the damaged region right in the current path, so it's very sensitive;
+a saturation-region measurement (I<sub>dsat</sub>) is dominated by the source-side barrier, so it's much less sensitive. On the same device, the two metrics' degradation can differ by 3-10×.</p></div>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why does Step 1 (linear region) show almost no HCI?</summary><div class="a">Because V<sub>D</sub> &lt; V<sub>dsat</sub>, the channel stays fully inverted from source to drain, and the voltage is spread evenly along its whole length — <b>no single stretch has an especially strong field</b>. No high-field region means no hot carriers.<br><br>This explains something practically useful: an analog switch generates almost no HCI <b>while it's on</b> — nearly all the damage happens in the instant of <b>switching</b>, when V<sub>D</sub> hasn't collapsed yet but the channel has already started conducting.</div></details><details><summary>Why do holes flow to the substrate, forming I<sub>sub</sub>?</summary><div class="a">Impact ionization produces an electron-hole pair. The electron gets pulled away by the drain's positive voltage (joining I<sub>D</sub>), while the hole gets pushed toward the lowest potential available — the grounded substrate.<br><br>This turns out to be extremely useful in practice: <b>I<sub>sub</sub> is the only externally measurable proxy for "how strong the local field is."</b> That's why the standard HCI procedure is to sweep I<sub>sub</sub>-V<sub>G</sub>, find the peak, and use that as the stress condition.</div></details><details><summary>What's the difference between interface traps N<sub>it</sub> and oxide trapped charge?</summary><div class="a"><b>Interface traps</b> sit right at the Si/SiO₂ interface, with energy levels inside silicon's bandgap, and can charge and discharge as the gate voltage changes — they cause both a V<sub>t</sub> shift <b>and</b> mobility degradation (since they scatter carriers in the channel).<br><br><b>Oxide trapped charge</b> sits inside the bulk of the oxide as captured fixed charge — it mainly causes a V<sub>t</sub> shift.<br><br>Both occur, but NMOS HCI degradation is usually dominated by interface traps, which is why the drop in transconductance g<sub>m</sub> is such a sensitive indicator.</div></details><details><summary>Why does "the damage is local" matter for measurement?</summary><div class="a">Because the damage only exists in that one small region near the drain. A <b>linear-region measurement</b> (small V<sub>D</sub>) inverts the whole channel uniformly, putting the damaged region directly in series with the current path — like an extra resistor — extremely sensitive. A <b>saturation-region measurement</b> (V<sub>G</sub>=V<sub>D</sub>=high) is dominated by the source-side barrier; the drain end is already pinched off with few carriers there anyway — comparatively insensitive.<br><br>Advanced trick: swap source and drain and re-measure (reverse mode), turning the damaged end into the source — this amplifies the sensitivity further, and is the standard technique for locating where the damage sits.</div></details></div>
+<div class="pager"><a class="prev" href="hci-1-intuition.html"><div class="d">← Previous · Stage 1</div><div class="t">Intuition</div></a><a class="next" href="hci-3-model.html"><div class="d">Next · Stage 3 →</div><div class="t">Physical Model</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+/* ================= 教科書式 MOSFET 剖面圖（含 LDD / pocket） ================= */
+const VW=1320, VH=452;
+const DZ=88, KX=0.52, KY=-0.42;
+const OX=272, OY=196;
+/* 橫向配置（px） */
+const STI_W=72, SD_W=106, SP_W=46, CHW=300;
+const xST0=-(STI_W+SD_W+SP_W), xS0=-(SD_W+SP_W), xSP0=-SP_W, xC0=0,
+      xC1=CHW, xSP1=CHW+SP_W, xD1=CHW+SP_W+SD_W, xST1=CHW+SP_W+SD_W+STI_W;
+const SIH=168;
+let parts=[], nits=[], playing=true, tPrev=0;
+let STAGE=9, SHOWLBL=true;
+
+const proj=(x,y,z)=>[OX+x+z*KX, OY+y+z*KY];
+function el2(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function poly(pts,fill,stroke,extra){
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('')+'Z';
+  return el2('path',Object.assign({d,fill:fill||'none',stroke:stroke||'none','stroke-width':1,
+    'stroke-linejoin':'round'},extra||{}));
+}
+/* 立體方塊：前面 + 頂面 + 右面 */
+function blk(x0,x1,y0,y1,fill,stroke,op,dz){
+  dz=dz===undefined?DZ:dz;
+  const g=el2('g',{});
+  const f =[[x0,y0,0],[x1,y0,0],[x1,y1,0],[x0,y1,0]].map(a=>proj(a[0],a[1],a[2]));
+  const tp=[[x0,y0,0],[x1,y0,0],[x1,y0,dz],[x0,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  const rt=[[x1,y0,0],[x1,y1,0],[x1,y1,dz],[x1,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  g.appendChild(poly(tp,fill,stroke,{opacity:(op||1)*0.70}));
+  g.appendChild(poly(rt,fill,stroke,{opacity:(op||1)*0.50}));
+  g.appendChild(poly(f ,fill,stroke,{opacity:op||1}));
+  return g;
+}
+function fieldColor(t){
+  const st=[[0,'#fde8d6',0],[0.35,'#f7b585',0.5],[0.68,'#ec7638',0.8],[1,'#c22c1c',0.97]];
+  let a=st[0],b=st[st.length-1];
+  for(let i=0;i<st.length-1;i++) if(t>=st[i][0]&&t<=st[i+1][0]){a=st[i];b=st[i+1];break;}
+  const f=(t-a[0])/Math.max(b[0]-a[0],1e-9);
+  return {c:f<0.5?a[1]:b[1], o:a[2]+(b[2]-a[2])*f};
+}
+/* 摻雜色（教科書慣例：n 型偏藍、p 型偏暖褐） */
+const DOP={
+  nplus:{l:'#7fb3ea',d:'#20456e'}, nldd:{l:'#c2dbf4',d:'#2f5a86'},
+  pwell:{l:'#ded9cd',d:'#2a2926'}, phalo:{l:'#e5b394',d:'#5e3a26'},
+  sti:{l:'#f0eee7',d:'#3a3937'}, poly:{l:'#cfccc2',d:'#3d3b37'},
+  sil:{l:'#a9a6a0',d:'#5a5852'}, ox:{l:'#b5b2a8',d:'#514f4a'},
+  m1:{l:'#b9b6ae',d:'#6a6862'}
+};
+const dark=()=>document.documentElement.getAttribute('data-theme')==='dark'
+  || (!document.documentElement.getAttribute('data-theme') &&
+      window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches);
+const dc=k=>dark()?DOP[k].d:DOP[k].l;
+
+function drawViz(M){
+  const svg=el2('svg',{viewBox:'0 0 '+VW+' '+VH,role:'img'});
+  const P_=P;
+  const stroke=css('--axis');
+  const xjPX  = Math.min(74, 20+(M.xj/1e-7)/600*66);
+  const xlddPX= xjPX*0.52;
+  const stiPX = Math.min(SIH-24, xjPX*2.0+18);
+  const oxT   = Math.max(4,Math.min(16,M.tox/1e-7/60*16));
+  const polyH = 42, silH=9, spH=polyH+oxT;
+
+  /* ---- 基板 ---- */
+  svg.appendChild(blk(xST0,xST1,0,SIH,dc('pwell'),stroke,1));
+  /* ---- STI ---- */
+  svg.appendChild(blk(xST0,xS0,0,stiPX,dc('sti'),stroke,1));
+  svg.appendChild(blk(xD1,xST1,0,stiPX,dc('sti'),stroke,1));
+
+  /* ---- halo / pocket（畫在 n 型之前，讓 n 型疊上去） ---- */
+  if(P_.halo){
+    const hd=xjPX*1.30;
+    [[xSP0-10, xC0+34],[xC1-34, xSP1+10]].forEach(function(r){
+      const a=proj(r[0],0,0), b=proj(r[1],0,0), c=proj(r[1],hd*0.55,0), d2=proj((r[0]+r[1])/2,hd,0), e2=proj(r[0],hd*0.55,0);
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1]+'L'+c[0]+' '+c[1]+
+        'Q'+d2[0]+' '+d2[1]+' '+e2[0]+' '+e2[1]+'Z',fill:dc('phalo'),opacity:.9}));
+    });
+  }
+  /* ---- LDD n- 延伸 ---- */
+  if(P_.ldd){
+    [[xSP0,xC0+4],[xC1-4,xSP1]].forEach(function(r){
+      svg.appendChild(blk(r[0],r[1],0,xlddPX,dc('nldd'),stroke,1,DZ));
+    });
+  }
+  /* ---- n+ 深源汲 ---- */
+  svg.appendChild(blk(xS0,xSP0+(P_.ldd?0:SP_W),0,xjPX,dc('nplus'),stroke,1));
+  svg.appendChild(blk(xSP1-(P_.ldd?0:SP_W),xD1,0,xjPX,dc('nplus'),stroke,1));
+  /* ---- 矽化物 ---- */
+  svg.appendChild(blk(xS0+6,xSP0-6,-6,0,dc('sil'),stroke,1));
+  svg.appendChild(blk(xSP1+6,xD1-6,-6,0,dc('sil'),stroke,1));
+
+  /* ---- 接面輪廓 ---- */
+  const jl=(x0,x1,d)=>{const a=proj(x0,d,0),b=proj(x1,d,0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:stroke,'stroke-width':1,opacity:.9}));};
+
+  /* ---- 空乏區邊界 ---- */
+  let dd='';
+  for(let i=0;i<=80;i++){
+    const x=xS0+(xD1-xS0)*i/80;
+    let dep;
+    const bulge=26*Math.min(1,M.dV/6)+ (P_.halo?-8:0) + (P_.ldd?6:0);
+    if(x<xSP0) dep=xjPX+14+bulge*0.35;
+    else if(x>xSP1) dep=xjPX+14+bulge;
+    else {const u=(x-xSP0)/(xSP1-xSP0); dep=xjPX*0.3+8+(xjPX+14+bulge-xjPX*0.3-8)*Math.pow(u,3);}
+    const pp=proj(x,dep,0); dd+=(i?'L':'M')+pp[0].toFixed(1)+' '+pp[1].toFixed(1);
+  }
+  svg.appendChild(el2('path',{d:dd,fill:'none',stroke:stroke,'stroke-width':1.2,'stroke-dasharray':'5 4',opacity:.85}));
+
+  /* ---- 高場區熱圖 ---- */
+  const frac=Math.min(M.dLoverL,1);
+  const hi0=xC1-(xC1-xC0)*frac;
+  const hiEnd=P_.ldd?xSP1:xC1;
+  const NB=48;
+  for(let i=0;i<NB;i++){
+    const u0=i/NB,u1=(i+1)/NB;
+    const x0=hi0+(hiEnd-hi0)*u0, x1=hi0+(hiEnd-hi0)*u1;
+    const y=M.dL*(u0+u1)/2;
+    const E=M.pinch?M.Esat*Math.cosh(Math.min(y/M.l,20)):M.Esat;
+    const t=Math.min(1,Math.log10(Math.max(E,1e3)/1e4)/Math.log10(3e6/1e4));
+    const cc=fieldColor(Math.max(0,t));
+    const q=[[x0,-1,0],[x1,-1,0],[x1,Math.max(xlddPX,22),0],[x0,Math.max(xlddPX,22),0]].map(a=>proj(a[0],a[1],a[2]));
+    svg.appendChild(poly(q,cc.c,null,{opacity:cc.o*0.88}));
+  }
+  /* ---- 反轉層 ---- */
+  const c0=proj(xC0,4,0), c1=proj(xC1,4,0);
+  svg.appendChild(el2('line',{x1:c0[0],y1:c0[1],x2:c1[0],y2:c1[1],
+    stroke:css('--e'),'stroke-width':2.6,opacity:M.Vgt>0.05?0.9:0.12}));
+
+  /* ---- 閘極堆疊 ---- */
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT,0,dc('ox'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH,-oxT,dc('poly'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH-silH,-oxT-polyH,dc('sil'),stroke,1));
+  /* ---- 側壁間隔物（梯形） ---- */
+  [[xC0-2,xSP0,-1],[xC1+2,xSP1,1]].forEach(function(sp){
+    const inner=sp[0], outer=sp[1];
+    const q=[[inner,-spH,0],[inner,0,0],[outer,0,0]].map(a=>proj(a[0],a[1],a[2]));
+    const cx=proj((inner+outer)/2,-spH*0.55,0);
+    const d='M'+q[0][0]+' '+q[0][1]+'Q'+cx[0]+' '+cx[1]+' '+q[2][0]+' '+q[2][1]+'L'+q[1][0]+' '+q[1][1]+'Z';
+    svg.appendChild(el2('path',{d,fill:dc('ox'),stroke:stroke,'stroke-width':1,opacity:.92}));
+  });
+  /* ---- 接觸窗 + M1 ---- */
+  const via=(xc)=>{
+    svg.appendChild(blk(xc-13,xc+13,-oxT-polyH-silH-40,-6,dc('m1'),stroke,1,DZ*0.5));
+  };
+  via((xS0+xSP0)/2); via((xSP1+xD1)/2);
+  svg.appendChild(blk(xS0-4,xD1+4,-oxT-polyH-silH-56,-oxT-polyH-silH-40,dc('m1'),stroke,.001,1));
+
+  /* ---- pinch-off 標記 ---- */
+  if(M.pinch&&frac>0.01){
+    const a=proj(hi0,-oxT-polyH-silH-8,0), b=proj(hi0,Math.max(xlddPX,26),0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:css('--h'),
+      'stroke-width':1.3,'stroke-dasharray':'4 3',opacity:.95}));
+    const lp=proj((hi0+hiEnd)/2,Math.max(xlddPX,26)+18,0);
+    svg.appendChild(txt(lp[0],lp[1],L('高場區 ΔL = ','High-field ΔL = ')+fmtEng(M.dL*1e-2,'m',1).replace(' ','')+
+      L('（L 的 '+(frac*100).toFixed(0)+'%）',' ('+(frac*100).toFixed(0)+'% of L)'),{ta:'middle',fs:11.5,fw:650,fill:css('--h')}));
+  }
+
+  /* ---- 標註 ---- */
+  if(SHOWLBL){
+    const lab=(x,y,s,o)=>{const p2=proj(x,y,0);
+      svg.appendChild(txt(p2[0],p2[1],s,Object.assign({fs:11,fill:css('--ink2')},o||{})));};
+    const lead=(x,y,tx,ty,s,col)=>{
+      const a=proj(x,y,0), b=[OX+tx,OY+ty];
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1],stroke:col||css('--muted'),
+        'stroke-width':1,opacity:.8}));
+      svg.appendChild(el2('circle',{cx:a[0],cy:a[1],r:2.4,fill:col||css('--muted')}));
+      svg.appendChild(txt(b[0]+(tx<0?-6:6),b[1],s,{ta:tx<0?'end':'start',db:'middle',fs:11,
+        fw:600,fill:col||css('--ink2')}));
+    };
+    lab((xS0+xSP0)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xSP1+xD1)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xST0+xS0)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xD1+xST1)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xC0+xC1)/2, -oxT-polyH*0.55,L('多晶矽閘極','Poly Gate'),{ta:'middle',db:'middle',fw:650,fs:12,fill:css('--ink')});
+    lab(xST0+16, SIH-16,L('p 型基板 / p-well  (N','p-substrate / p-well  (N')+'ₐ'+' = '+sci(P_.Nsub)+' cm⁻³)',{fs:11});
+    lab((xC0+xC1)/2, xjPX+40,L('通道  L = ','channel  L = ')+(P_.L<0.1?(P_.L*1000).toFixed(0)+' nm':P_.L.toFixed(3)+' µm'),
+      {ta:'middle',fs:11.5});
+    lead(xC1+2,-oxT/2, 600, -138, L('閘極氧化層  t','gate oxide  t')+'~ox~ = '+(M.tox*1e7).toFixed(1)+' nm');
+    lead((xC1+xSP1)/2,-spH*0.4, 600, -112, L('側壁間隔物','sidewall spacer'));
+    if(P_.ldd) lead((xC1+xSP1)/2, xlddPX*0.6, 600, -86,
+      L('LDD  n⁻ 延伸  (N = ','LDD  n⁻ extension  (N = ')+sci(P_.Nldd)+' cm⁻³)', css('--e'));
+    if(P_.halo) lead(xC1-12, xjPX*0.95, 600, -60,
+      L('pocket / halo  p 型  (N = ','pocket / halo  p-type  (N = ')+sci(P_.Nhalo)+' cm⁻³)', css('--h'));
+    lead((xSP1+xD1)/2,-3, 600, -34, L('矽化物','silicide'));
+  }
+  /* ---- 端點電壓 ---- */
+  const term=(x,y,name,volt,col)=>{
+    const q=proj(x,y,0);
+    svg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:4,fill:col,stroke:css('--surface'),'stroke-width':1.5}));
+    svg.appendChild(txt(q[0],q[1]-10,name+' = '+volt,{ta:'middle',fs:11.5,fw:650,fill:col}));
+  };
+  term((xC0+xC1)/2,-oxT-polyH-silH-64,'V~G~',P_.VG.toFixed(2)+' V',css('--e'));
+  term((xSP1+xD1)/2,-oxT-polyH-silH-64,'V~D~',P_.VD.toFixed(2)+' V',css('--h'));
+  term((xS0+xSP0)/2,-oxT-polyH-silH-64,'V~S~','0 V',css('--ink2'));
+  const bq=proj(xST0+16,SIH,0);
+  svg.appendChild(txt(bq[0],bq[1]+18,'V~B~ = 0 V',{fs:11,fw:650,fill:css('--ink2')}));
+
+  /* ---- 電場色標 ---- */
+  const cbx=VW-104, cby=52, cbw=16, cbh=150;
+  for(let i=0;i<40;i++){const t=1-i/39, cc=fieldColor(t);
+    svg.appendChild(el2('rect',{x:cbx,y:cby+cbh*i/40,width:cbw,height:cbh/40+0.6,fill:cc.c,opacity:cc.o}));}
+  svg.appendChild(el2('rect',{x:cbx,y:cby,width:cbw,height:cbh,fill:'none',stroke:stroke,'stroke-width':1}));
+  svg.appendChild(txt(cbx+cbw/2,cby-8,L('橫向電場','Lateral field'),{ta:'middle',fs:10.5,fill:css('--ink2')}));
+  svg.appendChild(txt(cbx+cbw+5,cby+4,'3 MV/cm',{fs:10}));
+  svg.appendChild(txt(cbx+cbw+5,cby+cbh,'10 kV/cm',{fs:10}));
+  const emT=Math.max(0,Math.min(1,Math.log10(Math.max(M.Em,1e4)/1e4)/Math.log10(3e6/1e4)));
+  svg.appendChild(el2('path',{d:'M'+(cbx-4)+' '+(cby+cbh*(1-emT))+'l-8 -5l0 10Z',fill:css('--ink')}));
+  svg.appendChild(txt(cbx-15,cby+cbh*(1-emT),'E~m~',{ta:'end',db:'middle',fs:10.5,fw:650,fill:css('--ink')}));
+
+  const pg=el2('g',{id:'pg'}); svg.appendChild(pg);
+  const ng=el2('g',{id:'ng'}); svg.appendChild(ng);
+  const host=document.getElementById('viz');
+  host.innerHTML=''; host.appendChild(svg);
+  const lv=document.getElementById('legV');
+  if(lv) lv.innerHTML=
+    '<span><i class="sw dot" style="background:'+css('--e')+'"></i>'+L('電子 e⁻','electron e⁻')+'</span>'+
+    '<span><i class="sw dot" style="background:'+css('--h')+'"></i>'+L('電洞 h⁺（→ I<sub>sub</sub>）','hole h⁺ (→ I<sub>sub</sub>)')+'</span>'+
+    '<span><span style="color:'+css('--nit')+';font-weight:700">✕</span> '+L('界面態 N<sub>it</sub>（累積）','interface trap N<sub>it</sub> (accumulated)')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:linear-gradient(90deg,#fde8d6,#c22c1c)"></i>'+L('橫向電場','lateral field')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:'+dc('nplus')+'"></i>n⁺</span>'+
+    (P.ldd?'<span><i class="sw" style="width:16px;background:'+dc('nldd')+'"></i>n⁻ LDD</span>':'')+
+    (P.halo?'<span><i class="sw" style="width:16px;background:'+dc('phalo')+'"></i>p halo</span>':'');
+  return {svg,pg,ng,hi0,oxT,polyH,silH,xjPX,xlddPX,hiEnd};
+}
+
+/* ---------- 動畫 ---------- */
+let VZ=null, MM=null;
+function spawn(){ if(VZ&&MM) parts.push({x:xS0+20,y:4+(Math.random()-0.5)*4,state:'e',en:0}); }
+function step(dt){
+  if(!VZ||!MM) return;
+  const M=MM, hi0=VZ.hi0, hiEnd=VZ.hiEnd, out=[];
+  for(const p of parts){
+    if(p.state==='e'){
+      let E=M.Esat*0.25, inPinch=false;
+      if(p.x>hi0&&p.x<=hiEnd&&M.pinch){
+        const u=(p.x-hi0)/Math.max(hiEnd-hi0,1e-6);
+        E=M.Esat*Math.cosh(Math.min(u*M.dL/M.l,20)); inPinch=true;
+      } else if(p.x<=hi0) E=M.Esat*(0.15+0.85*Math.max(p.x-xC0,0)/Math.max(hi0-xC0,1));
+      const v=(1.0+2.2*Math.min(1,Math.log10(Math.max(E,1e3)/1e3)/3))*(M.Vgt>0.05?1:0.25);
+      p.x+=v*dt*0.10;
+      if(inPinch&&STAGE>=3){
+        const dy=(v*dt*0.10)/Math.max(hiEnd-hi0,1)*M.dL;
+        const al=AI*Math.exp(-M.Bi/Math.max(E,1));
+        if(Math.random()<Math.min(0.6,al*dy*40)){
+          out.push({x:p.x,y:p.y,vy:1.6,state:'h'});
+          out.push({x:p.x,y:p.y+1,state:'e',en:0});
+          out.push({x:p.x,y:p.y,state:'flash',life:1});
+        }
+        const fox=1/(1+Math.exp(-(P.VG-P.VD+0.5)/0.35));
+        if(STAGE>=4&&Math.random()<Math.min(0.35,CG*fox*Math.exp(-M.Bg/Math.max(E,1))*6e4)){p.state='inj';p.vy=-2.2;}
+        if(STAGE>=5&&Math.random()<Math.min(0.25,Math.exp(-M.Bit/Math.max(E,1))*2.5e6)&&nits.length<170)
+          nits.push({x:p.x,a:0});
+      }
+      if(p.x>hiEnd+56) p.dead=true;
+    } else if(p.state==='inj'){ p.y+=p.vy*dt*0.10; p.x+=0.3*dt*0.10;
+      if(p.y<-VZ.oxT-VZ.polyH-10) p.dead=true;
+    } else if(p.state==='h'){ p.y+=p.vy*dt*0.10; p.x-=0.25*dt*0.10;
+      if(p.y>SIH-16) p.dead=true;
+    } else if(p.state==='flash'){ p.life-=dt*0.006; if(p.life<=0) p.dead=true; }
+  }
+  parts=parts.filter(p=>!p.dead).concat(out);
+  if(parts.length<105&&MM.Vgt>0.05) spawn();
+  if(parts.length>300) parts=parts.slice(-300);
+  nits.forEach(n=>{ if(n.a<1) n.a=Math.min(1,n.a+dt*0.004); });
+}
+function render(){
+  if(!VZ) return;
+  const pg=VZ.pg, ng=VZ.ng;
+  while(pg.firstChild) pg.removeChild(pg.firstChild);
+  while(ng.firstChild) ng.removeChild(ng.firstChild);
+  const ce=css('--e'), ch=css('--h'), cn=css('--nit'), cs=css('--surface');
+  for(const p of parts){
+    const q=proj(p.x,p.y,0);
+    if(p.state==='flash')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3+9*(1-p.life),fill:'none',stroke:ch,
+        'stroke-width':1.6,opacity:p.life*0.85}));
+    else if(p.state==='h')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ch,stroke:cs,'stroke-width':1}));
+    else if(p.state==='inj')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ce,stroke:'#fff','stroke-width':1.4}));
+    else
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:2.6,fill:ce,opacity:.9}));
+  }
+  for(const n of nits){
+    const q=proj(n.x,0.5,0), s=3.4;
+    ng.appendChild(el2('path',{d:'M'+(q[0]-s)+' '+(q[1]-s)+'L'+(q[0]+s)+' '+(q[1]+s)+
+      'M'+(q[0]+s)+' '+(q[1]-s)+'L'+(q[0]-s)+' '+(q[1]+s),
+      stroke:cn,'stroke-width':1.9,'stroke-linecap':'round',opacity:0.35+0.65*n.a}));
+  }
+  if(nits.length){
+    const q=proj(xST1,SIH,0);
+    ng.appendChild(txt(q[0],q[1]+18,L('累積 N~it~ : ','Accumulated N~it~: ')+nits.length+(nits.length>=170?L('（顯示上限）',' (display cap)'):''),
+      {ta:'end',fs:11.5,fw:650,fill:cn}));
+  }
+}
+function loop(ts){
+  const dt=Math.min(60,ts-(tPrev||ts)); tPrev=ts;
+  if(playing) step(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+
+var STEPS=[
+ {n:['步驟 1','Step 1'],t:['通道形成','Channel forms'],stage:1,bias:{VG:2.5,VD:0.3},
+  h:['閘極把電子拉到表面，形成通道','The gate pulls electrons to the surface, forming a channel'],
+  p:[['V<sub>G</sub> 超過臨界電壓 V<sub>t</sub> 之後，閘極的正電壓把電子吸到矽表面，形成一層薄薄的反轉層 —— 這就是通道。',
+      'Once V<sub>G</sub> exceeds the threshold voltage V<sub>t</sub>, the gate\'s positive voltage pulls electrons to the silicon surface, forming a thin inversion layer — the channel.'],
+     ['現在 V<sub>D</sub> 只有 0.3 V，很小。電子從源極流到汲極，一路上電場都差不多、都很弱。',
+      'Right now V<sub>D</sub> is only 0.3 V — small. Electrons flow from source to drain, and the field stays roughly the same, and weak, along the whole way.'],
+     ['<b>這是線性區（三極管區）。此時幾乎沒有 HCI</b> —— 沒有任何一段的電場強到能把電子加熱。',
+      '<b>This is the linear (triode) region. There\'s almost no HCI here</b> — no stretch of the field is strong enough to heat any electrons.']]},
+ {n:['步驟 2','Step 2'],t:['夾止與高場區','Pinch-off & the high-field region'],stage:2,bias:{VG:2.5,VD:5.0},
+  h:['汲極加壓 → 通道在汲極端夾止 → 電場集中','Raise the drain voltage → the channel pinches off at the drain → the field concentrates'],
+  p:[['把 V<sub>D</sub> 拉到 5 V。當 V<sub>D</sub> 超過 V<sub>dsat</sub>，靠近汲極的那一段通道會「夾止」—— 反轉層在那裡消失。',
+      'Pull V<sub>D</sub> up to 5 V. Once V<sub>D</sub> exceeds V<sub>dsat</sub>, the stretch of channel near the drain "pinches off" — the inversion layer disappears there.'],
+     ['關鍵在於：<b>多出來的電壓（V<sub>D</sub> − V<sub>dsat</sub>）幾乎全部落在這一小段夾止區上</b>。'+
+      '同樣的電壓擠進更短的距離，電場就暴增 —— 圖上的橘紅色熱區就是它。',
+      'Here\'s the key: <b>the extra voltage (V<sub>D</sub> − V<sub>dsat</sub>) drops almost entirely across this one short pinch-off stretch</b>. '+
+      'Squeeze the same voltage into a shorter distance and the field spikes — that\'s the orange-red hot zone in the diagram.'],
+     ['注意熱區有多窄：它只佔通道的一小部分。<b>HCI 的一切都發生在這裡。</b>',
+      'Notice how narrow the hot zone is — just a small fraction of the channel. <b>Everything about HCI happens right here.</b>']]},
+ {n:['步驟 3','Step 3'],t:['撞擊游離','Impact ionization'],stage:3,bias:{VG:2.5,VD:5.0},
+  h:['熱電子撞出電子電洞對，電洞流向基板','Hot electrons knock loose electron-hole pairs; the holes flow to the substrate'],
+  p:[['電子進入高場區後急速加速。少數「幸運」電子（上一頁講的那些）累積到 1.3 eV 以上，'+
+      '就能把矽的價電子撞進導電帶 —— 一個電子變成三個載子。',
+      'Once electrons enter the high-field region they accelerate rapidly. A rare few "lucky" electrons (the ones from the last page) build up more than 1.3 eV, '+
+      'enough to knock a valence electron in silicon into the conduction band — one electron becomes three carriers.'],
+     ['新生的<b style="color:var(--h)">電洞</b>被推向接地的基板，形成可以從外部量到的 <b>基板電流 I<sub>sub</sub></b>。'+
+      '這是 HCI 最重要的實驗指標。',
+      'The newborn <b style="color:var(--h)">hole</b> gets pushed toward the grounded substrate, forming the externally measurable <b>substrate current I<sub>sub</sub></b>. '+
+      'This is HCI\'s single most important experimental signature.'],
+     ['看動畫裡電洞的來源位置：<b>全部集中在汲極角落</b>。這就是損傷局部化的直接原因。',
+      'Watch where the holes originate in the animation: <b>all clustered right at the drain corner</b>. That\'s the direct reason the damage is localized.']]},
+ {n:['步驟 4','Step 4'],t:['注入閘極','Injection into the gate'],stage:4,bias:{VG:4.5,VD:5.0},
+  h:['能量更高的電子翻過 Si/SiO₂ 的能量牆','Even higher-energy electrons clear the Si/SiO₂ energy wall'],
+  p:[['把 V<sub>G</sub> 拉高到接近 V<sub>D</sub>。此時氧化層裡的電場方向有利於把電子往閘極拉。',
+      'Pull V<sub>G</sub> up close to V<sub>D</sub>. Now the field direction inside the oxide favors pulling electrons toward the gate.'],
+     ['能量超過 3.1 eV 的電子可以翻過矽與二氧化矽之間的位障，形成 <b>閘極電流 I<sub>G</sub></b>。'+
+      '它非常小（常常是 pA 甚至 fA 等級），但可以量。',
+      'Electrons with more than 3.1 eV can clear the barrier between silicon and silicon dioxide, forming <b>gate current I<sub>G</sub></b>. '+
+      'It\'s tiny (often pA or even fA scale), but measurable.'],
+     ['<b>這個偏壓條件叫 CHE（通道熱電子）</b>，是薄氧化層元件的主要退化模式。'+
+      '相對地，步驟 3 的 V<sub>G</sub>≈V<sub>D</sub>/2 條件叫 DAHC，是厚氧元件的 worst case。',
+      '<b>This bias condition is called CHE (channel hot electrons)</b>, the dominant degradation mode for thin-oxide devices. '+
+      'By contrast, Step 3\'s V<sub>G</sub>≈V<sub>D</sub>/2 condition is called DAHC, the worst case for thick-oxide devices.']]},
+ {n:['步驟 5','Step 5'],t:['留下永久缺陷','A permanent defect is left behind'],stage:5,bias:{VG:2.5,VD:5.0},
+  h:['打斷 Si–H 鍵，界面態持續累積','Si–H bonds break, and interface traps keep accumulating'],
+  p:[['矽表面原本有很多懸鍵（dangling bond），製程用氫把它們封起來。'+
+      '能量超過約 3.7 eV 的載子可以把氫撞掉，留下一個<b style="color:var(--nit)">界面態 N<sub>it</sub></b>。',
+      'The silicon surface starts out full of dangling bonds, capped with hydrogen during processing. '+
+      'A carrier with more than about 3.7 eV can knock that hydrogen loose, leaving behind an <b style="color:var(--nit)">interface trap N<sub>it</sub></b>.'],
+     ['<b>這個過程沒有回復。</b>停止應力之後，界面態不會自己修好 —— 這是 HCI 與 NBTI 最重要的差別。'+
+      '（NBTI 停止應力後會部分回復，所以它的 duty cycle 依賴性完全不同。）',
+      '<b>This never heals.</b> Once stress stops, interface traps don\'t repair themselves — the most important difference between HCI and NBTI. '+
+      '(NBTI partially recovers once stress stops, so its duty-cycle dependence is completely different.)'],
+     ['看圖上汲極角落的 ✕ 一顆一顆累積起來。真實元件一天工作幾兆個週期，'+
+      '每個週期都在往上加一點點 —— 可靠度工程要回答的就是：<b>十年後累積到多少？還在規格內嗎？</b>',
+      'Watch the ✕ marks pile up one by one at the drain corner in the diagram. A real device runs trillions of cycles a day, '+
+      'each one adding a little more — the question reliability engineering has to answer is: <b>how much accumulates in ten years, and is the device still within spec?</b>']]}
+];
+var cur=0;
+P.L=1.0;P.tox=20;P.xj=200;P.Vt0=0.7;P.W=10;P.Tc=25;
+
+function renderSteps(){
+  $('steps').innerHTML=STEPS.map(function(s,i){
+    return '<button data-i="'+i+'" aria-pressed="'+(i===cur)+'"><span class="n">'+L(s.n[0],s.n[1])+'</span><span class="t">'+L(s.t[0],s.t[1])+'</span></button>';
+  }).join('');
+  Array.prototype.forEach.call($('steps').querySelectorAll('button'),function(b){
+    b.addEventListener('click',function(){ go(+b.dataset.i); });
+  });
+}
+function tiles(M){
+  var s=STEPS[cur];
+  var rows=[
+    ['V<sub>G</sub> / V<sub>D</sub>',P.VG.toFixed(2)+' / '+P.VD.toFixed(2)+'<span class="u"> V</span>',''],
+    [L('V<sub>dsat</sub>（夾止起點）','V<sub>dsat</sub> (pinch-off onset)'),M.Vdsat.toFixed(2)+'<span class="u"> V</span>',''],
+    [L('高場區長度 ΔL','High-field length ΔL'),M.pinch?fmtEng(M.dL*1e-2,'m',1):'—',
+      M.pinch?'<span class="badge ok">'+L('佔通道 ','')+(M.dLoverL*100).toFixed(0)+L('%','% of channel')+'</span>':'<span class="badge bad">'+L('無夾止','no pinch-off')+'</span>'],
+    [L('峰值電場 E<sub>m</sub>','Peak field E<sub>m</sub>'),fmtEng(M.Em,'V/cm',2),'',1]
+  ];
+  if(cur>=3) rows.push(['I<sub>sub</sub> / I<sub>D</sub>',sci(M.isubRatio),'']);
+  if(cur>=4) rows.push(['I<sub>G</sub> / I<sub>D</sub>',sci(M.igRatio),'']);
+  if(cur>=5) rows.push([L('已累積 N<sub>it</sub>','Accumulated N<sub>it</sub>'),String(nits.length),'']);
+  $('tiles').innerHTML=rows.map(function(t){
+    return '<div class="tile'+(t[3]?' hl':'')+'"><div class="k">'+t[0]+'</div><div class="v">'+t[1]+'</div>'+
+      (t[2]?'<div style="margin-top:4px">'+t[2]+'</div>':'')+'</div>';}).join('');
+}
+function refreshStext(){
+  var s=STEPS[cur];
+  $('stext').innerHTML='<h3>'+L(s.h[0],s.h[1])+'</h3>'+s.p.map(function(x){return '<p>'+L(x[0],x[1])+'</p>';}).join('');
+}
+function go(i){
+  cur=i; var s=STEPS[i]; STAGE=s.stage;
+  for(var k in s.bias) P[k]=s.bias[k];
+  if(i<5) nits=[];
+  parts=[];
+  renderSteps();
+  refreshStext();
+  draw();
+}
+function draw(){
+  var M=model(P); MM=M; VZ=drawViz(M); tiles(M);
+}
+function relabelPlayBtn(){
+  var b=$('playBtn');
+  b.innerHTML='⏸ '+(playing?L('暫停動畫','Pause animation'):L('播放動畫','Play animation'));
+  if(!playing) b.innerHTML='▶ '+L('播放動畫','Play animation');
+}
+$('playBtn').addEventListener('click',function(e){playing=!playing;
+  e.target.setAttribute('aria-pressed',String(playing));
+  relabelPlayBtn();});
+$('resetBtn').addEventListener('click',function(){nits=[];});
+window.__rebuild=function(){ renderSteps(); refreshStext(); relabelPlayBtn(); draw(); };
+go(0); requestAnimationFrame(loop);
+setInterval(function(){ if(cur>=3) tiles(MM); },700);
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 1：直覺 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 1：直覺 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+.ladderwrap{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+@media(max-width:760px){.ladderwrap{grid-template-columns:1fr}}
+.outcome{border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px;
+  background:var(--surface);opacity:.42;transition:.25s}
+.outcome.on{opacity:1;border-width:1.5px}
+.outcome .h{display:flex;align-items:center;gap:8px;font-weight:650;font-size:16px;margin-bottom:2px}
+.outcome .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.outcome .d{font-size:14.5px;color:var(--ink2);line-height:1.6}
+.outcome .p{font-size:14px;color:var(--ink2);margin-top:5px;font-variant-numeric:tabular-nums}
+.outcome .p b{font-size:15.5px;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html" aria-current="page"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:14%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 1 / 7 · 直覺</p>
+<h1>為什麼叫「熱」載子？</h1>
+<p class="lede">這一頁不用任何公式，只有一根滑桿。目標是讓你對「電場多強才會出事」建立量感——之後每一頁的數學，都是把這個量感寫成算式而已。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>電子在矽裡前進時會不斷被晶格撞散，平均每走 <b>λ ≈ 9 奈米</b>就被撞一次，把好不容易累積的動能還給晶格，等於重新歸零。
+在兩次碰撞之間，電場給它的能量大約是 <b>qλE</b>。
+當這個能量接近 1 eV 以上，電子就「熱」得足以做壞事 —— 這就是熱載子（「熱」講的是能量高，不是溫度高）。</p></div>
+
+<h2>電子在通道裡並不是一路加速</h2>
+<p>直覺上，電場推著電子跑，電子應該越跑越快。但矽晶格裡到處都是振動的原子（聲子），
+電子平均每走一小段距離就會被撞一次，把好不容易累積的能量交出去，然後從頭開始。</p>
+<p>這個「平均走多遠被撞一次」的距離叫 <b>平均自由程 λ</b>，在室溫的矽裡大約 <b>9 奈米</b>——比一根頭髮的萬分之一還細。
+所以真正決定電子能不能變「熱」的，不是它走了多遠，而是它<b>一口氣不被打斷</b>能撐多久：</p>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0"><b>一次自由飛行能拿到多少能量 = q × λ × E</b><br>
+電場 E 越強，或平均自由程 λ 越長，單次飛行拿到的能量就越多。這個能量要跟三道「門檻」比大小。</p></div>
+
+<h2>三道門檻</h2>
+<p>拖動下面的電場滑桿，看能量長條越過哪幾道線。<b>越過門檻不代表一定會發生，而是機率變得不可忽略</b>
+—— 有些幸運的電子連續好幾個自由程都沒被撞到，就能累積到門檻以上。滑桿數值本身不用背，重點是看三條機率曲線怎麼隨電場動。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 1 / 7 · Intuition</p>
+<h1>Why "hot" carriers?</h1>
+<p class="lede">No formulas on this page — just one slider. The goal is to build a feel for how strong a field has to be before things go wrong; every equation on the pages that follow is just this same intuition written down.</p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<p>As an electron moves through silicon, the lattice keeps knocking it around — on average once every <b>λ ≈ 9 nm</b>, handing back whatever kinetic energy it had picked up and starting over.
+Between two collisions, the field hands it roughly <b>qλE</b> of energy.
+Once that energy gets close to 1 eV, the electron is "hot" enough to cause trouble — that's a hot carrier ("hot" means high-energy, not high-temperature).</p></div>
+
+<h2>Electrons don't just keep accelerating down the channel</h2>
+<p>Intuitively, the field pushes the electron along, so it should just keep speeding up. But the silicon lattice is full of vibrating atoms (phonons),
+and on average the electron gets knocked around after every short stretch, handing back whatever energy it had built up and starting from zero again.</p>
+<p>This "average distance between hits" is called the <b>mean free path λ</b>, and in room-temperature silicon it's roughly <b>9 nm</b> — about a ten-thousandth the width of a human hair.
+So what actually decides whether an electron goes "hot" isn't how far it has traveled — it's how long it manages to fly <b>uninterrupted</b>:</p>
+
+<div class="key"><div class="t">The key intuition</div>
+<p style="margin:0"><b>Energy from one free flight = q × λ × E</b><br>
+A stronger field E, or a longer mean free path λ, means more energy per flight. That energy then gets compared against three "thresholds."</p></div>
+
+<h2>Three thresholds</h2>
+<p>Drag the field slider below and watch which lines the energy bar crosses. <b>Crossing a threshold doesn't guarantee the event — it means the probability stops being negligible</b>
+— some lucky electrons go several mean free paths in a row without a hit, and that's how they end up above threshold. Don't worry about memorizing the numbers; just watch how the three probability curves move with the field.</p>
+</div>
+
+<!-- 互動元件：中英共用同一組 DOM／JS，文字用 span[lang] 內嵌雙語 -->
+<div class="card">
+  <div class="bigslider">
+    <label for="rE"><span lang="zh-Hant">汲極端的電場強度 E</span><span lang="en">Field strength E at the drain</span></label>
+    <input type="range" id="rE" min="4" max="6.6" step="0.005" value="5.45">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+      <span class="val" id="vE">—</span>
+      <span class="note" id="hintE">—</span>
+    </div>
+  </div>
+  <div class="ctrl" style="margin-top:14px;max-width:340px">
+    <label for="rT"><span lang="zh-Hant">溫度（先放著，階段 3 會解釋它為什麼重要）</span><span lang="en">Temperature (leave it for now — Stage 3 explains why it matters)</span></label>
+    <div class="row"><input type="range" id="rT" min="-40" max="200" step="1" value="25">
+    <span class="val" id="vT">25 °C</span></div>
+  </div>
+
+  <div class="ladderwrap" style="margin-top:18px">
+    <div id="ladder"></div>
+    <div>
+      <div class="outcome" id="o1"><div class="h"><span class="dot" style="background:var(--h)"></span><span lang="zh-Hant">撞出一對電子電洞</span><span lang="en">Knocks loose an electron-hole pair</span></div>
+        <div class="d">
+          <span lang="zh-Hant">能量夠的話，電子可以把矽的價電子撞到導電帶，一次變成三個載子（原本那顆 + 新的電子電洞對）。
+          新的電洞往基板流走 —— 這就是量測得到的 <b>基板電流 I<sub>sub</sub></b>，也是實驗室裡最常用來抓 HCI 的指標，因為它比直接量 V<sub>t</sub> 漂移敏感得多。</span>
+          <span lang="en">With enough energy, an electron can knock a valence electron in silicon up into the conduction band — one carrier becomes three
+          (the original plus the new pair). The new hole flows into the substrate — this is the measurable <b>substrate current I<sub>sub</sub></b>, the most common lab signature of HCI, since it's far more sensitive than measuring the V<sub>t</sub> shift directly.</span>
+        </div>
+        <div class="p"><span lang="zh-Hant">門檻 φ<sub>i</sub> ≈ 1.3 eV · 需要連續</span><span lang="en">Threshold φ<sub>i</sub> ≈ 1.3 eV · needs</span> <b id="n1">—</b> <span lang="zh-Hant">個自由程都不被撞 · 機率</span><span lang="en">consecutive free paths without a hit · probability</span> <b id="p1">—</b></div></div>
+      <div class="outcome" id="o2"><div class="h"><span class="dot" style="background:var(--e)"></span><span lang="zh-Hant">衝進閘極氧化層</span><span lang="en">Plows into the gate oxide</span></div>
+        <div class="d">
+          <span lang="zh-Hant">矽與二氧化矽之間有一道能量牆。電子若能翻過去，就會變成<b>閘極電流 I<sub>G</sub></b>，
+          有些會卡在氧化層裡變成固定電荷，讓 V<sub>t</sub> 額外多偏移一點。</span>
+          <span lang="en">There's an energy wall between silicon and silicon dioxide. An electron that clears it becomes <b>gate current I<sub>G</sub></b>,
+          and some get trapped in the oxide as fixed charge, adding a bit more V<sub>t</sub> shift.</span>
+        </div>
+        <div class="p"><span lang="zh-Hant">門檻 φ<sub>b</sub> ≈ 3.1 eV · 需要連續</span><span lang="en">Threshold φ<sub>b</sub> ≈ 3.1 eV · needs</span> <b id="n2">—</b> <span lang="zh-Hant">個自由程 · 機率</span><span lang="en">consecutive free paths · probability</span> <b id="p2">—</b></div></div>
+      <div class="outcome" id="o3"><div class="h"><span class="dot" style="background:var(--nit)"></span><span lang="zh-Hant">打斷矽與氫的鍵結</span><span lang="en">Breaks a silicon–hydrogen bond</span></div>
+        <div class="d">
+          <span lang="zh-Hant">矽表面的懸鍵原本用氫封住（製程裡特地做的鈍化）。能量夠高的電子會把氫撞掉，留下一個永久的缺陷
+          —— <b>界面態 N<sub>it</sub></b>。<b>這個過程沒有回復</b>，缺陷只會越積越多，這也是三個後果裡對元件壽命影響最直接的一個。</span>
+          <span lang="en">Dangling bonds at the silicon surface are normally capped with hydrogen (a deliberate passivation step in processing). A sufficiently energetic electron can knock that hydrogen loose, leaving a permanent defect
+          — an <b>interface trap N<sub>it</sub></b>. <b>This never heals</b>; the defects only accumulate. Of the three outcomes, this is the one with the most direct effect on device lifetime.</span>
+        </div>
+        <div class="p"><span lang="zh-Hant">門檻 φ<sub>it</sub> ≈ 3.7 eV · 需要連續</span><span lang="en">Threshold φ<sub>it</sub> ≈ 3.7 eV · needs</span> <b id="n3">—</b> <span lang="zh-Hant">個自由程 · 機率</span><span lang="en">consecutive free paths · probability</span> <b id="p3">—</b></div></div>
+    </div>
+  </div>
+</div>
+
+<div lang="zh-Hant">
+<h2>看它實際發生</h2>
+<p>下面是同一件事的動畫：電子從左邊進來，一邊被電場加速一邊被隨機撞散。
+顏色代表它目前累積的能量（藍冷、紅熱）。<b>只有極少數「一路沒被撞到」的幸運電子</b>才會亮起來做壞事——多看幾秒，你會發現大部分電子其實安然通過，完全沒發生任何事。</p>
+</div>
+<div lang="en">
+<h2>Watch it actually happen</h2>
+<p>Below is an animation of the same story: electrons enter from the left, accelerated by the field and randomly scattered.
+Color tracks their current energy (blue = cold, red = hot). <b>Only the rare "never got hit" lucky electrons</b> light up and cause trouble — watch for a few seconds and you'll notice most electrons simply sail through, nothing happening at all.</p>
+</div>
+
+<div class="card">
+  <div class="legend" id="legR"></div>
+  <div id="track"></div>
+  <div class="note" id="stat" style="margin-top:8px"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><div class="t">為什麼工程師在乎</div>
+<p style="margin:0">界面態 N<sub>it</sub> 會讓臨界電壓 V<sub>t</sub> 漂移、電流下降、轉導 g<sub>m</sub> 變差。
+單一個缺陷不算什麼，但元件一天工作幾兆個週期，缺陷持續累積，而且<b>不會自己好</b>。
+可靠度工程的問題就是：<b>照這個速率累積下去，十年後元件還在規格內嗎？</b>——這正是後面幾頁要教你算的東西。</p></div>
+
+<h2>三個馬上可以帶走的觀念</h2>
+<table>
+<thead><tr><th class="nw">觀念</th><th>為什麼重要</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI 是電場問題</b><br>不是電流問題</td>
+<td>把電流加倍，能量門檻一點都沒變；但電場只要多 20%，事件機率可以跳一個數量級。<b>降低 V<sub>D</sub> 遠比降低 I<sub>D</sub> 有效。</b></td></tr>
+<tr><td class="nw"><b>靠的是「運氣」</b></td>
+<td>平均能量遠低於門檻，做壞事的是分布尾巴上的少數電子。這就是為什麼所有 HCI 公式裡都有 e<sup>−φ/qλE</sup> 這種指數項。</td></tr>
+<tr><td class="nw"><b>損傷不會回復</b></td>
+<td>Si–H 鍵斷了就是斷了。<b>與 NBTI 不同</b> —— NBTI 停止應力後會部分回復，HCI 不會。這會影響整個壽命計算的做法。</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>如果我把通道電流加倍，HCI 損傷會加倍嗎？</summary><div class="a"><b>不會等比例。</b>能量門檻由電場決定，跟有多少電子在跑無關。電流加倍只是讓「嘗試次數」加倍，但每次嘗試的成功機率完全沒變。相對地，電場只要提高一點，指數項 e<sup>−φ/qλE</sup> 就會大幅上升。所以降 V<sub>D</sub> 的效果遠大於降 I<sub>D</sub>。</div></details><details><summary>為什麼「平均能量」遠低於 1.3 eV，卻還是會發生撞擊游離？</summary><div class="a">因為散射是<b>隨機</b>的。平均每 λ 被撞一次，但總有一些電子連續走了 5、6 個 λ 都沒被撞到，累積的能量就是平均值的 5、6 倍。這些「幸運電子」就是損傷的來源 —— 這也是 lucky electron model 名稱的由來。</div></details><details><summary>猜猜看：溫度升高，HCI 會變嚴重還是變輕微？</summary><div class="a"><b>變輕微</b>（對傳統的通道熱載子而言）。溫度高 → 晶格振動劇烈 → 電子更容易被撞散 → λ 變短 → 同樣的電場下 qλE 變小 → 幸運電子更少。你可以現在就拖溫度滑桿驗證：三個機率都會下降。<br><br>這件事的正式說法是「HCI 的活化能是負的」，跟 NBTI、TDDB 相反 —— 階段 3 和 4 會算給你看。</div></details><details><summary>那為什麼不乾脆讓元件在高溫下工作就好？</summary><div class="a">因為其他退化機制（NBTI、TDDB、電遷移）都是<b>正</b>活化能，高溫會惡化。實務上要在多個機制之間取平衡，而且 HCI 的 worst case 通常就落在規格的<b>低溫端</b> —— 這是很多人做 qual 時會忽略的角落。</div></details></div>
+<div class="pager"><a class="prev" href="hci.html"><div class="d">← 上一課 · 階段 0</div><div class="t">課程地圖</div></a><a class="next" href="hci-2-mechanism.html"><div class="d">下一課 · 階段 2 →</div><div class="t">物理機制</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<div class="key"><div class="t">Why engineers care</div>
+<p style="margin:0">Interface traps N<sub>it</sub> shift the threshold voltage V<sub>t</sub>, cut the drive current, and degrade transconductance g<sub>m</sub>.
+One defect is nothing, but a device runs trillions of cycles a day, so defects keep piling up — and <b>they never heal on their own</b>.
+The reliability-engineering question is: <b>if it keeps accumulating at this rate, will the device still be within spec in ten years?</b> — which is exactly what the next few pages teach you to calculate.</p></div>
+
+<h2>Three takeaways to keep</h2>
+<table>
+<thead><tr><th class="nw">Idea</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI is a field problem</b><br>not a current problem</td>
+<td>Doubling the current doesn't touch the energy threshold at all; but a mere 20% increase in field can jump the event probability by an order of magnitude. <b>Lowering V<sub>D</sub> is far more effective than lowering I<sub>D</sub>.</b></td></tr>
+<tr><td class="nw"><b>It runs on "luck"</b></td>
+<td>The average energy sits well below threshold — the damage comes from the rare electrons in the tail of the distribution. That's why every HCI formula carries an exponential term like e<sup>−φ/qλE</sup>.</td></tr>
+<tr><td class="nw"><b>The damage never heals</b></td>
+<td>A broken Si–H bond stays broken. <b>Unlike NBTI</b> — which partially recovers once stress is removed, HCI doesn't. That difference changes how you have to do the entire lifetime calculation.</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>If I double the channel current, does HCI damage double too?</summary><div class="a"><b>No, not proportionally.</b> The energy threshold is set by the field, not by how many electrons are flowing. Doubling the current just doubles the number of "attempts," but the success probability per attempt doesn't change at all. A field increase, on the other hand, drives the exponential term e<sup>−φ/qλE</sup> sharply upward. That's why lowering V<sub>D</sub> beats lowering I<sub>D</sub> by a wide margin.</div></details><details><summary>Why does impact ionization still happen when the "average energy" is well below 1.3 eV?</summary><div class="a">Because scattering is <b>random</b>. On average an electron gets hit once every λ, but some electrons travel 5 or 6 λ in a row without a hit, ending up with 5-6× the average energy. These "lucky electrons" are the source of the damage — which is exactly where the name "lucky electron model" comes from.</div></details><details><summary>Guess: does raising the temperature make HCI worse or better?</summary><div class="a"><b>Better</b> (for classic channel hot carriers). Higher temperature → more violent lattice vibration → electrons get scattered more easily → λ shrinks → for the same field, qλE drops → fewer lucky electrons. You can verify this right now by dragging the temperature slider: all three probabilities fall.<br><br>The formal way to say this is "HCI has a negative activation energy," the opposite of NBTI and TDDB — Stages 3 and 4 will walk you through computing it.</div></details><details><summary>So why not just run the device hot on purpose?</summary><div class="a">Because the other degradation mechanisms (NBTI, TDDB, electromigration) all have <b>positive</b> activation energy and get worse with heat. In practice you have to balance multiple mechanisms against each other — and HCI's worst case usually sits at the <b>low-temperature end</b> of the spec, a corner a lot of people overlook when planning qualification.</div></details></div>
+<div class="pager"><a class="prev" href="hci.html"><div class="d">← Previous · Stage 0</div><div class="t">Course Map</div></a><a class="next" href="hci-2-mechanism.html"><div class="d">Next · Stage 2 →</div><div class="t">Mechanism</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+var E=Math.pow(10,5.45), Tc=25;
+var PHI={i:1.3,b:3.1,it:3.7};
+function lamAt(tc){var T=tc+273.15;return LAM0*Math.tanh(EP/(2*K*T));}
+
+function ladder(){
+  var W=300,H=340,M={t:20,r:14,b:26,l:56},iw=W-M.l-M.r,ih=H-M.t-M.b;
+  var emax=5.0;
+  var Y=function(v){return M.t+ih*(1-Math.min(v,emax)/emax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,emax,5).forEach(function(v){
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-8,Y(v),v.toFixed(0)+' eV',{ta:'end',db:'middle'}));});
+  svg.appendChild(el('line',{x1:M.l,x2:M.l,y1:M.t,y2:M.t+ih,stroke:css('--axis'),'stroke-width':1}));
+  var lam=lamAt(Tc), en=E*lam;   // eV
+  // 門檻線
+  [[PHI.i,L('撞擊游離 1.3 eV','Impact ionization 1.3 eV'),css('--h')],
+   [PHI.b,L('越過位障 3.1 eV','Over barrier 3.1 eV'),css('--e')],
+   [PHI.it,L('打斷 Si–H 3.7 eV','Breaks Si–H 3.7 eV'),css('--nit')]]
+  .forEach(function(t){
+    var lit=en>=t[0];
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(t[0]),y2:Y(t[0]),stroke:t[2],
+      'stroke-width':lit?2:1.2,'stroke-dasharray':lit?'':'5 4',opacity:lit?1:.5}));
+    svg.appendChild(txt(M.l+iw-2,Y(t[0])-6,t[1],{ta:'end',fs:10.5,fw:650,fill:t[2],
+      }));
+  });
+  // 能量長條
+  var bw=52, bx=M.l+iw*0.22;
+  svg.appendChild(el('rect',{x:bx,y:Y(Math.min(en,emax)),width:bw,height:Math.max(M.t+ih-Y(Math.min(en,emax)),1),
+    rx:4,fill:css('--e'),opacity:.9}));
+  svg.appendChild(txt(bx+bw/2,Y(Math.min(en,emax))-8,en.toFixed(2)+' eV',{ta:'middle',fs:12.5,fw:700,fill:css('--e')}));
+  svg.appendChild(txt(bx+bw/2,M.t+ih+16,'qλE',{ta:'middle',fs:11,fill:css('--ink2')}));
+  svg.appendChild(txt(M.l+iw*0.62,M.t+ih+16,L('一次自由飛行拿到的能量','energy gained in one free flight'),{ta:'middle',fs:10,fill:css('--muted')}));
+  $('ladder').innerHTML='';$('ladder').appendChild(svg);
+
+  // 機率
+  [['1',PHI.i,'o1'],['2',PHI.b,'o2'],['3',PHI.it,'o3']].forEach(function(t){
+    var need=t[1]/en, pr=Math.exp(-need);
+    $('n'+t[0]).textContent=need.toFixed(1);
+    $('p'+t[0]).textContent=pr<1e-4?pr.toExponential(1):(pr*100).toFixed(pr>0.01?1:3)+'%';
+    $(t[2]).classList.toggle('on',pr>2e-4);
+  });
+  $('vE').innerHTML=fmtEng(E,'V/cm',2);
+  $('hintE').textContent = E<5e4?L('通道中段的典型電場 —— 完全安全','Typical field mid-channel — completely safe')
+    : E<2e5?L('開始有一點點游離，但機率極低','Slight ionization begins, but the probability is still tiny')
+    : E<6e5?L('典型工作中的汲極端峰值電場','Typical peak field at the drain under normal operation')
+    : E<1.5e6?L('應力測試等級 —— 損傷明顯','Stress-test level — damage becomes significant')
+    : L('接近崩潰，元件已在危險區','Near breakdown — the device is in the danger zone');
+  $('vT').textContent=Tc.toFixed(0)+' °C';
+
+  $('legR').innerHTML='<span><i class="sw dot" style="background:'+css('--e')+'"></i>'+L('低能量電子','low-energy electron')+'</span>'+
+    '<span><i class="sw dot" style="background:'+css('--h')+'"></i>'+L('高能量電子','high-energy electron')+'</span>'+
+    '<span style="color:'+css('--h')+'">○ '+L('撞擊游離','impact ionization')+'</span>'+
+    '<span style="color:'+css('--e')+'">↑ '+L('進入閘極','enters gate')+'</span>'+
+    '<span style="color:'+css('--nit')+'">✕ '+L('打斷 Si–H','breaks Si–H')+'</span>';
+}
+
+/* ---- 賽道動畫（直接模擬 lucky electron） ---- */
+var TW=900,TH=170,LANE=96,DXCM=1.94e-8;   /* 每 px 代表的距離 → 全長約 175 nm */
+var trk=[], events=[], tp=0, cnt={i:0,b:0,it:0,n:0};
+function tcolor(en){
+  var t=Math.min(1,en/3.7);
+  var a=[42,120,214], b=[227,73,72];
+  return 'rgb('+Math.round(a[0]+(b[0]-a[0])*t)+','+Math.round(a[1]+(b[1]-a[1])*t)+','+Math.round(a[2]+(b[2]-a[2])*t)+')';
+}
+function tstep(dt){
+  var lam=lamAt(Tc)/DXCM;                       /* 以 px 計的自由程 */
+  var v=3.4*dt*0.1;
+  for(var i=0;i<trk.length;i++){
+    var p=trk[i]; p.x+=v; p.en+=E*DXCM*v;
+    if(Math.random()<v/lam){                    /* 散射 */
+      if(p.en>=PHI.it){events.push({x:p.x,k:'it',l:1});cnt.it++;}
+      else if(p.en>=PHI.b){events.push({x:p.x,k:'b',l:1});cnt.b++;}
+      else if(p.en>=PHI.i){events.push({x:p.x,k:'i',l:1});cnt.i++;}
+      p.en=0; p.sc=1;
+    } else if(p.sc) p.sc*=0.86;
+    if(p.x>TW-20){p.dead=true;cnt.n++;}
+  }
+  trk=trk.filter(function(p){return !p.dead;});
+  while(trk.length<22) trk.push({x:-Math.random()*160,en:0,y:LANE+(Math.random()-0.5)*30,sc:0});
+  events.forEach(function(e){e.l-=dt*0.0022;});
+  events=events.filter(function(e){return e.l>0;});
+}
+function trender(){
+  var svg=el('svg',{viewBox:'0 0 '+TW+' '+TH});
+  svg.appendChild(el('rect',{x:0,y:LANE-30,width:TW,height:60,rx:8,fill:css('--surface'),stroke:css('--border')}));
+  svg.appendChild(txt(10,LANE-38,L('汲極端高場區（約 175 nm）→','High-field region near the drain (~175 nm) →'),{fs:11,fill:css('--muted')}));
+  svg.appendChild(txt(TW-8,LANE-38,L('汲極','Drain'),{fs:11,fill:css('--muted'),ta:'end'}));
+  var lam=lamAt(Tc)/DXCM;
+  for(var g=lam;g<TW;g+=lam)
+    svg.appendChild(el('line',{x1:g,x2:g,y1:LANE-30,y2:LANE+30,stroke:css('--grid'),'stroke-width':1}));
+  svg.appendChild(txt(lam/2,LANE+46,L('每格 = 一個平均自由程 λ = ','Each grid cell = one mean free path λ = ')+(lamAt(Tc)*1e7).toFixed(1)+' nm',{fs:10.5,fill:css('--muted')}));
+  events.forEach(function(e){
+    var c=e.k==='i'?css('--h'):e.k==='b'?css('--e'):css('--nit');
+    svg.appendChild(el('circle',{cx:e.x,cy:LANE,r:6+16*(1-e.l),fill:'none',stroke:c,'stroke-width':2,opacity:e.l}));
+    if(e.k==='it') svg.appendChild(el('path',{d:'M'+(e.x-5)+' '+(LANE-35)+'l10 10M'+(e.x+5)+' '+(LANE-35)+'l-10 10',
+      stroke:css('--nit'),'stroke-width':2,'stroke-linecap':'round',opacity:e.l}));
+    if(e.k==='b') svg.appendChild(el('path',{d:'M'+e.x+' '+(LANE-8)+'l0 -26m0 0l-4 6m4 -6l4 6',
+      stroke:css('--e'),'stroke-width':2,'stroke-linecap':'round',opacity:e.l}));
+  });
+  trk.forEach(function(p){
+    var r=2.4+2.6*Math.min(1,p.en/2);
+    svg.appendChild(el('circle',{cx:p.x,cy:p.y,r:r,fill:tcolor(p.en),opacity:.92}));
+  });
+  $('track').innerHTML='';$('track').appendChild(svg);
+  var tot=cnt.i+cnt.b+cnt.it;
+  $('stat').innerHTML=L('已通過 ','')+'<b>'+cnt.n+'</b> '+L('顆電子 · 撞擊游離','electrons passed · impact ionization')+' <b style="color:'+css('--h')+'">'+cnt.i+
+    '</b> '+L('次 · 進入閘極','times · entered gate')+' <b style="color:'+css('--e')+'">'+cnt.b+'</b> '+L('次 · 打斷 Si–H','times · broke Si–H')+' <b style="color:'+css('--nit')+
+    '">'+cnt.it+'</b> '+L('次','times')+(cnt.n>20?L('（每顆電子平均 ',' (avg ')+(tot/cnt.n).toFixed(3)+L(' 次事件）',' events/electron)'):'');
+}
+function tloop(ts){var dt=Math.min(50,ts-(tp||ts));tp=ts;tstep(dt);trender();requestAnimationFrame(tloop);}
+
+$('rE').addEventListener('input',function(e){E=Math.pow(10,parseFloat(e.target.value));ladder();
+  cnt={i:0,b:0,it:0,n:0};});
+$('rT').addEventListener('input',function(e){Tc=parseFloat(e.target.value);ladder();
+  cnt={i:0,b:0,it:0,n:0};});
+window.__rebuild=ladder;
+ladder(); requestAnimationFrame(tloop);
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="自我發熱如何同時影響 HCI、NBTI、TDDB、電遷移四個可靠度機制，方向互相打架的量化對照。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="自我發熱與機制耦合">
+<meta property="og:description" content="同一個 ΔT，HCI 被抑制、NBTI/TDDB/EM 被加速 —— 可靠度必須聯合最佳化。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>自我發熱與機制耦合 · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">自我發熱與機制耦合</span><div class="steps"><a href="hci.html"><span class="n">01</span>HCI</a><a href="tddb.html"><span class="n">02</span>TDDB</a><a href="nbti.html"><span class="n">03</span>NBTI</a><a href="em.html"><span class="n">04</span>EM</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:100%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">機制 05 · 串聯前面所有機制</p>
+<h1>自我發熱與熱載子的交互作用</h1>
+<p class="lede">這一頁不是新機制，是把前面四個模組的溫度活化能放到同一張表上一起看。
+自我發熱造成的局部溫升 ΔT，同時對 HCI、NBTI、TDDB、EM 起作用 —— 但方向不一致，
+這正是為什麼<b>可靠度必須聯合最佳化，不能用一組 HTOL 溫度條件涵蓋全部機制</b>。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>同一次應力、同一個 ΔT，HCI 的活化能是負的（升溫反而抑制）；NBTI、TDDB、EM 的活化能都是正的
+（升溫加速劣化）。四個機制裡只有 HCI 是異數 —— 這在先進節點自我發熱量級動輒破百 K 時，
+不再是可以忽略的小擾動。</p></div>
+
+<h2>四機制溫度活化能方向對照</h2>
+<table>
+<thead><tr><th class="nw">機制</th><th class="nw">E<sub>a</sub> 方向</th><th class="n">典型量級</th><th>自我發熱的淨效果</th></tr></thead>
+<tbody>
+<tr><td class="nw">HCI</td><td class="nw"><b>負</b></td><td class="n">−0.1 ~ −0.2 eV</td><td><span class="badge ok">抑制</span></td></tr>
+<tr><td class="nw">NBTI</td><td class="nw">正</td><td class="n">概念上為正（見 NBTI 章節）</td><td><span class="badge bad">加速</span></td></tr>
+<tr><td class="nw">TDDB</td><td class="nw">正</td><td class="n">≈ +0.75 eV</td><td><span class="badge bad">加速</span></td></tr>
+<tr><td class="nw">電遷移 EM</td><td class="nw">正</td><td class="n">+0.4 ~ +2.2 eV（依材料，見 EM 章節）</td><td><span class="badge bad">加速</span></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0">同一顆元件、同一次應力，自我發熱把 HCI 往「看起來沒事」的方向推，
+同時把 NBTI／TDDB／EM 往「加速劣化」的方向推 —— 這正是為什麼單一機制各自建模、
+最後不放回同一個溫度軸看，會漏掉最關鍵的交互作用。</p></div>
+
+<h2>反饋迴路：功耗 → 溫升 → 機制分流</h2>
+<div class="eq"><span class="lbl">自我發熱</span>
+ΔT = R<sub>th</sub> · P = R<sub>th</sub> · I<sub>D</sub> · V<sub>D</sub>
+<span class="say">局部溫升一旦產生，四個機制同時收到這個溫度變化，但反應方向不同 ——
+這不是一個需要「解」的閉環（自我發熱本身不會因劣化而顯著改變，是單向的功耗到溫度），
+而是一個<b>分流節點</b>：同一個 ΔT 輸入，四條輸出各自沿自己的活化能方向移動。</span></div>
+
+<p>實務上意味著：用同一組 HTOL 溫度條件去同時涵蓋這四個機制，本身就有方法學上的矛盾 ——
+這呼應本站 HCI 章節「HCI/TDDB 溫度方向相反 → HTOL 只抓得到其中一個」的結論，
+現在要再加上 NBTI 與 EM 的方向確認：四者中有三個（NBTI、TDDB、EM）方向一致，只有 HCI 是唯一的異數。</p>
+
+<h2>為什麼先進節點下這個耦合更嚴重</h2>
+<p>本站 HCI 章節記錄了 GAA sub-10nm 的自我發熱 ΔT 可達 100 K 以上，遠高於 14nm bulk FinFET 的個位數到十幾度。
+當 ΔT 量級從「個位數」變成「三位數」，原本可以近似成小擾動修正的溫度效應，
+會直接把元件推到一個對 NBTI／TDDB／EM 而言明顯加速、對 HCI 而言明顯抑制的工作點 ——
+四個機制的<b>淨風險排序</b>可能因此在先進節點整個翻轉，這是純平面元件時代不太需要認真處理的問題。</p>
+
+<h2>互動：同一個 ΔT，四個機制各自的相對加速/抑制</h2>
+</div>
+<div lang="en">
+<p class="eyebrow">Mechanism 05 · Ties Everything Before It Together</p>
+<h1>How Self-Heating Interacts With the Hot-Carrier Chain</h1>
+<p class="lede">This page isn't a new mechanism — it puts the temperature activation energies from the previous four
+modules on the same table so you can see them side by side. The local temperature rise ΔT from self-heating
+acts on HCI, NBTI, TDDB, and EM at the same time — but not in the same direction, which is exactly why
+<b>reliability has to be jointly optimized, and why a single HTOL temperature condition can't cover every mechanism at once</b>.</p>
+
+<div class="tldr"><div class="t">One-minute version</div>
+<p>Under the same stress and the same ΔT, HCI's activation energy is negative (heating actually suppresses it);
+NBTI's, TDDB's, and EM's are all positive (heating accelerates degradation). HCI is the only outlier among the
+four mechanisms — and once self-heating in advanced nodes routinely exceeds 100 K, that's no longer a
+small perturbation you can afford to ignore.</p></div>
+
+<h2>Temperature Activation-Energy Direction Across the Four Mechanisms</h2>
+<table>
+<thead><tr><th class="nw">Mechanism</th><th class="nw">E<sub>a</sub> direction</th><th class="n">Typical scale</th><th>Net effect of self-heating</th></tr></thead>
+<tbody>
+<tr><td class="nw">HCI</td><td class="nw"><b>Negative</b></td><td class="n">−0.1 to −0.2 eV</td><td><span class="badge ok">Suppresses</span></td></tr>
+<tr><td class="nw">NBTI</td><td class="nw">Positive</td><td class="n">Positive in principle (see the NBTI chapter)</td><td><span class="badge bad">Accelerates</span></td></tr>
+<tr><td class="nw">TDDB</td><td class="nw">Positive</td><td class="n">≈ +0.75 eV</td><td><span class="badge bad">Accelerates</span></td></tr>
+<tr><td class="nw">Electromigration (EM)</td><td class="nw">Positive</td><td class="n">+0.4 to +2.2 eV (material-dependent, see the EM chapter)</td><td><span class="badge bad">Accelerates</span></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">Key intuition</div>
+<p style="margin:0">On the same device, under the same stress, self-heating pushes HCI toward "looking fine"
+while simultaneously pushing NBTI/TDDB/EM toward "accelerated degradation" — which is exactly why modeling
+each mechanism in isolation, without ever putting them back on the same temperature axis, misses the single
+most important interaction.</p></div>
+
+<h2>The Feedback Loop: Power → Temperature Rise → Mechanism Split</h2>
+<div class="eq"><span class="lbl">Self-heating</span>
+ΔT = R<sub>th</sub> · P = R<sub>th</sub> · I<sub>D</sub> · V<sub>D</sub>
+<span class="say">Once a local temperature rise appears, all four mechanisms receive the same temperature
+change — but they respond in different directions. This isn't a closed loop you need to "solve" (self-heating
+itself doesn't change appreciably from degradation; it's a one-way path from power to temperature) —
+it's a <b>split node</b>: the same ΔT input, with four outputs each moving along its own activation-energy direction.</span></div>
+
+<p>In practice this means using a single HTOL temperature condition to cover all four mechanisms is
+methodologically contradictory on its own — echoing this site's HCI chapter conclusion that "HCI and TDDB
+point in opposite temperature directions, so HTOL only catches one of them." Now add the confirmation from
+NBTI and EM: three of the four (NBTI, TDDB, EM) point the same way, and HCI alone is the outlier.</p>
+
+<h2>Why This Coupling Gets Worse at Advanced Nodes</h2>
+<p>This site's HCI chapter documents self-heating ΔT exceeding 100 K in sub-10nm GAA devices, far above the
+single-to-low-double-digit range typical of 14nm bulk FinFETs. Once ΔT moves from a single digit to three
+digits, a temperature effect that used to be approximated as a small correction instead pushes the device
+straight to an operating point that's clearly accelerating for NBTI/TDDB/EM and clearly suppressing for HCI —
+the <b>net risk ranking</b> across the four mechanisms can flip entirely at advanced nodes, a problem planar-device-era
+engineering rarely had to take seriously.</p>
+
+<h2>Interactive: The Same ΔT, Relative Acceleration/Suppression for Each Mechanism</h2>
+</div>
+
+<div class="card">
+<div class="ctrls">
+  <div class="ctrl"><label for="shDt"><span lang="zh-Hant">自我發熱 ΔT（K）</span><span lang="en">Self-heating ΔT (K)</span></label>
+    <div class="row"><input type="range" id="shDt" min="0" max="120" step="1" value="20"><span class="val" id="vshDt">20 K</span></div></div>
+  <div class="ctrl"><label for="shT0"><span lang="zh-Hant">基準溫度 T₀（°C）</span><span lang="en">Baseline temperature T₀ (°C)</span></label>
+    <div class="row"><input type="range" id="shT0" min="25" max="150" step="1" value="105"><span class="val" id="vshT0">105</span></div></div>
+</div>
+<div class="tiles" style="margin-top:14px">
+<div class="tile"><div class="k"><span lang="zh-Hant">HCI 相對速率（log₂）</span><span lang="en">HCI relative rate (log₂)</span></div><div class="v" id="outHCI">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">NBTI 相對速率（log₂）</span><span lang="en">NBTI relative rate (log₂)</span></div><div class="v" id="outNBTI">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">TDDB 相對速率（log₂）</span><span lang="en">TDDB relative rate (log₂)</span></div><div class="v" id="outTDDB">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">EM 相對速率（log₂）</span><span lang="en">EM relative rate (log₂)</span></div><div class="v" id="outEM">—</div></div>
+</div>
+<p class="note" lang="zh-Hant" style="margin-top:10px">正值代表相對 T₀ 加速、負值代表抑制，log₂ 尺度（+1 代表快 2 倍）。
+NBTI 的 E<sub>a</sub> 取示意值 0.12 eV（本站尚未對 NBTI 溫度活化能做逐項查證，數字僅供比例示意，
+不可引用為結論）；EM 取 Cu 介電質 cap 量級 0.9 eV 作代表。</p>
+<p class="note" lang="en" style="margin-top:10px">A positive value means acceleration relative to T₀, negative means
+suppression, on a log₂ scale (+1 means 2× faster). NBTI's E<sub>a</sub> uses an illustrative value of 0.12 eV (this site
+hasn't verified NBTI's temperature activation energy item by item; the number is for illustrating scale only and
+shouldn't be cited as a conclusion); EM uses 0.9 eV, representative of a Cu dielectric-cap process.</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">誠實邊界</div>
+<p style="margin:0;font-size:16px">本頁的「反饋迴路」用詞其實是<b>單向分流</b>而非真正閉環回饋 ——
+沒有把劣化本身回過頭改變 R<sub>th</sub> 或功耗的二階效應納入（例如 V<sub>t</sub> 漂移改變 I<sub>D</sub>、
+進而改變 P），這在長期劣化下並非完全零效應，但本頁未建模。四機制的活化能都是文獻常見量級的代表值，
+不是同一顆元件、同一次量測下取得的一致數據集。NBTI 對溫度的活化能方向本身在文獻上有一定分歧
+（部分報告顯示更複雜的非單調行為），本頁採用最常見的簡化正向假設。GAA ΔT 可達 100K+ 的量級
+引用本站 HCI 章節既有查證結果，本頁未重新查證，僅做延伸推論。</p></div>
+
+<div class="pager"><a class="prev" href="em-4-spec.html"><div class="d">← 回到</div><div class="t">電遷移</div></a><a class="next" href="index.html"><div class="d">回到 →</div><div class="t">所有可靠度機制</div></a></div>
+<div class="foot"><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">Honest boundary</div>
+<p style="margin:0;font-size:16px">This page's "feedback loop" language is really a <b>one-way split</b>, not a true closed-loop
+feedback — it doesn't include second-order effects where degradation itself feeds back into R<sub>th</sub> or power
+(for example, V<sub>t</sub> drift changing I<sub>D</sub>, which changes P). That effect isn't strictly zero under long-term
+degradation, but it isn't modeled here. The activation energies for all four mechanisms are representative
+literature-scale values, not a consistent dataset measured on the same device in the same run. The direction
+of NBTI's temperature activation energy itself has some disagreement in the literature (some reports show
+more complex, non-monotonic behavior); this page adopts the most common simplified positive-direction
+assumption. The claim that GAA ΔT can exceed 100K+ is carried over from this site's already-verified HCI
+chapter; it isn't independently re-verified here, only extended as inference.</p></div>
+
+<div class="pager"><a class="prev" href="em-4-spec.html"><div class="d">← Back to</div><div class="t">Electromigration</div></a><a class="next" href="index.html"><div class="d">Back to →</div><div class="t">All reliability mechanisms</div></a></div>
+<div class="foot"><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script>
+(function(){
+var shDt=document.getElementById('shDt'),shT0=document.getElementById('shT0');
+var MECH=[
+  {id:'outHCI',ea:-0.15},
+  {id:'outNBTI',ea:0.12},
+  {id:'outTDDB',ea:0.75},
+  {id:'outEM',ea:0.9}
+];
+function upd(){
+  var dT=parseFloat(shDt.value),T0c=parseFloat(shT0.value);
+  document.getElementById('vshDt').textContent=dT+' K';
+  document.getElementById('vshT0').textContent=T0c;
+  var k=8.617e-5, T0=T0c+273.15, T1=T0+dT;
+  MECH.forEach(function(m){
+    var ratio=Math.exp((m.ea/k)*(1/T0-1/T1));
+    var log2=Math.log2(ratio);
+    document.getElementById(m.id).textContent=(log2>=0?'+':'')+log2.toFixed(2);
+  });
+}
+[shDt,shT0].forEach(function(el){el.addEventListener('input',upd);});
+window.__rebuild=upd;
+upd();
+})();
+</script>
+
+
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

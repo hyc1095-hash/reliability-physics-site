@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NBTI 的 Si-H 鍵斷裂機制與 R-D 反應擴散模型，時間指數 n 的理論值與實測落差。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 2 · 機制與 R-D 模型">
+<meta property="og:description" content="R-D 模型的時間律，以及先進節點實測 n 值偏離理論的原因。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 2 · 機制與 R-D 模型 · NBTI/PBTI</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html" aria-current="page"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-spec.html"><span class="n">4</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:40%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 2 / 4 · 物理機制與 R-D 模型</p>
+<h1>Si–H 鍵斷裂，反應與擴散的耦合</h1>
+<p class="lede">負偏壓下電洞在界面累積，界面處鈍化用的 Si–H 鍵在電場與電洞共同作用下斷裂，
+釋出的氫物種擴散進閘極介電層，留下的懸鍵就是界面態 N<sub>it</sub> —— 這是一個
+<b>反應（介面 Si-H 斷裂）＋ 擴散（H 物種離開介面）</b>耦合的過程，稱為 R-D（Reaction-Diffusion）模型。</p>
+
+<div class="eq"><span class="lbl">R-D 時間律</span>
+ΔV<sub>t</sub>(t) = A · t<sup>n</sup>
+<span class="say">A：前置係數，強烈製程相依。n：時間指數。
+擴散限制（diffusion-limited）理論給出 <b>n = 1/6 ≈ 0.167</b>（H₂ 分子擴散）或 n = 1/4（H 原子擴散）。</span></div>
+
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">實測落差</div>
+<p style="margin:0;font-size:16px">大量文獻室溫平面元件實測 n 落在 <b>0.15–0.25</b> 之間，跟理論值 1/6 同一量級但不精確吻合；
+先進節點與 high-k／metal gate 疊層常見 n 偏高（0.2 附近），跟界面／介電層缺陷態密度、氮化製程有關。
+跟本站 HCI 章節處理幸運電子指數 m 的原則一致：<b>不要把單一理論值當成放諸四海皆準的常數，要標示實測範圍。</b></p></div>
+
+<h2>互動：R-D 時間律推移</h2>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 2 / 4 · Physical Mechanism & the R-D Model</p>
+<h1>Si–H bond breaking: reaction coupled to diffusion</h1>
+<p class="lede">Under negative bias, holes accumulate at the interface, and the Si–H bonds that passivate it break under the combined action of the field and those holes.
+The released hydrogen species diffuse into the gate dielectric, and the dangling bonds left behind are the interface traps N<sub>it</sub> — this is a process where
+<b>reaction (Si-H breaking at the interface) couples with diffusion (H species leaving the interface)</b>, known as the R-D (Reaction-Diffusion) model.</p>
+
+<div class="eq"><span class="lbl">R-D time law</span>
+ΔV<sub>t</sub>(t) = A · t<sup>n</sup>
+<span class="say">A: a prefactor, strongly process-dependent. n: the time exponent.
+Diffusion-limited theory gives <b>n = 1/6 ≈ 0.167</b> (H₂ molecular diffusion) or n = 1/4 (atomic H diffusion).</span></div>
+
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">The gap with measurement</div>
+<p style="margin:0;font-size:16px">A large body of literature on room-temperature planar devices measures n in the range <b>0.15–0.25</b> — the same order of magnitude as the theoretical 1/6, but not an exact match;
+advanced nodes and high-k/metal-gate stacks commonly see n run higher (near 0.2), related to interface/dielectric defect-state density and the nitridation process.
+This follows the same principle this site's HCI chapter uses for the lucky-electron exponent m: <b>don't treat a single theoretical value as a universal constant — report the measured range.</b></p></div>
+
+<h2>Interactive: watching the R-D time law shift</h2>
+</div>
+
+<div class="card">
+<div class="ctrls">
+  <div class="ctrl"><label for="nN"><span lang="zh-Hant">時間指數 n</span><span lang="en">Time exponent n</span></label>
+    <div class="row"><input type="range" id="nN" min="0.10" max="0.30" step="0.01" value="0.17"><span class="val" id="vnN">0.17</span></div></div>
+  <div class="ctrl"><label for="tN"><span lang="zh-Hant">應力時間指數（10 的次方，秒）</span><span lang="en">Stress-time exponent (power of 10, seconds)</span></label>
+    <div class="row"><input type="range" id="tN" min="1" max="7" step="0.1" value="4"><span class="val" id="vtN">1e4 s</span></div></div>
+  <div class="ctrl"><label for="aN"><span lang="zh-Hant">前置係數 A（mV）</span><span lang="en">Prefactor A (mV)</span></label>
+    <div class="row"><input type="range" id="aN" min="5" max="60" step="1" value="20"><span class="val" id="vaN">20 mV</span></div></div>
+</div>
+<div class="tiles" style="margin-top:14px">
+<div class="tile"><div class="k"><span lang="zh-Hant">ΔV<sub>t</sub>，目前應力時間點</span><span lang="en">ΔV<sub>t</sub> at the current stress time</span></div><div class="v" id="nowN">—</div></div>
+<div class="tile hl"><div class="k"><span lang="zh-Hant">ΔV<sub>t</sub>，外推到 10 年</span><span lang="en">ΔV<sub>t</sub>, extrapolated to 10 years</span></div><div class="v" id="tenN">—</div></div>
+</div>
+</div>
+
+<div lang="zh-Hant">
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼先進節點 high-k/metal gate 的 n 常偏高，接近 0.2 而不是 1/6？</summary>
+<div class="a">n 值反映的是哪種微觀過程在限制動力學。理論 n=1/6 假設純擴散限制、界面缺陷態密度均勻；
+先進節點的界面／介電層缺陷密度較高、缺陷分布也更不均勻，使得動力學偏離純擴散限制的理想情況，
+表現為實測 n 值偏離理論值。這跟 HCI 章節裡幸運電子指數 m 在 28nm HKMG 實測只有 1.1（遠低於理論 2.85）
+是同一類現象 ——<b>疊層界面的缺陷物理會系統性地把實測值推離簡化模型的理論值</b>。</div></details>
+<details><summary>R-D 模型的「反應」跟「擴散」分別對應哪個物理量？</summary>
+<div class="a">「反應」是介面處 Si-H 鍵斷裂生成界面態與氫原子的化學反應速率；「擴散」是生成的氫物種
+（原子或分子）離開界面、往閘極介電層內部擴散的速率。兩者耦合的意思是：如果氫物種擴散得不夠快、
+在界面附近堆積，會提高局部氫濃度、抑制反應繼續往前（化學平衡往回推）——
+這正是為什麼<b>純反應限制</b>（n=1，線性）和<b>純擴散限制</b>（n=1/6 或 1/4）是兩個極端，
+實際系統通常介於中間，且隨應力時間從反應限制段過渡到擴散限制段。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-1-intuition.html"><div class="d">← 上一課 · 階段 1</div><div class="t">直覺</div></a><a class="next" href="nbti-3-recovery.html"><div class="d">下一課 · 階段 3 →</div><div class="t">恢復與量測陷阱</div></a></div>
+<div class="foot"><b>模型範圍</b>：R-D 時間律採擴散限制段的冪次律外觀，未實作完整反應-擴散耦合微分方程；恢復動力學僅作文字說明，無可調曲線工具；PBTI（nMOS 電子穿隧機制）未展開，僅並列標題。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why is n on advanced-node high-k/metal-gate stacks often high, near 0.2 rather than 1/6?</summary>
+<div class="a">The value of n reflects which microscopic process is limiting the kinetics. Theoretical n=1/6 assumes pure diffusion-limited behavior with a uniform interface defect-state density;
+advanced nodes have a higher interface/dielectric defect density with a less uniform distribution, pushing the kinetics away from the ideal pure-diffusion-limited case
+and showing up as a measured n that deviates from theory. This is the same class of phenomenon as the HCI chapter's lucky-electron exponent m measuring only 1.1 on 28nm HKMG (far below the theoretical 2.85) —
+<b>defect physics at stacked interfaces systematically pushes measured values away from a simplified model's theoretical prediction.</b></div></details>
+<details><summary>What physical quantities do "reaction" and "diffusion" correspond to in the R-D model?</summary>
+<div class="a">"Reaction" is the chemical reaction rate at which interfacial Si-H bonds break to generate interface traps and hydrogen atoms; "diffusion" is the rate at which the generated hydrogen species
+(atomic or molecular) leave the interface and diffuse into the gate dielectric. The coupling between the two means: if the hydrogen species doesn't diffuse away fast enough and piles up near the interface,
+it raises the local hydrogen concentration and suppresses the reaction from proceeding further (pushing the chemical equilibrium back) —
+this is exactly why <b>pure reaction-limited</b> (n=1, linear) and <b>pure diffusion-limited</b> (n=1/6 or 1/4) are two extremes,
+and a real system usually sits somewhere in between, transitioning from the reaction-limited regime to the diffusion-limited regime as stress time goes on.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-1-intuition.html"><div class="d">← Previous · Stage 1</div><div class="t">Intuition</div></a><a class="next" href="nbti-3-recovery.html"><div class="d">Next · Stage 3 →</div><div class="t">Recovery & Measurement Traps</div></a></div>
+<div class="foot"><b>Model scope</b>: the R-D time law uses the power-law appearance of the diffusion-limited regime, without implementing the full reaction-diffusion coupled differential equations; recovery dynamics are described in text only, with no tunable curve tool; PBTI (the nMOS electron-tunneling mechanism) is not expanded — only its heading is listed alongside NBTI's. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script>
+(function(){
+var nN=document.getElementById('nN'),tN=document.getElementById('tN'),aN=document.getElementById('aN');
+function upd(){
+  var n=parseFloat(nN.value),tExp=parseFloat(tN.value),A=parseFloat(aN.value);
+  document.getElementById('vnN').textContent=n.toFixed(2);
+  document.getElementById('vtN').textContent='1e'+tExp.toFixed(1)+' s';
+  document.getElementById('vaN').textContent=A+' mV';
+  var tNow=Math.pow(10,tExp);
+  var t10y=10*365*24*3600;
+  document.getElementById('nowN').textContent=(A*Math.pow(tNow,n)).toFixed(1)+' mV';
+  document.getElementById('tenN').textContent=(A*Math.pow(t10y,n)).toFixed(1)+' mV';
+}
+[nN,tN,aN].forEach(function(el){el.addEventListener('input',upd);});
+window.__rebuild=upd;
+upd();
+})();
+</script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="金屬導線電遷移（EM）可靠度物理循序教學：電子風力直覺、Black 方程式、材料活化能、Blech 長度、統計外推與防治。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="課程地圖 · 電遷移 · 半導體可靠度物理">
+<meta property="og:description" content="從電子風力直覺到 Black 方程式與材料活化能，四個階段學完 EM。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>課程地圖 · 電遷移 · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">EM · 電遷移</span><div class="steps"><a href="em.html" aria-current="page"><span class="n">0</span>課程地圖</a><a href="em-1-intuition.html"><span class="n">1</span>直覺</a><a href="em-2-model.html"><span class="n">2</span>Black 方程式與材料</a><a href="em-3-blech.html"><span class="n">3</span>Blech 長度</a><a href="em-4-spec.html"><span class="n">4</span>統計與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:0%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">互動教材 · 不需要先修過半導體元件物理</p>
+<h1>電遷移（Electromigration）<br>可靠度物理，從零開始</h1>
+<p class="lede">EM 發生在後段金屬導線裡，不在電晶體本身——這是它跟 HCI、TDDB、NBTI 最大的不同：故事的舞台從矽換成了金屬線。
+更關鍵的是驅動力也不一樣：不是電場，而是<b>電流本身帶來的動量</b>——你可以把它想成一陣持續吹過金屬原子的「風」。
+這份教材分四個階段：直覺、Black 方程式與材料活化能、Blech 長度的「免疫」效應、以及統計外推與防治。
+<b>每一頁都短，一次只講一件事，卡住了隨時可以往回翻。</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">一句話版本</h3>
+<p style="margin-bottom:0">導電電子與金屬原子不斷碰撞，把動量傳給原子——這就是「電子風」。電流密度夠高時，
+這股風會讓原子沿電流方向淨位移，一顆一顆被搬走：陰極端因此逐漸掏空成孔洞（最終斷路），
+陽極端則可能因為原子越堆越多而擠出突起（可能短路到旁邊的線）。</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 178" role="img" aria-label="EM 因果鏈：高電流密度、電子風力、原子淨位移、陰極空洞與陽極突起">
+<defs><marker id="ar2-zh" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="81.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">高電流密度 J</text><text x="81.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">導電電子流</text><circle cx="23" cy="68" r="11" fill="var(--muted)"/><text x="23" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="160" y1="98" x2="194" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-zh)"/>
+<rect x="200" y="68" width="150" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="275.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">電子風力</text><text x="275.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--h)">動量傳遞給原子</text><circle cx="217" cy="68" r="11" fill="var(--h)"/><text x="217" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="354" y1="98" x2="388" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-zh)"/>
+<rect x="394" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="469.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">原子淨位移</text><text x="469.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">沿電流方向擴散</text><circle cx="411" cy="68" r="11" fill="var(--muted)"/><text x="411" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="548" y1="98" x2="582" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-zh)"/>
+<rect x="588" y="22" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="672.0" y="51.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">陰極端空洞 → 斷路</text><circle cx="605" cy="22" r="11" fill="var(--h)"/><text x="605" y="26" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="588" y="92" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="672.0" y="121.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">陽極端突起 → 短路</text>
+</g>
+</svg>
+</div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="em-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">直覺：電子風把原子吹走</div>
+  <div class="d">不是熱效應，是動量傳遞。看電流密度怎麼決定原子淨漂移的方向與速率。</div>
+  <div class="g">學完你會知道：<b>陰極空洞、陽極突起為什麼分別對應開路與短路</b></div>
+  <div class="meta">約 5 分鐘 · 1 個互動</div></div>
+</a>
+<a class="mapcard" href="em-2-model.html">
+  <div class="no">2</div>
+  <div><div class="t">Black 方程式與材料活化能</div>
+  <div class="d">業界標準壽命模型，加上 Al／Al-Cu／Cu（介電質 cap／金屬 cap）／W 的晶界與介面擴散活化能對照表。</div>
+  <div class="g">學完你會知道：<b>Cu 換金屬 cap 為什麼是單一改動裡效果最大的</b></div>
+  <div class="meta">約 10 分鐘 · 材料表 + 互動計算</div></div>
+</a>
+<a class="mapcard" href="em-3-blech.html">
+  <div class="no">3</div>
+  <div><div class="t">Blech 長度：短線可以「免疫」</div>
+  <div class="d">背向擴散應力如何抵銷電子風力，讓夠短的導線在給定電流密度下理論上不會因 EM 失效。</div>
+  <div class="g">學完你會知道：<b>j·L 這個乘積才是判準，不是 j 或 L 單獨</b></div>
+  <div class="meta">約 6 分鐘 · 1 個互動</div></div>
+</a>
+<a class="mapcard" href="em-4-spec.html">
+  <div class="no">4</div>
+  <div><div class="t">統計外推與防治</div>
+  <div class="d">為什麼跟 NBTI 一樣用對數常態而不是 Weibull；製程／版圖／材料三層對策，含 redundancy 與 wide-narrow rule。</div>
+  <div class="g">學完你會知道：<b>「乘性退化 vs 極值分布」這把尺可以套用到幾乎所有機制上</b></div>
+  <div class="meta">約 8 分鐘</div></div>
+</a>
+</div>
+
+<h2>先備知識</h2>
+<table>
+<thead><tr><th class="nw">需要知道</th><th>大概到什麼程度</th></tr></thead>
+<tbody>
+<tr><td class="nw">電流密度</td><td>單位截面積通過的電流，J = I / A</td></tr>
+<tr><td class="nw">擴散與活化能</td><td>D = D₀·exp(−E<sub>a</sub>/kT)，E<sub>a</sub> 越高，同溫度下擴散越慢</td></tr>
+<tr><td class="nw">為什麼在後段而不是電晶體</td><td>EM 發生在金屬導線／via，不是閘極氧化層或通道 —— 跟 HCI／TDDB／NBTI 完全是不同的物理位置</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="next" href="em-1-intuition.html"><div class="d">下一課 · 階段 1 →</div><div class="t">直覺</div></a></div>
+<div class="foot"><b>模型範圍</b>：本模組的 Black 方程式與 Blech length 計算採文獻常見量級的代表值，<b>不是任何製程的實測資料</b>；材料活化能表已逐項附來源，分歧處兩個都列。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。電流擁擠（current crowding）、應力誘發空洞化（SIV）、先進封裝层級 EM（RDL／凸塊）未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Interactive coursework · no prior semiconductor device physics required</p>
+<h1>Electromigration (EM)<br>reliability physics, from zero</h1>
+<p class="lede">EM happens in the back-end metal wiring, not in the transistor itself — the biggest difference from HCI, TDDB, and NBTI: the stage shifts from silicon to metal lines.
+Even more important, the driving force is different too: not an electric field, but <b>momentum carried by the current itself</b> — think of it as a steady "wind" blowing through the metal atoms.
+This course breaks it into four stages: intuition, the Black equation and material activation energy, the Blech-length "immunity" effect, and statistical extrapolation with mitigation.
+<b>Every page is short and covers exactly one idea — you can always flip back.</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">The 30-second version</h3>
+<p style="margin-bottom:0">Conducting electrons keep colliding with metal atoms, handing over momentum — that's the "electron wind." Once the current density is high enough,
+this wind produces a net drift of atoms along the current direction, carrying them away one by one: the cathode end gradually hollows out into a void (eventually an open circuit),
+while the anode end can pile atoms up into a hillock (potentially shorting to a neighboring line).</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 178" role="img" aria-label="EM causal chain: high current density, electron wind force, net atomic displacement, cathode voiding and anode hillocks">
+<defs><marker id="ar2-en" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="81.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">High current density J</text><text x="81.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">conducting electron flow</text><circle cx="23" cy="68" r="11" fill="var(--muted)"/><text x="23" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="160" y1="98" x2="194" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-en)"/>
+<rect x="200" y="68" width="150" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="275.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Electron wind force</text><text x="275.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--h)">momentum transfer to atoms</text><circle cx="217" cy="68" r="11" fill="var(--h)"/><text x="217" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="354" y1="98" x2="388" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-en)"/>
+<rect x="394" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="469.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Net atomic displacement</text><text x="469.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">diffuses along current direction</text><circle cx="411" cy="68" r="11" fill="var(--muted)"/><text x="411" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="548" y1="98" x2="582" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar2-en)"/>
+<rect x="588" y="22" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="672.0" y="51.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">Cathode voiding → open</text><circle cx="605" cy="22" r="11" fill="var(--h)"/><text x="605" y="26" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="588" y="92" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="672.0" y="121.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">Anode hillock → short</text>
+</g>
+</svg>
+</div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="em-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">Intuition: the electron wind blows atoms away</div>
+  <div class="d">Not a thermal effect — momentum transfer. Watch how current density sets the direction and rate of net atomic drift.</div>
+  <div class="g">You'll walk away knowing: <b>why cathode voids and anode hillocks map to open and short circuits respectively</b></div>
+  <div class="meta">~5 min · 1 interactive</div></div>
+</a>
+<a class="mapcard" href="em-2-model.html">
+  <div class="no">2</div>
+  <div><div class="t">The Black equation & material activation energy</div>
+  <div class="d">The industry-standard lifetime model, plus a table of grain-boundary and interface diffusion activation energies for Al / Al-Cu / Cu (dielectric cap / metal cap) / W.</div>
+  <div class="g">You'll walk away knowing: <b>why switching Cu to a metal cap is the single most effective change you can make</b></div>
+  <div class="meta">~10 min · materials table + interactive calculator</div></div>
+</a>
+<a class="mapcard" href="em-3-blech.html">
+  <div class="no">3</div>
+  <div><div class="t">Blech length: short wires can be "immune"</div>
+  <div class="d">How back-diffusion stress cancels the electron wind, so a short enough wire is theoretically immune to EM failure at a given current density.</div>
+  <div class="g">You'll walk away knowing: <b>the product j·L is the actual criterion — not j or L alone</b></div>
+  <div class="meta">~6 min · 1 interactive</div></div>
+</a>
+<a class="mapcard" href="em-4-spec.html">
+  <div class="no">4</div>
+  <div><div class="t">Statistical extrapolation & mitigation</div>
+  <div class="d">Why it uses lognormal instead of Weibull, just like NBTI; countermeasures at the process, layout, and material levels, including redundancy and the wide-narrow rule.</div>
+  <div class="g">You'll walk away knowing: <b>the "multiplicative degradation vs. extreme-value distribution" ruler applies to almost every mechanism</b></div>
+  <div class="meta">~8 min</div></div>
+</a>
+</div>
+
+<h2>What you need going in</h2>
+<table>
+<thead><tr><th class="nw">What to know</th><th>How well</th></tr></thead>
+<tbody>
+<tr><td class="nw">Current density</td><td>Current per unit cross-sectional area, J = I / A</td></tr>
+<tr><td class="nw">Diffusion and activation energy</td><td>D = D₀·exp(−E<sub>a</sub>/kT) — the higher E<sub>a</sub> is, the slower diffusion is at a given temperature</td></tr>
+<tr><td class="nw">Why this happens in the back end, not the transistor</td><td>EM happens in metal wires / vias, not the gate oxide or channel — a completely different physical location from HCI / TDDB / NBTI</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="next" href="em-1-intuition.html"><div class="d">Next · Stage 1 →</div><div class="t">Intuition</div></a></div>
+<div class="foot"><b>Model scope</b>: this module's Black-equation and Blech-length calculations use representative literature-scale values — <b>not measured data from any specific process</b>; the material activation-energy table cites sources item by item, and lists both values where the literature disagrees. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules. Current crowding, stress-induced voiding (SIV), and advanced-packaging-level EM (RDL / bumps) are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

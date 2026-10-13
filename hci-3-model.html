@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 3：物理模型 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 3：物理模型 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html" aria-current="page"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:43%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 3 / 7 · 物理模型</p>
+<h1>把「電場很強」變成可以算的東西</h1>
+<p class="lede">前兩頁都在說「汲極端電場很強」。這一頁要回答：<b>到底多強？</b>
+只有算得出數字，才能預測壽命、比較製程、決定規格。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<ul>
+<li>不能用「電壓 ÷ 通道長度」—— 電場極不均勻，那樣算會低估好幾倍。</li>
+<li>正確的做法叫 <b>pseudo-2D 模型</b>：解出 E(y) = E<sub>sat</sub>·cosh(y/l) 這個形狀。</li>
+<li>裡面的 <b>l = √(3·t<sub>ox</sub>·x<sub>j</sub>)</b> 是特徵長度 —— <b>它不含 L</b>，這一點常被誤解。</li>
+<li>溫度只從<b>一個</b>地方進來：平均自由程 λ(T)。這就是活化能為負的全部原因。</li>
+</ul></div>
+
+<h2>第一個問題：為什麼不能用平均電場？</h2>
+<p>最直覺的算法是「電壓除以距離」：E = V<sub>D</sub>/L。對一條均勻的電阻絲，這是對的。
+但夾止之後的 MOSFET 通道<b>完全不均勻</b> —— 通道大部分區域的電位緩慢上升，
+所有多出來的電壓幾乎全部落在汲極端那一小段上。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 3 / 7 · Physical Model</p>
+<h1>Turning "the field is strong" into something computable</h1>
+<p class="lede">The last two pages both said "the field near the drain is strong." This page answers: <b>how strong, exactly?</b>
+Only once you can compute a number can you predict lifetime, compare processes, or set a spec.</p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<ul>
+<li>You can't use "voltage ÷ channel length" — the field is extremely non-uniform, and that would underestimate it by several times.</li>
+<li>The correct approach is called a <b>pseudo-2D model</b>: solve for the shape E(y) = E<sub>sat</sub>·cosh(y/l).</li>
+<li>The <b>l = √(3·t<sub>ox</sub>·x<sub>j</sub>)</b> inside it is a characteristic length — <b>it contains no L</b>, a point that's commonly misunderstood.</li>
+<li>Temperature enters through exactly <b>one</b> place: the mean free path λ(T). That's the entire reason the activation energy is negative.</li>
+</ul></div>
+
+<h2>Question one: why can't you use the average field?</h2>
+<p>The most intuitive approach is "voltage divided by distance": E = V<sub>D</sub>/L. For a uniform resistive wire, that's correct.
+But a pinched-off MOSFET channel is <b>completely non-uniform</b> — the potential rises slowly across most of the channel,
+and almost all of the extra voltage drops across that one short stretch near the drain.</p>
+</div>
+
+<div class="card">
+  <div class="legend" id="legC"></div>
+  <div id="cCmp"></div>
+  <p class="note" id="cmpNote" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>第二個問題：那一小段有多長？</h2>
+<p>這是 pseudo-2D 模型的核心。想法是：取通道裡的一個薄片，對它用高斯定律。
+電力線不只沿著通道走，還會<b>往上漏到閘極、往下漏到基板</b>。
+把這件事寫成方程式，會得到一個帶有特徵長度 <b>l</b> 的二階微分方程，解出來就是 cosh 的形狀。</p>
+
+<div class="eq"><span class="lbl">特徵長度</span>
+l = √( ε<sub>Si</sub>/ε<sub>ox</sub> · t<sub>ox</sub> · x<sub>j</sub> ) ≈ √( 3 · t<sub>ox</sub> · x<sub>j</sub> )
+<span class="say">物理意義：電力線「漏」出通道的尺度。氧化層越薄，閘極把電力線抓得越緊、漏得越少 → l 越小；
+接面越淺，可供電力線散開的縱深越少 → l 也越小。<b>l 越小，同樣的電壓被擠進越短的距離，電場就越強。</b></span></div>
+</div>
+
+<div lang="en">
+<h2>Question two: how long is that one short stretch?</h2>
+<p>This is the core of the pseudo-2D model. The idea: take a thin slice of the channel and apply Gauss's law to it.
+Field lines don't just run along the channel — they also <b>leak upward into the gate and downward into the substrate</b>.
+Writing that as an equation gives a second-order differential equation with a characteristic length <b>l</b>, whose solution is the cosh shape.</p>
+
+<div class="eq"><span class="lbl">Characteristic length</span>
+l = √( ε<sub>Si</sub>/ε<sub>ox</sub> · t<sub>ox</sub> · x<sub>j</sub> ) ≈ √( 3 · t<sub>ox</sub> · x<sub>j</sub> )
+<span class="say">Physical meaning: the length scale over which field lines "leak" out of the channel. A thinner oxide means the gate holds field lines tighter, so less leaks → smaller l;
+a shallower junction leaves less depth for field lines to spread into → l also shrinks. <b>The smaller l is, the same voltage gets squeezed into a shorter distance, and the field gets stronger.</b></span></div>
+</div>
+
+<div class="card">
+  <div class="ctrls">
+    <div class="ctrl"><label for="rTox"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+      <div class="row"><input type="range" id="rTox" min="0.18" max="1.78" step="0.005" value="1.301">
+      <span class="val" id="vTox">—</span></div></div>
+    <div class="ctrl"><label for="rXj"><span lang="zh-Hant">接面深度 x<sub>j</sub></span><span lang="en">Junction depth x<sub>j</sub></span></label>
+      <div class="row"><input type="range" id="rXj" min="1.18" max="2.78" step="0.005" value="2.301">
+      <span class="val" id="vXj">—</span></div></div>
+    <div class="ctrl"><label for="rL"><span lang="zh-Hant">通道長度 L（先放著看它影響多小）</span><span lang="en">Channel length L (watch how small its effect is)</span></label>
+      <div class="row"><input type="range" id="rL" min="-1.52" max="0.3" step="0.005" value="0">
+      <span class="val" id="vL">—</span></div></div>
+    <div class="ctrl"><label for="rVD"><span lang="zh-Hant">汲極電壓 V<sub>D</sub></span><span lang="en">Drain voltage V<sub>D</sub></span></label>
+      <div class="row"><input type="range" id="rVD" min="0.5" max="10" step="0.05" value="5">
+      <span class="val" id="vVD">—</span></div></div>
+  </div>
+  <div class="tiles" style="margin-top:14px" id="tiles3"></div>
+  <div class="legend" id="legE" style="margin-top:12px"></div>
+  <div id="cE"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><div class="t">最容易誤解的一點</div>
+<p style="margin:0">拖 <b>L</b> 的滑桿，再拖 <b>t<sub>ox</sub></b> 的滑桿，比較 E<sub>m</sub> 的變化幅度。
+<br><br>l 的式子裡<b>根本沒有 L</b>。單獨縮短通道長度，只能透過 V<sub>dsat</sub> 下降來間接抬升 E<sub>m</sub>，效果有限。
+<b>真正讓每一個縮放世代 HCI 惡化的，是 t<sub>ox</sub> 與 x<sub>j</sub> 跟著一起縮小</b> —— 同樣的壓降被擠進更短的距離。
+「短通道元件 HCI 比較嚴重」是對的，但原因不是「短」，是「薄」和「淺」。</p></div>
+
+<h2>第三個問題：溫度從哪裡進來？</h2>
+<p>整個模型裡，溫度<b>只影響一個量</b>：熱載子的平均自由程 λ。
+溫度越高，晶格振動（聲子）越劇烈，電子越容易被撞散，λ 就越短。</p>
+<div class="eq"><span class="lbl">平均自由程的溫度依賴</span>
+λ(T) = λ<sub>0</sub> · tanh( E<sub>p</sub> / 2kT )
+<span class="say">E<sub>p</sub> ≈ 0.063 eV 是矽的光學聲子能量，λ<sub>0</sub> ≈ 10.4 nm 是絕對零度的極限值。
+高溫時 tanh 的引數變小，λ 跟著變小 —— 電子拿不到那麼多能量。</span></div>
+</div>
+
+<div lang="en">
+<div class="key"><div class="t">The point most people get wrong</div>
+<p style="margin:0">Drag the <b>L</b> slider, then the <b>t<sub>ox</sub></b> slider, and compare how much each moves E<sub>m</sub>.
+<br><br>The equation for l <b>contains no L at all</b>. Shortening the channel length by itself only raises E<sub>m</sub> indirectly, through a drop in V<sub>dsat</sub>, and that effect is limited.
+<b>What actually makes HCI worse with every scaling generation is t<sub>ox</sub> and x<sub>j</sub> shrinking together</b> — the same voltage drop gets squeezed into a shorter distance.
+"Short-channel devices suffer worse HCI" is true, but the reason isn't "short" — it's "thin" and "shallow."</p></div>
+
+<h2>Question three: where does temperature come in?</h2>
+<p>Across the whole model, temperature affects <b>exactly one quantity</b>: the hot carrier's mean free path λ.
+The higher the temperature, the more violently the lattice vibrates (phonons), the more easily electrons get scattered, and the shorter λ becomes.</p>
+<div class="eq"><span class="lbl">Temperature dependence of the mean free path</span>
+λ(T) = λ<sub>0</sub> · tanh( E<sub>p</sub> / 2kT )
+<span class="say">E<sub>p</sub> ≈ 0.063 eV is silicon's optical phonon energy, and λ<sub>0</sub> ≈ 10.4 nm is the limiting value at absolute zero.
+At high temperature, tanh's argument shrinks, and λ shrinks with it — electrons simply don't get to keep as much energy.</span></div>
+</div>
+
+<div class="card">
+  <div class="ctrl" style="max-width:400px">
+    <label for="rT3"><span lang="zh-Hant">溫度</span><span lang="en">Temperature</span></label>
+    <div class="row"><input type="range" id="rT3" min="-40" max="200" step="1" value="25">
+    <span class="val" id="vT3">—</span></div>
+  </div>
+  <div class="legend" id="legT3" style="margin-top:10px"></div>
+  <div id="cT3"></div>
+  <p class="note" id="t3note" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>把三塊拼起來</h2>
+<table>
+<thead><tr><th class="nw">你調的</th><th class="nw">直接影響</th><th>最終效果</th></tr></thead>
+<tbody>
+<tr><td class="nw">t<sub>ox</sub>、x<sub>j</sub></td><td class="nw">特徵長度 l</td>
+  <td>l 小 → 同樣壓降擠進更短距離 → <b>E<sub>m</sub> 大幅上升</b>。這是縮放世代惡化的主因</td></tr>
+<tr><td class="nw">V<sub>D</sub>、V<sub>G</sub></td><td class="nw">V<sub>D</sub> − V<sub>dsat</sub></td>
+  <td>夾止區的壓降。V<sub>G</sub> 上升會抬高 V<sub>dsat</sub>、反而讓 E<sub>m</sub> 下降 —— 這就是 I<sub>sub</sub> 鐘形曲線的由來</td></tr>
+<tr><td class="nw">L</td><td class="nw">V<sub>dsat</sub>（間接）</td>
+  <td>影響比一般人以為的小得多</td></tr>
+<tr><td class="nw">溫度</td><td class="nw">λ(T)</td>
+  <td>高溫 → λ 短 → 幸運電子變少 → <b>HCI 變輕</b>。活化能為負</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼 l 的式子裡有 t<sub>ox</sub> 和 x<sub>j</sub>，卻沒有 L？</summary><div class="a">因為 l 描述的是<b>電力線往垂直方向漏出去的尺度</b>，這件事只跟「上面的閘極有多近（t<sub>ox</sub>）」和「下面有多少縱深可以散開（x<sub>j</sub>）」有關，跟通道有多長無關。<br><br>可以這樣想：l 決定了汲極的電位擾動能往源極方向「傳」多遠。這是一個局部的幾何性質。</div></details><details><summary>如果我把 t<sub>ox</sub> 減半，E<sub>m</sub> 大概變成幾倍？</summary><div class="a">l ∝ √t<sub>ox</sub>，所以 t<sub>ox</sub> 減半 → l 變成 1/√2 ≈ 0.71 倍 → E<sub>m</sub> ≈ (V<sub>D</sub>−V<sub>dsat</sub>)/l 變成約 <b>1.41 倍</b>。<br><br>聽起來不多？但損傷率是 e<sup>−B/E<sub>m</sub></sup>。以典型的 B/E<sub>m</sub> ≈ 12 來算，E<sub>m</sub> 變 1.41 倍會讓指數從 −12 變成 −8.5，損傷率跳約 <b>e<sup>3.5</sup> ≈ 33 倍</b>。這就是為什麼薄氧化層的 HCI 這麼難搞。</div></details><details><summary>為什麼 V<sub>G</sub> 拉高反而可能讓 E<sub>m</sub> 下降？</summary><div class="a">因為 V<sub>dsat</sub> 隨 V<sub>G</sub> 上升。夾止區的壓降是 V<sub>D</sub> − V<sub>dsat</sub>，V<sub>dsat</sub> 變大就代表落在高場區的電壓變少 → E<sub>m</sub> 下降。<br><br>但另一方面 V<sub>G</sub> 上升會讓 I<sub>D</sub> 增加。<b>兩個效應打架，就生出了 I<sub>sub</sub> 的鐘形曲線</b>，峰值大約落在 V<sub>G</sub> ≈ V<sub>D</sub>/2。階段 5 可以親眼看到這條曲線自己長出來。</div></details><details><summary>λ(T) 用 tanh 而不是簡單的指數，有什麼道理？</summary><div class="a">tanh(E<sub>p</sub>/2kT) 來自聲子的佔據數（Bose–Einstein 分布）。低溫時聲子很少，λ 趨近極限值 λ<sub>0</sub>；高溫時聲子數 ∝ T，散射率 ∝ T，λ ∝ 1/T。tanh 剛好平滑地連接這兩個極限。<br><br>這叫 Crowell–Sze 修正，是處理熱載子輸運的標準做法。</div></details></div>
+<div class="pager"><a class="prev" href="hci-2-mechanism.html"><div class="d">← 上一課 · 階段 2</div><div class="t">物理機制</div></a><a class="next" href="hci-4-formula.html"><div class="d">下一課 · 階段 4 →</div><div class="t">公式階梯</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<h2>Putting the three pieces together</h2>
+<table>
+<thead><tr><th class="nw">What you tune</th><th class="nw">Direct effect</th><th>End result</th></tr></thead>
+<tbody>
+<tr><td class="nw">t<sub>ox</sub>, x<sub>j</sub></td><td class="nw">Characteristic length l</td>
+  <td>Smaller l → the same voltage drop squeezed into a shorter distance → <b>E<sub>m</sub> rises sharply</b>. This is the main reason HCI worsens each scaling generation</td></tr>
+<tr><td class="nw">V<sub>D</sub>, V<sub>G</sub></td><td class="nw">V<sub>D</sub> − V<sub>dsat</sub></td>
+  <td>The voltage drop across the pinch-off region. Raising V<sub>G</sub> also raises V<sub>dsat</sub>, which actually lowers E<sub>m</sub> — this is where I<sub>sub</sub>'s bell curve comes from</td></tr>
+<tr><td class="nw">L</td><td class="nw">V<sub>dsat</sub> (indirectly)</td>
+  <td>Much smaller an effect than most people assume</td></tr>
+<tr><td class="nw">Temperature</td><td class="nw">λ(T)</td>
+  <td>Higher temperature → shorter λ → fewer lucky electrons → <b>HCI gets lighter</b>. Negative activation energy</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why does the equation for l contain t<sub>ox</sub> and x<sub>j</sub>, but no L?</summary><div class="a">Because l describes <b>the length scale over which field lines leak in the vertical direction</b>, which only depends on "how close the gate is above (t<sub>ox</sub>)" and "how much depth is available to spread into below (x<sub>j</sub>)" — nothing to do with how long the channel is.<br><br>Think of it this way: l determines how far the drain's potential disturbance can "reach" back toward the source. It's a local geometric property.</div></details><details><summary>If I halve t<sub>ox</sub>, roughly how many times bigger does E<sub>m</sub> get?</summary><div class="a">l ∝ √t<sub>ox</sub>, so halving t<sub>ox</sub> → l becomes 1/√2 ≈ 0.71× → E<sub>m</sub> ≈ (V<sub>D</sub>−V<sub>dsat</sub>)/l becomes roughly <b>1.41×</b>.<br><br>Doesn't sound like much? But the damage rate goes as e<sup>−B/E<sub>m</sub></sup>. With a typical B/E<sub>m</sub> ≈ 12, a 1.41× change in E<sub>m</sub> shifts the exponent from −12 to −8.5, jumping the damage rate by roughly <b>e<sup>3.5</sup> ≈ 33×</b>. That's why HCI is so hard to manage in thin-oxide devices.</div></details><details><summary>Why can raising V<sub>G</sub> actually lower E<sub>m</sub>?</summary><div class="a">Because V<sub>dsat</sub> rises with V<sub>G</sub>. The pinch-off region's voltage drop is V<sub>D</sub> − V<sub>dsat</sub>, so a bigger V<sub>dsat</sub> means less voltage lands in the high-field region → E<sub>m</sub> falls.<br><br>But on the other hand, raising V<sub>G</sub> increases I<sub>D</sub>. <b>Those two effects fighting each other is exactly what produces I<sub>sub</sub>'s bell-shaped curve</b>, peaking roughly at V<sub>G</sub> ≈ V<sub>D</sub>/2. Stage 5 lets you watch that curve grow out of the model yourself.</div></details><details><summary>Why tanh instead of a simple exponential for λ(T)?</summary><div class="a">tanh(E<sub>p</sub>/2kT) comes from the phonon occupation number (a Bose–Einstein distribution). At low temperature, phonons are scarce and λ approaches its limiting value λ<sub>0</sub>; at high temperature, the phonon count ∝ T, the scattering rate ∝ T, and λ ∝ 1/T. tanh smoothly connects these two limits.<br><br>This is called the Crowell–Sze correction, the standard treatment for hot-carrier transport.</div></details></div>
+<div class="pager"><a class="prev" href="hci-2-mechanism.html"><div class="d">← Previous · Stage 2</div><div class="t">Mechanism</div></a><a class="next" href="hci-4-formula.html"><div class="d">Next · Stage 4 →</div><div class="t">Formula Ladder</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+var S={tox:20,xj:200,L:1.0,VD:5.0,VG:2.5,Tc:25};
+function mk(){var q=Object.assign({},P,{tox:S.tox,xj:S.xj,L:S.L,VD:S.VD,VG:S.VG,Tc:S.Tc,Vt0:0.7,W:10});return model(q);}
+
+/* ---- A. 均勻場 vs 實際場 ---- */
+function drawCmp(){
+  var M=mk(), W=880,H=250,Mg={t:16,r:130,b:44,l:86},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var Lum=M.L*1e4, avg=S.VD/(M.L);
+  var Emax=Math.max(M.Em*1.08,avg*3);
+  var X=function(u){return Mg.l+iw*u/Lum;}, Y=function(v){return Mg.t+ih*(1-Math.min(v,Emax)/Emax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,Emax,4).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),fmtEng(v,'V/cm',1),{ta:'end',db:'middle'}));});
+  ticks(0,Lum,6).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+15,v.toFixed(2),{ta:'middle'}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('沿通道位置（µm，0 = 源極）','Position along channel (µm, 0 = source)'),{ta:'middle',fs:11.5,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,L('橫向電場','Lateral field'),{ta:'middle',fs:11.5,fill:css('--ink2'),db:'middle',rot:-90}));
+  svg.appendChild(el('line',{x1:X(0),y1:Y(avg),x2:X(Lum),y2:Y(avg),stroke:css('--muted'),'stroke-width':2,'stroke-dasharray':'6 5'}));
+  svg.appendChild(txt(Mg.l+iw+6,Y(avg),L('平均 = V~D~/L','average = V~D~/L'),{db:'middle',fs:11,fill:css('--muted')}));
+  var d='',N=240;
+  for(var i=0;i<=N;i++){var uUm=Lum*i/N, ycm=uUm*1e-4, E;
+    if(!M.pinch) E=M.Esat*Math.min(1,ycm/Math.max(M.L,1e-9));
+    else if(ycm<M.L-M.dL) E=M.Esat*(0.1+0.9*ycm/Math.max(M.L-M.dL,1e-12));
+    else E=M.Esat*Math.cosh(Math.min((ycm-(M.L-M.dL))/M.l,20));
+    d+=(d?'L':'M')+X(uUm).toFixed(2)+' '+Y(E).toFixed(2);}
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--h'),'stroke-width':2.4}));
+  svg.appendChild(el('circle',{cx:X(Lum),cy:Y(Math.min(M.Em,Emax)),r:5.5,fill:css('--h'),stroke:css('--surface'),'stroke-width':2}));
+  svg.appendChild(txt(Mg.l+iw+6,Y(Math.min(M.Em,Emax)),'E~m~',{db:'middle',fs:11.5,fw:700,fill:css('--h')}));
+  $('cCmp').innerHTML='';$('cCmp').appendChild(svg);
+  $('legC').innerHTML='<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('實際電場 E(y)（pseudo-2D）','actual field E(y) (pseudo-2D)')+'</span>'+
+    '<span style="color:'+css('--muted')+'"><i class="sw" style="background:'+css('--muted')+'"></i>'+L('天真的平均值 V<sub>D</sub>/L','naive average V<sub>D</sub>/L')+'</span>';
+  var r=M.Em/avg;
+  $('cmpNote').innerHTML = L(
+    '以目前的參數，真實的峰值電場是「電壓除以長度」的 <b>'+r.toFixed(1)+' 倍</b>。'+
+      '而損傷率對電場是<b>指數敏感</b>的 —— 用平均值去估，會把壽命高估好幾個數量級。'+
+      '<br>注意曲線的形狀：通道前 '+((1-M.dLoverL)*100).toFixed(0)+'% 幾乎是平的，'+
+      '最後 '+(M.dLoverL*100).toFixed(0)+'% 才陡然衝上去。',
+    'With the current parameters, the real peak field is <b>'+r.toFixed(1)+'×</b> the naive "voltage over length" estimate. '+
+      'And the damage rate is <b>exponentially sensitive</b> to the field — estimating with the average would overstate lifetime by orders of magnitude.'+
+      '<br>Notice the curve\'s shape: the first '+((1-M.dLoverL)*100).toFixed(0)+'% of the channel is nearly flat, and only the final '+
+      (M.dLoverL*100).toFixed(0)+'% shoots up sharply.'
+  );
+}
+
+/* ---- B. l / E(y) ---- */
+function drawE(){
+  var M=mk();
+  $('tiles3').innerHTML=[
+    [L('特徵長度 l = √(3 t<sub>ox</sub>x<sub>j</sub>)','Characteristic length l = √(3 t<sub>ox</sub>x<sub>j</sub>)'),fmtEng(M.l*1e-2,'m',2),'',1],
+    ['V<sub>dsat</sub>',M.Vdsat.toFixed(2)+'<span class="u"> V</span>',''],
+    [L('夾止區壓降 V<sub>D</sub>−V<sub>dsat</sub>','Pinch-off voltage drop V<sub>D</sub>−V<sub>dsat</sub>'),M.dV.toFixed(2)+'<span class="u"> V</span>',''],
+    [L('高場區長度 ΔL','High-field length ΔL'),M.pinch?fmtEng(M.dL*1e-2,'m',1):'—',
+      M.pinch?'<span class="badge '+(M.dLoverL>0.5?'warn':'ok')+'">'+L('佔通道 ','')+(M.dLoverL*100).toFixed(0)+L('%','% of channel')+'</span>'
+             :'<span class="badge bad">'+L('無夾止','no pinch-off')+'</span>'],
+    [L('峰值電場 E<sub>m</sub>','Peak field E<sub>m</sub>'),fmtEng(M.Em,'V/cm',2),'',1]
+  ].map(function(t){return '<div class="tile'+(t[3]?' hl':'')+'"><div class="k">'+t[0]+'</div><div class="v">'+t[1]+'</div>'+
+      (t[2]?'<div style="margin-top:4px">'+t[2]+'</div>':'')+'</div>';}).join('');
+
+  var W=880,H=250,Mg={t:16,r:120,b:44,l:86},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var Lum=M.L*1e4, Emax=Math.max(M.Em*1.08,1e4);
+  var X=function(u){return Mg.l+iw*u/Lum;}, Y=function(v){return Mg.t+ih*(1-Math.min(v,Emax)/Emax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,Emax,4).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),fmtEng(v,'V/cm',1),{ta:'end',db:'middle'}));});
+  ticks(0,Lum,6).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+15,v.toFixed(2),{ta:'middle'}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('沿通道位置（µm）','Position along channel (µm)'),{ta:'middle',fs:11.5,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,'E(y)',{ta:'middle',fs:11.5,fill:css('--ink2'),db:'middle',rot:-90}));
+  if(M.pinch&&M.dL>0){
+    var yp=Math.max(Lum-M.dL*1e4,0);
+    svg.appendChild(el('rect',{x:X(yp),y:Mg.t,width:Math.max(X(Lum)-X(yp),1),height:ih,fill:css('--h'),opacity:.08}));
+    svg.appendChild(txt((X(yp)+X(Lum))/2,Mg.t+13,L('高場區 ΔL','High-field ΔL'),{ta:'middle',fs:10.5,fw:650,fill:css('--h')}));
+  }
+  var d='',N=240;
+  for(var i=0;i<=N;i++){var uUm=Lum*i/N, ycm=uUm*1e-4, E;
+    if(!M.pinch) E=M.Esat*Math.min(1,ycm/Math.max(M.L,1e-9));
+    else if(ycm<M.L-M.dL) E=M.Esat*(0.1+0.9*ycm/Math.max(M.L-M.dL,1e-12));
+    else E=M.Esat*Math.cosh(Math.min((ycm-(M.L-M.dL))/M.l,20));
+    d+=(d?'L':'M')+X(uUm).toFixed(2)+' '+Y(E).toFixed(2);}
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--h'),'stroke-width':2.4}));
+  $('cE').innerHTML='';$('cE').appendChild(svg);
+  $('legE').innerHTML='<span><i class="sw" style="background:'+css('--h')+'"></i>E(y) = E<sub>sat</sub>·cosh(y/l)</span>'+
+    '<span style="color:var(--ink)">E<sub>m</sub> = √( E<sub>sat</sub>² + ((V<sub>D</sub>−V<sub>dsat</sub>)/l)² ) = <b>'+
+    fmtEng(M.Em,'V/cm',2)+'</b></span>';
+}
+
+
+/* ---- C. λ(T) ---- */
+function drawT(){
+  var W=880,H=240,Mg={t:16,r:120,b:44,l:86},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var lo=-40,hi=200,N=120,dat=[];
+  for(var i=0;i<=N;i++){var tc=lo+(hi-lo)*i/N, T=tc+273.15;
+    dat.push({tc:tc,lam:LAM0*Math.tanh(EP/(2*K*T))*1e7});}
+  var ymax=11, X=function(v){return Mg.l+iw*(v-lo)/(hi-lo);}, Y=function(v){return Mg.t+ih*(1-v/ymax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,ymax,5).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),v.toFixed(0)+' nm',{ta:'end',db:'middle'}));});
+  ticks(lo,hi,6).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+15,v.toFixed(0)+'°C',{ta:'middle'}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('溫度','Temperature'),{ta:'middle',fs:11.5,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,L('平均自由程 λ','Mean free path λ'),{ta:'middle',fs:11.5,fill:css('--ink2'),db:'middle',rot:-90}));
+  svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(LAM0*1e7),y2:Y(LAM0*1e7),stroke:css('--muted'),'stroke-width':1,'stroke-dasharray':'3 3'}));
+  svg.appendChild(txt(Mg.l+iw+6,Y(LAM0*1e7),'λ~0~ = 10.4 nm',{db:'middle',fs:10.5}));
+  var d='';dat.forEach(function(q){d+=(d?'L':'M')+X(q.tc).toFixed(2)+' '+Y(q.lam).toFixed(2);});
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--seq4'),'stroke-width':2.4}));
+  var T=S.Tc+273.15, lam=LAM0*Math.tanh(EP/(2*K*T));
+  svg.appendChild(el('line',{x1:X(S.Tc),x2:X(S.Tc),y1:Mg.t,y2:Mg.t+ih,stroke:css('--e'),'stroke-width':1.4,'stroke-dasharray':'4 4'}));
+  svg.appendChild(el('circle',{cx:X(S.Tc),cy:Y(lam*1e7),r:6,fill:css('--e'),stroke:css('--surface'),'stroke-width':2}));
+  $('cT3').innerHTML='';$('cT3').appendChild(svg);
+  $('legT3').innerHTML='<span><i class="sw" style="background:'+css('--seq4')+'"></i>λ(T)</span>'+
+    '<span style="color:var(--ink)">'+L('目前 λ = ','current λ = ')+'<b>'+(lam*1e7).toFixed(2)+' nm</b></span>';
+  var M=mk(), qlE=M.Em*lam;
+  var l25=LAM0*Math.tanh(EP/(2*K*298.15)), l125=LAM0*Math.tanh(EP/(2*K*398.15));
+  $('t3note').innerHTML = L(
+    '把目前的 E<sub>m</sub> = '+fmtEng(M.Em,'V/cm',2)+' 代進去，'+
+      '一次自由飛行拿到的能量是 <b>qλE<sub>m</sub> = '+qlE.toFixed(3)+' eV</b>，'+
+      '離撞擊游離門檻 1.3 eV 還差 <b>'+(1.3/qlE).toFixed(1)+' 個自由程</b>的運氣。'+
+      '<br><br>從 25 °C 升到 125 °C，λ 從 '+(l25*1e7).toFixed(2)+' nm 降到 '+(l125*1e7).toFixed(2)+' nm（約 −'+
+      ((1-l125/l25)*100).toFixed(0)+'%）。看起來不多，但它坐在 e<sup>−φ/qλE</sup> 的指數裡 —— '+
+      '<b>這個 '+((1-l125/l25)*100).toFixed(0)+'% 就足以讓損傷率掉數倍</b>。階段 4 會把這件事算成活化能。',
+    'Plugging in the current E<sub>m</sub> = '+fmtEng(M.Em,'V/cm',2)+', '+
+      'the energy from one free flight is <b>qλE<sub>m</sub> = '+qlE.toFixed(3)+' eV</b>, '+
+      'still <b>'+(1.3/qlE).toFixed(1)+' free paths</b> of luck short of the 1.3 eV impact-ionization threshold.'+
+      '<br><br>Going from 25 °C to 125 °C, λ drops from '+(l25*1e7).toFixed(2)+' nm to '+(l125*1e7).toFixed(2)+' nm (about −'+
+      ((1-l125/l25)*100).toFixed(0)+'%). Doesn\'t sound like much, but it sits inside the exponent of e<sup>−φ/qλE</sup> — '+
+      '<b>that '+((1-l125/l25)*100).toFixed(0)+'% alone is enough to drop the damage rate by several times</b>. Stage 4 turns this into an activation energy.'
+  );
+}
+
+function all(){drawCmp();drawE();drawT();}
+function bind(id,vid,key,logv,fmt){
+  $(id).addEventListener('input',function(e){
+    var v=parseFloat(e.target.value); if(logv)v=Math.pow(10,v);
+    S[key]=v; $(vid).textContent=fmt(v); all();});
+  $(vid).textContent=fmt(S[key]);
+}
+bind('rTox','vTox','tox',true,function(v){return v.toFixed(1)+' nm';});
+bind('rXj','vXj','xj',true,function(v){return v.toFixed(0)+' nm';});
+bind('rL','vL','L',true,function(v){return v<0.1?(v*1000).toFixed(0)+' nm':v.toFixed(2)+' µm';});
+bind('rVD','vVD','VD',false,function(v){return v.toFixed(2)+' V';});
+bind('rT3','vT3','Tc',false,function(v){return v.toFixed(0)+' °C';});
+window.__rebuild=all; all();
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

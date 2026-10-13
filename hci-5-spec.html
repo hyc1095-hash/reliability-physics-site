@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 5：可靠度規格 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 5：可靠度規格 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html" aria-current="page"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:71%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 5 / 7 · HCI 規格</p>
+<h1>HCI 的可靠度規格</h1>
+<p class="lede">前面四頁講物理。這一頁只講一件事：<b>產業如何把 HCI 的物理變成可以簽名的規格</b> ——
+判定準則怎麼定、應力條件怎麼選、溫度等級代表什麼，
+以及那個把整份教材串起來的陷阱：<b>產品級的高溫測試，抓不到 HCI。</b></p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<ul>
+<li>HCI 有<b>專屬</b>的量測標準：<b>JESD28 / JESD28-1</b>，做的是晶圓層級的 DC 應力，不是封裝後測試。</li>
+<li>監測四個參數：V<sub>TH</sub>、G<sub>M</sub>、I<sub>DLIN</sub>、I<sub>DSAT</sub>。
+壽命定義為<b>參數變化 10%</b>，V<sub>TH</sub> 則是<b>變化 50 mV</b>。</li>
+<li>應力條件的傳統做法：掃 I<sub>sub</sub>–V<sub>G</sub> 找峰值，在那裡施加 DC 應力，多電壓外推。</li>
+<li>AEC-Q100 的溫度等級界定操作範圍，但 <b>HCI 的 worst corner 一律在低溫端（多數車規是 −40 °C）</b>。</li>
+<li>產品級 HTOL 在 <b>125 °C</b> 跑 1000 小時 —— 對負活化能的 HCI 而言那是<b>減速</b>，不是加速。</li>
+</ul></div>
+
+<h2>HCI 在標準體系裡的位置</h2>
+<p>可靠度標準有很多份，但跟 HCI 直接有關的只有下面這條線。其他（封裝完整性、ESD、溫度循環等）與 HCI 無關，這裡不列。</p>
+<table>
+<thead><tr><th class="nw">層級</th><th class="nw">文件</th><th>對 HCI 的角色</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI 專屬</b></td><td class="nw"><b>JESD28<br>JESD28-1</b></td>
+  <td><b>唯一直接規範 HCI 的標準。</b>N 通道 MOSFET 在 DC 應力下熱載子誘發退化的<b>量測程序</b>與<b>資料分析</b>方法。
+  做在晶圓層級的測試結構上，不是成品。</td></tr>
+<tr><td class="nw">失效模型</td><td class="nw">JEP122</td>
+  <td>Failure Mechanisms and Models for Semiconductor Devices —— 收錄含熱載子注入在內的失效模型與參數指引。
+  <b>階段 4 那些公式的產業版本。</b></td></tr>
+<tr><td class="nw">加速方法</td><td class="nw">JESD91</td>
+  <td>Methods for Developing Acceleration Models —— 怎麼從應力點合法地外推到使用條件。
+  HCI 的外推依據就是這一類方法。</td></tr>
+<tr><td class="nw">製程級認證</td><td class="nw">JP-001</td>
+  <td>Foundry Process Qualification Guidelines —— <b>foundry 端交付 HCI 資料的主要依據。</b></td></tr>
+<tr><td class="nw">產品級認證</td><td class="nw">JESD47</td>
+  <td>定義 HTOL 等封裝後的驗收測試。<b>HCI 不是在這裡被抓到的</b> —— 原因見下面「溫度陷阱」。</td></tr>
+<tr><td class="nw">車用加嚴</td><td class="nw">AEC-Q100</td>
+  <td>「晶片製程可靠度」類別涵蓋 HCI；另以<b>溫度等級</b>界定元件的操作溫度範圍，
+  這直接決定 HCI 應力測試該涵蓋哪個溫度角落。</td></tr>
+</tbody>
+</table>
+<div class="key"><div class="t">一句話</div>
+<p style="margin:0"><b>HCI 是「製程級」的問題，不是「產品級」的問題。</b>
+它在晶圓上用專用結構量、用模型外推、交給設計端使用。
+等到封裝後的 HTOL 才想抓它，時機太晚、機制上也抓不到。</p></div>
+
+<h2>判定準則：什麼叫「壞了」</h2>
+<p>HCI 不會讓元件突然不動，它是連續的參數漂移。所以「失效」必須人為定義一條線。</p>
+
+<div class="spec"><div class="t">標準的監測參數與壽命定義</div>
+<p style="margin:6px 0 0">監測四個參數：<b>臨界電壓 V<sub>TH</sub>、轉導 G<sub>M</sub>、線性區汲極電流 I<sub>DLIN</sub>、飽和區汲極電流 I<sub>DSAT</sub></b>。
+<br>壽命定義為<b>參數變化 10%</b>；若是 V<sub>TH</sub>，則定義為<b>相對未應力值變化 50 mV</b>。</p></div>
+
+<h3>為什麼是這四個參數</h3>
+<table>
+<thead><tr><th class="nw">參數</th><th class="nw">對 HCI 的敏感度</th><th>物理原因 / 對應的電路功能</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>I<sub>DLIN</sub></b></td><td class="nw"><span class="badge bad">最敏感</span></td>
+  <td>低 V<sub>D</sub> 量測時整條通道均勻反轉，<b>汲極端的損傷區直接串在電流路徑上</b>，
+  等效於一段額外電阻加上局部 V<sub>t</sub> shift。<br>
+  對應功能：<b>R<sub>on</sub></b> —— 類比開關、取樣開關、LDO pass device、交換電容電路。</td></tr>
+<tr><td class="nw"><b>G<sub>M</sub></b></td><td class="nw"><span class="badge warn">敏感</span></td>
+  <td>界面態會散射通道載子、降低有效遷移率。<br>
+  對應功能：放大器增益、GBW、slew rate。</td></tr>
+<tr><td class="nw"><b>V<sub>TH</sub></b></td><td class="nw"><span class="badge warn">中等</span></td>
+  <td>陷阱電荷造成的平移。用絕對值（50 mV）而非百分比，因為 V<sub>t</sub> 本身的絕對值才是電路在乎的。<br>
+  對應功能：偏壓點、<b>matched pair 的 offset</b>。</td></tr>
+<tr><td class="nw"><b>I<sub>DSAT</sub></b></td><td class="nw"><span class="badge ok">不敏感</span></td>
+  <td>V<sub>G</sub>=V<sub>D</sub>=高壓時電流由<b>源極端</b>的位障與速度飽和決定；
+  汲極端本來就在夾止區、載子濃度低，損傷區的貢獻小。<br>
+  對應功能：驅動能力、延遲、電流源。</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">最常被誤解的一點</div>
+<p style="margin:0"><b>ΔI<sub>DLIN</sub> ≫ ΔI<sub>DSAT</sub>（文獻常見比值 3–10 倍）是 HCI 局部損傷的必然結果，不是元件異常。</b>
+<br><br>所以「I<sub>DLIN</sub> 先撞線、I<sub>DSAT</sub> 還很寬鬆」是正常現象。
+真正該問的不是「為什麼 I<sub>DLIN</sub> 這麼差」，而是<b>「這顆元件在應用裡工作在哪個區？」</b>——
+線性區操作（開關、pass device）就該卡 I<sub>DLIN</sub>；飽和區操作（放大器、電流源）的功能參數是 I<sub>DSAT</sub> 與 G<sub>M</sub>，
+I<sub>DLIN</sub> 不是它的功能限制。
+<br><br>進階技巧：把 source 與 drain 對調再量一次（<b>reverse mode</b>），讓損傷端變成源極，敏感度會再放大 ——
+這是定位損傷位置、確認「損傷確實在汲極端」的標準手法。</p></div>
+
+<h2>應力條件怎麼定</h2>
+<p>HCI 應力測試的流程，本質上就是階段 4 那條 Age function 的實驗版：</p>
+<table>
+<thead><tr><th class="nw">步驟</th><th>做什麼</th><th class="nw">為什麼</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>1</b></td><td>在目標 V<sub>D</sub> 下掃 V<sub>G</sub>，量 I<sub>sub</sub>–V<sub>G</sub> 曲線，<b>找出峰值位置</b></td>
+  <td class="nw">I<sub>sub</sub> 是唯一能從外部即時量到的高場強度指標</td></tr>
+<tr><td class="nw"><b>2</b></td><td>在 peak I<sub>sub</sub> 的 V<sub>G</sub> 下施加 <b>DC 應力</b>，週期性中斷量四個參數（MSM：measure–stress–measure）</td>
+  <td class="nw">DC 條件可重複、可比較；HCI 無回復，中斷量測不會失真</td></tr>
+<tr><td class="nw"><b>3</b></td><td>用<b>多個 V<sub>D</sub></b> 重複，得到多組壽命 τ</td>
+  <td class="nw">建立電壓加速關係，才有外推的依據</td></tr>
+<tr><td class="nw"><b>4</b></td><td>把 ln(τ·I<sub>D</sub>/W) 對 ln(I<sub>sub</sub>/I<sub>D</sub>) 作圖，<b>斜率就是 −m</b></td>
+  <td class="nw">m 應從自己的資料萃取，不要直接套 3</td></tr>
+<tr><td class="nw"><b>5</b></td><td>用 Age function 外推到使用條件的 V<sub>D</sub> 與溫度</td>
+  <td class="nw">這一步的不確定性最大 —— 見下方但書</td></tr>
+</tbody>
+</table>
+
+<h3>三個容易被問倒的設計選擇</h3>
+<table>
+<thead><tr><th class="nw">問題</th><th>答案</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>為什麼用 DC 應力，<br>而不是模擬真實的 AC 波形？</b></td>
+  <td>因為 <b>HCI 是準靜態的</b>：載子加熱在次皮秒尺度完成，而且<b>沒有回復效應</b>。
+  所以任意 AC 波形造成的損傷，等於沿波形對 DC 損傷率作積分。
+  <br>DC 應力提供的是<b>模型參數</b>；AC 的部分交給設計端的 reliability simulator 沿自己的波形積分。
+  <b>用 DC 建模、用模型算 AC</b> —— 這樣一組資料可以服務所有客戶電路。</td></tr>
+<tr><td class="nw"><b>為什麼在晶圓層級做，<br>不等封裝後的 HTOL？</b></td>
+  <td>三個理由。<b>機制上抓不到</b>（HTOL 在 125 °C，對負活化能的 HCI 是減速）；
+  <b>時機太晚</b>（HTOL 是產品級測試，發現時製程已定版、客戶已投片）；
+  <b>交付物不對</b>（客戶要的是能放進 reliability simulator 的模型，不是一句「我們過了」）。</td></tr>
+<tr><td class="nw"><b>為什麼在 peak I<sub>sub</sub>？<br>那裡是損傷最大的地方嗎？</b></td>
+  <td><b>不完全是。</b>peak I<sub>sub</sub> 是<b>訊號最好量、加速最穩定</b>的條件，是傳統做法。
+  但損傷率 ∝ I<sub>sub</sub><sup>m</sup>/I<sub>D</sub><sup>m−1</sup>，它的峰值會落在<b>比 peak I<sub>sub</sub> 更低的 V<sub>G</sub></b>。
+  <br>兩者不同是正常的。實務建議：兩個條件都掃過一次，別預設它們重合。</td></tr>
+</tbody>
+</table>
+
+<h2 id="trap">溫度：HCI 專屬的陷阱</h2>
+<p>這是整份教材真正想帶你到的地方。把階段 4 的負活化能結論，放進規格的脈絡：</p>
+
+<table>
+<thead><tr><th class="nw">磨耗機制</th><th class="nw">活化能</th><th class="nw">125 °C 高溫測試</th><th>該怎麼測</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI</b></td><td class="nw"><span class="badge bad">負</span><br>典型 −0.1 ~ −0.3 eV</td>
+  <td class="nw"><b>反而變輕</b><br>抓不到</td>
+  <td>晶圓層級 DC 應力（JESD28），<b>worst case 在低溫端</b>，再用 Age function 外推</td></tr>
+<tr><td class="nw">NBTI / PBTI</td><td class="nw"><span class="badge ok">正</span></td><td class="nw">加速</td>
+  <td>晶圓層級 + HTOL 都看得到。<b>有回復效應</b>，量測延遲時間要控制</td></tr>
+<tr><td class="nw">TDDB</td><td class="nw"><span class="badge ok">正</span></td><td class="nw">加速</td>
+  <td>晶圓層級，Weibull 統計 + 面積外推</td></tr>
+<tr><td class="nw">電遷移</td><td class="nw"><span class="badge ok">正</span></td><td class="nw">加速</td>
+  <td>金屬線 / via 專用結構，Black's equation</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">陷阱與對策</div>
+<p style="margin:0"><b>陷阱：</b>「我們過了 1000 小時 125 °C 的 HTOL，所以可靠度沒問題。」
+—— 這句話對 NBTI、TDDB、電遷移大致成立，<b>對 HCI 完全不成立</b>。
+在 125 °C，HCI 的損傷率比室溫還低；元件如果會因 HCI 出事，HTOL 反而是最不容易抓到的條件。
+<br><br><b>對策：</b>HCI 必須在晶圓層級單獨做，而且應力溫度要涵蓋規格的<b>低溫端</b>。
+對 Grade 0 / 1 的車規元件，那是 <b>−40 °C</b>，不是 150 °C。
+很多 qual 計畫只在高溫做，就是這樣漏掉 HCI 的 worst corner。</p></div>
+</div>
+
+<div lang="en">
+<h2>Where HCI sits in the standards landscape</h2>
+<p>There are many reliability standards, but only the ones below relate directly to HCI. Others (package integrity, ESD, temperature cycling, etc.) aren't relevant to HCI and aren't listed here.</p>
+<table>
+<thead><tr><th class="nw">Level</th><th class="nw">Document</th><th>Role for HCI</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI-specific</b></td><td class="nw"><b>JESD28<br>JESD28-1</b></td>
+  <td><b>The only standard that directly governs HCI.</b> The <b>measurement procedure</b> and <b>data-analysis</b> method for hot-carrier-induced degradation in N-channel MOSFETs under DC stress.
+  Performed on wafer-level test structures, not finished product.</td></tr>
+<tr><td class="nw">Failure models</td><td class="nw">JEP122</td>
+  <td>Failure Mechanisms and Models for Semiconductor Devices — catalogs failure models and parameter guidance, hot carrier injection included.
+  <b>The industry version of Stage 4's equations.</b></td></tr>
+<tr><td class="nw">Acceleration methods</td><td class="nw">JESD91</td>
+  <td>Methods for Developing Acceleration Models — how to legitimately extrapolate from stress conditions to use conditions.
+  HCI's extrapolation is grounded in this class of methods.</td></tr>
+<tr><td class="nw">Process-level qualification</td><td class="nw">JP-001</td>
+  <td>Foundry Process Qualification Guidelines — <b>the primary basis for how a foundry delivers HCI data.</b></td></tr>
+<tr><td class="nw">Product-level qualification</td><td class="nw">JESD47</td>
+  <td>Defines post-package acceptance tests like HTOL. <b>HCI is not caught here</b> — see the "temperature trap" below for why.</td></tr>
+<tr><td class="nw">Automotive stringency</td><td class="nw">AEC-Q100</td>
+  <td>Its "chip process reliability" category covers HCI; it also defines a device's operating temperature range via <b>temperature grades</b>,
+  which directly determines which temperature corner HCI stress testing needs to cover.</td></tr>
+</tbody>
+</table>
+<div class="key"><div class="t">In one line</div>
+<p style="margin:0"><b>HCI is a "process-level" problem, not a "product-level" one.</b>
+It's measured on-wafer with dedicated structures, extrapolated with a model, and handed to the design side to use.
+Waiting until post-package HTOL to try to catch it is both too late and, mechanistically, doesn't work.</p></div>
+
+<h2>Pass/fail criteria: what counts as "broken"</h2>
+<p>HCI doesn't make a device suddenly stop working — it's continuous parameter drift. So "failure" has to be an arbitrarily defined line.</p>
+
+<div class="spec"><div class="t">Standard monitored parameters and lifetime definition</div>
+<p style="margin:6px 0 0">Four parameters are monitored: <b>threshold voltage V<sub>TH</sub>, transconductance G<sub>M</sub>, linear-region drain current I<sub>DLIN</sub>, saturation-region drain current I<sub>DSAT</sub></b>.
+<br>Lifetime is defined as a <b>10% parameter change</b>; for V<sub>TH</sub>, it's defined as a <b>50 mV change</b> relative to the unstressed value.</p></div>
+
+<h3>Why these four parameters</h3>
+<table>
+<thead><tr><th class="nw">Parameter</th><th class="nw">Sensitivity to HCI</th><th>Physical reason / corresponding circuit function</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>I<sub>DLIN</sub></b></td><td class="nw"><span class="badge bad">Most sensitive</span></td>
+  <td>At low V<sub>D</sub>, the whole channel is uniformly inverted, so <b>the damaged region at the drain sits directly in series with the current path</b>,
+  equivalent to extra resistance plus a local V<sub>t</sub> shift.<br>
+  Corresponding function: <b>R<sub>on</sub></b> — analog switches, sampling switches, LDO pass devices, switched-capacitor circuits.</td></tr>
+<tr><td class="nw"><b>G<sub>M</sub></b></td><td class="nw"><span class="badge warn">Sensitive</span></td>
+  <td>Interface traps scatter carriers in the channel, lowering effective mobility.<br>
+  Corresponding function: amplifier gain, GBW, slew rate.</td></tr>
+<tr><td class="nw"><b>V<sub>TH</sub></b></td><td class="nw"><span class="badge warn">Moderate</span></td>
+  <td>The shift caused by trapped charge. Measured as an absolute value (50 mV) rather than a percentage, because it's V<sub>t</sub>'s absolute value that the circuit cares about.<br>
+  Corresponding function: bias point, <b>matched-pair offset</b>.</td></tr>
+<tr><td class="nw"><b>I<sub>DSAT</sub></b></td><td class="nw"><span class="badge ok">Insensitive</span></td>
+  <td>At V<sub>G</sub>=V<sub>D</sub>=high, current is set by the <b>source-side</b> barrier and velocity saturation;
+  the drain end is already pinched off with low carrier density, so the damaged region contributes little.<br>
+  Corresponding function: drive strength, delay, current sources.</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">The point most commonly misread</div>
+<p style="margin:0"><b>ΔI<sub>DLIN</sub> ≫ ΔI<sub>DSAT</sub> (commonly 3-10× in the literature) is the inevitable result of HCI's localized damage, not a device anomaly.</b>
+<br><br>So "I<sub>DLIN</sub> hits its limit first while I<sub>DSAT</sub> still has plenty of margin" is normal.
+The right question isn't "why is I<sub>DLIN</sub> so bad," it's <b>"which region does this device actually operate in?"</b> —
+linear-region operation (switches, pass devices) should be gated on I<sub>DLIN</sub>; saturation-region operation (amplifiers, current sources) has I<sub>DSAT</sub> and G<sub>M</sub> as its functional parameters,
+and I<sub>DLIN</sub> isn't a functional limit for it.
+<br><br>Advanced trick: swap source and drain and re-measure (<b>reverse mode</b>), turning the damaged end into the source, which amplifies sensitivity further —
+the standard technique for locating the damage and confirming "the damage really is at the drain."</p></div>
+
+<h2>How stress conditions are set</h2>
+<p>The HCI stress-test procedure is, in essence, the experimental version of Stage 4's Age function:</p>
+<table>
+<thead><tr><th class="nw">Step</th><th>What to do</th><th class="nw">Why</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>1</b></td><td>Sweep V<sub>G</sub> at the target V<sub>D</sub>, measure the I<sub>sub</sub>–V<sub>G</sub> curve, <b>find where it peaks</b></td>
+  <td class="nw">I<sub>sub</sub> is the only externally, instantaneously measurable proxy for field strength</td></tr>
+<tr><td class="nw"><b>2</b></td><td>Apply <b>DC stress</b> at the V<sub>G</sub> where I<sub>sub</sub> peaks, periodically interrupting to measure the four parameters (MSM: measure–stress–measure)</td>
+  <td class="nw">DC conditions are repeatable and comparable; HCI never recovers, so interrupting to measure doesn't distort the result</td></tr>
+<tr><td class="nw"><b>3</b></td><td>Repeat at <b>multiple V<sub>D</sub></b> values, obtaining several lifetimes τ</td>
+  <td class="nw">Establishes the voltage-acceleration relationship needed for extrapolation</td></tr>
+<tr><td class="nw"><b>4</b></td><td>Plot ln(τ·I<sub>D</sub>/W) against ln(I<sub>sub</sub>/I<sub>D</sub>); <b>the slope is −m</b></td>
+  <td class="nw">m should be extracted from your own data, not assumed to be 3</td></tr>
+<tr><td class="nw"><b>5</b></td><td>Use the Age function to extrapolate to the use condition's V<sub>D</sub> and temperature</td>
+  <td class="nw">This step carries the most uncertainty — see the caveats below</td></tr>
+</tbody>
+</table>
+
+<h3>Three design choices people often get grilled on</h3>
+<table>
+<thead><tr><th class="nw">Question</th><th>Answer</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>Why DC stress,<br>instead of simulating a real AC waveform?</b></td>
+  <td>Because <b>HCI is quasi-static</b>: carrier heating happens on a sub-picosecond timescale, and <b>there's no recovery effect</b>.
+  So the damage from any AC waveform equals the integral of the DC damage rate along that waveform.
+  <br>DC stress supplies <b>model parameters</b>; the AC part is left to the design side's reliability simulator, integrated along their own waveform.
+  <b>Model with DC, compute AC from the model</b> — that way one dataset can serve every customer circuit.</td></tr>
+<tr><td class="nw"><b>Why test at wafer level<br>instead of waiting for post-package HTOL?</b></td>
+  <td>Three reasons. <b>Mechanistically it wouldn't catch it</b> (HTOL runs at 125 °C, which decelerates HCI's negative-activation-energy behavior);
+  <b>it's too late</b> (HTOL is a product-level test — by the time you find out, the process is frozen and customers have already taped out);
+  <b>it's the wrong deliverable</b> (customers need a model they can plug into a reliability simulator, not a "we passed").</td></tr>
+<tr><td class="nw"><b>Why stress at peak I<sub>sub</sub>?<br>Is that where the damage is worst?</b></td>
+  <td><b>Not exactly.</b> Peak I<sub>sub</sub> is the condition where the <b>signal is easiest to measure and the acceleration is most stable</b> — that's why it became standard practice.
+  But since the damage rate ∝ I<sub>sub</sub><sup>m</sup>/I<sub>D</sub><sup>m−1</sup>, its actual peak sits at <b>a lower V<sub>G</sub> than peak I<sub>sub</sub></b>.
+  <br>It's normal for the two to differ. Practical advice: sweep both conditions rather than assuming they coincide.</td></tr>
+</tbody>
+</table>
+
+<h2 id="trap-en">Temperature: HCI's own trap</h2>
+<p>This is where this whole course has really been leading. Put Stage 4's negative-activation-energy result into the context of a spec:</p>
+
+<table>
+<thead><tr><th class="nw">Wear-out mechanism</th><th class="nw">Activation energy</th><th class="nw">125 °C high-temp test</th><th>How to test it</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>HCI</b></td><td class="nw"><span class="badge bad">Negative</span><br>typically −0.1 to −0.3 eV</td>
+  <td class="nw"><b>Actually lighter</b><br>not caught</td>
+  <td>Wafer-level DC stress (JESD28), <b>worst case at the low-temperature end</b>, extrapolated with the Age function</td></tr>
+<tr><td class="nw">NBTI / PBTI</td><td class="nw"><span class="badge ok">Positive</span></td><td class="nw">Accelerated</td>
+  <td>Visible at both wafer level and HTOL. <b>Has a recovery effect</b>, so measurement delay must be controlled</td></tr>
+<tr><td class="nw">TDDB</td><td class="nw"><span class="badge ok">Positive</span></td><td class="nw">Accelerated</td>
+  <td>Wafer level, Weibull statistics + area extrapolation</td></tr>
+<tr><td class="nw">Electromigration</td><td class="nw"><span class="badge ok">Positive</span></td><td class="nw">Accelerated</td>
+  <td>Dedicated metal-line / via structures, Black's equation</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">The trap, and the fix</div>
+<p style="margin:0"><b>The trap:</b> "We passed 1000 hours of 125 °C HTOL, so reliability is fine."
+— That statement roughly holds for NBTI, TDDB, and electromigration, but <b>it doesn't hold for HCI at all</b>.
+At 125 °C, HCI's damage rate is lower than at room temperature; if a device is going to have an HCI problem, HTOL is precisely the condition least likely to catch it.
+<br><br><b>The fix:</b> HCI must be tested separately at wafer level, with the stress temperature covering the spec's <b>low-temperature end</b>.
+For Grade 0 / 1 automotive parts, that's <b>−40 °C</b>, not 150 °C.
+A lot of qual plans only test at high temperature — that's exactly how HCI's worst corner gets missed.</p></div>
+</div>
+
+<div lang="en">
+<h2>AEC-Q100 temperature grades — what they mean for HCI</h2>
+<p>Different locations in a vehicle see very different environments, so AEC-Q100 grades parts by <b>operating temperature range</b>.
+For HCI, what matters isn't the upper bound — it's the <b>lower</b> one:</p>
+<table>
+<thead><tr><th class="nw">Grade</th><th class="nw">Temperature range</th><th>Typical location</th><th class="nw">HCI worst corner</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>Grade 0</b></td><td class="nw">−40 to +150 °C</td><td>Engine compartment, close to the engine block</td>
+  <td class="nw"><span class="badge bad">−40 °C</span></td></tr>
+<tr><td class="nw"><b>Grade 1</b></td><td class="nw">−40 to +125 °C</td><td>General engine-compartment area (most common for automotive)</td>
+  <td class="nw"><span class="badge bad">−40 °C</span></td></tr>
+<tr><td class="nw"><b>Grade 2</b></td><td class="nw">−40 to +105 °C</td><td>Sun-exposed cabin areas</td>
+  <td class="nw"><span class="badge bad">−40 °C</span></td></tr>
+<tr><td class="nw"><b>Grade 3</b></td><td class="nw">−40 to +85 °C</td><td>General cabin environment</td>
+  <td class="nw"><span class="badge bad">−40 °C</span></td></tr>
+</tbody>
+</table>
+<p class="note"><b>Two things to note.</b>
+① AEC-Q100 specifies the <b>stress-test items and conditions</b>, not "how many years this part will last"; that lifetime comes from the automaker's mission profile,
+which the supplier uses to compute acceleration factors and set stress conditions from there. <b>"Passed Grade 1" does not mean "good for fifteen years."</b>
+② For most other mechanisms, qual focuses on the upper temperature; <b>for HCI, the focus is the lower bound</b>. The same qual plan has to cover both ends.</p>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0"><span lang="zh-Hant">動手驗證：跨越溫度等級的 HCI 損傷率</span><span lang="en">Try it: HCI damage rate across temperature grades</span></h3>
+<p class="cap"><span lang="zh-Hant">用階段 3、4 的模型算：同一個偏壓下，溫度從 Grade 0 的上限掃到下限，HCI 損傷率變幾倍？</span><span lang="en">Using the Stage 3/4 model: at the same bias, sweeping temperature from Grade 0's upper bound to its lower bound, how many times does the HCI damage rate change?</span></p>
+<div class="ctrls">
+  <div class="ctrl"><label for="rVD5"><span lang="zh-Hant">汲極電壓 V<sub>D</sub></span><span lang="en">Drain voltage V<sub>D</sub></span></label>
+    <div class="row"><input type="range" id="rVD5" min="1.5" max="10" step="0.05" value="5">
+    <span class="val" id="vVD5">—</span></div></div>
+  <div class="ctrl"><label for="rTox5"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+    <div class="row"><input type="range" id="rTox5" min="0.18" max="1.78" step="0.005" value="1.301">
+    <span class="val" id="vTox5">—</span></div></div>
+</div>
+<div class="tiles" id="tiles5" style="margin-top:14px"></div>
+<div class="legend" id="legG" style="margin-top:12px"></div>
+<div id="cG"></div>
+<p class="note" id="gnote" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>HCI 資料的三層分工</h2>
+<table>
+<thead><tr><th class="nw">角色</th><th>對 HCI 要交出什麼</th><th class="nw">依據</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>Foundry</b></td>
+  <td>Age function 參數（m、A<sub>i</sub>、B<sub>i</sub>）、壽命外推曲線、E<sub>a</sub> 與其適用的溫度與偏壓範圍、
+  以及 criterion 的建議。<b>交的是模型，不是單一壽命數字。</b></td>
+  <td class="nw">JESD28、JP-001、JEP122</td></tr>
+<tr><td class="nw"><b>IC 設計</b></td>
+  <td>用 foundry 的模型 + 自家電路的實際波形，在 reliability simulator 裡沿波形積分，
+  證明十年後電路仍在規格內。</td>
+  <td class="nw">PDK 的可靠度模型</td></tr>
+<tr><td class="nw"><b>產品 / 品保</b></td>
+  <td>封裝後的系統級認證與對客戶的 grade 宣告。<b>這一層基本上看不到 HCI</b> ——
+  它已經在前兩層被處理掉了。</td>
+  <td class="nw">JESD47、AEC-Q100</td></tr>
+</tbody>
+</table>
+<p class="note"><b>接縫處最容易出事：</b>foundry 給的模型適用範圍、設計端用的 mission profile、
+產品端的測試條件，三者假設不一致時沒有人會發現 —— 直到量產後的返修率上升。
+對 HCI 尤其如此，因為它是唯一一個「產品級測試看不到」的主要機制。</p>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼 HCI 的壽命準則 V<sub>TH</sub> 用「變化 50 mV」，其他參數卻用「變化 10%」？</summary><div class="a">因為對電路而言，V<sub>t</sub> 的<b>絕對漂移量</b>才是有意義的。50 mV 的偏移在類比電路裡直接變成 offset、在數位電路裡直接改變 noise margin —— 這件事跟 V<sub>t</sub> 原本是 0.4 V 還是 0.8 V 無關。<br><br>相對地，電流與轉導的絕對值隨元件尺寸差好幾個數量級，只有百分比才可比較。<b>準則的形式（絕對值 vs 百分比）反映的是它對應的電路功能，不是隨便定的。</b></div></details><details><summary>I<sub>DLIN</sub> 撞線但 I<sub>DSAT</sub> 還很寬鬆，是元件有問題嗎？</summary><div class="a"><b>不是，這是必然結果。</b>HCI 的損傷集中在汲極端幾十奈米。線性區量測時整條通道均勻反轉，損傷區直接串在電流路徑上（等效串聯電阻 + 局部 V<sub>t</sub> shift）→ 極敏感；飽和區量測時電流由源極端的位障與速度飽和決定 → 不敏感。文獻常見比值 3–10 倍。<br><br>真正該問的是：<b>這顆元件在應用裡工作在線性區還是飽和區？</b>線性區操作（開關、pass device、R<sub>on</sub> 是功能本身）就該卡 I<sub>DLIN</sub>；飽和區操作（放大器、電流源）的功能參數是 I<sub>DSAT</sub> 與 G<sub>M</sub>。</div></details><details><summary>為什麼 HCI 應力用 DC，而不是直接模擬客戶的 AC 波形？</summary><div class="a">因為 HCI 是<b>準靜態</b>（載子加熱在次皮秒完成）而且<b>沒有回復</b>，所以任意波形的損傷等於沿波形對 DC 損傷率作積分。<br><br>因此正確的分工是：<b>foundry 用 DC 應力建立模型參數，設計端用自己的波形去積分。</b>一組 DC 資料可以服務所有客戶電路 —— 如果改成用某個特定 AC 波形去測，那份資料只對那個電路有效。<br><br>（順帶一提：NBTI 有回復效應，這個「DC 建模、AC 積分」的邏輯對它就不能直接套用。）</div></details><details><summary>為什麼在 peak I<sub>sub</sub> 施加應力？那裡是損傷最大的地方嗎？</summary><div class="a"><b>不完全是。</b>peak I<sub>sub</sub> 是<b>訊號最好量、加速最穩定、可重複性最好</b>的條件，所以成為傳統做法。<br><br>但損傷率 ∝ I<sub>sub</sub><sup>m</sup>/I<sub>D</sub><sup>m−1</sup>，分母的 I<sub>D</sub><sup>m−1</sup> 會把峰值往<b>更低的 V<sub>G</sub></b>（低電流、高電場）拉。兩個峰不重合是正常的，實務上建議兩個條件都掃過，不要預設它們一樣。</div></details><details><summary>客戶說「你們的元件過了 1000 小時 125 °C 的 HTOL，所以 HCI 沒問題」。這句話對嗎？</summary><div class="a"><b>完全不對，而且是最危險的一種誤解。</b>HTOL 靠高溫加速，這對 NBTI、TDDB、電遷移（正活化能）成立，<b>但 HCI 的活化能是負的</b> —— 125 °C 的 HCI 損傷率比室溫還低。<br><br>換句話說，HTOL 對 HCI 不但不是加速測試，反而是<b>最不容易抓到問題的條件</b>。HCI 必須在晶圓層級用 JESD28 的方法單獨做，而且要涵蓋規格的<b>低溫端</b>。</div></details><details><summary>身為 foundry，交給客戶的 HCI 資料應該是什麼？</summary><div class="a"><b>是模型，不是一個壽命數字。</b>客戶（IC 設計端）需要的是能放進 reliability simulator 的參數：Age function 的 m、A<sub>i</sub>、B<sub>i</sub>，加上 E<sub>a</sub> 與它們各自的<b>適用範圍</b>（電壓區間、溫度區間、ΔL/L 的有效範圍）。<br><br>因為設計端的電路波形千變萬化，只有模型能讓他們沿自己的波形積分。給一句「我們的元件十年沒問題」對他們毫無用處 —— 那句話只在你假設的 mission profile 下成立。</div></details></div>
+<h2>來源與查證狀態</h2>
+<p class="note">依照「呈現的資料事實必須與來源相同」的原則，以下標明每一項的查證狀態。</p>
+<table>
+<thead><tr><th class="nw">狀態</th><th>內容與出處</th></tr></thead>
+<tbody>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對</span></td>
+  <td><a href="https://www.tek.com/en/documents/application-note/evaluating-hot-carrier-induced-degradation-mosfet-devices">Evaluating Hot Carrier Induced Degradation of MOSFET Devices（Tektronix App Note）</a>：
+  監測參數為 threshold voltage (V<sub>TH</sub>)、transconductance (G<sub>M</sub>)、linear (I<sub>DLIN</sub>) 與
+  saturation (I<sub>DSAT</sub>) drain current；壽命定義為
+  「a 10% parameter change or, in the case of V<sub>TH</sub>, a change of 50 mV from its unstressed value」。
+  <i>該文件並未說明線性區與飽和區敏感度為何不同 —— 本頁的局部損傷解釋非出自該文件。</i></td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對</span></td>
+  <td><a href="https://www.guerrilla-rf.com/includes/pdfs/general/JESD47I.pdf">JESD47I《Stress-Test-Driven Qualification of Integrated Circuits》</a>：
+  HTOL 條件為 1000 hours、T<sub>J</sub> ≤ 125 °C、V<sub>cc</sub> ≤ V<sub>cc</sub> max；
+  對 wafer-level 磨耗機制（含 hot carrier injection）引用 <b>JEP122</b>、<b>JP-001</b>、<b>JESD91</b>。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已核對</span></td>
+  <td><a href="https://media.monolithicpower.com/mps_cms_document/w/e/Webinar_-_Fundamentals_of_AEC-Q100-6Nov2018.pdf">Fundamentals of AEC-Q100（MPS 研討會講義）</a>
+  與 <a href="https://www.spilma.com/en/guides/aec-q100-q101-automotive-semiconductors">spilma AEC-Q100 指南</a>：
+  Grade 0 = −40~150 °C、Grade 1 = −40~125 °C、Grade 2 = −40~105 °C、Grade 3 = −40~85 °C（後者註明為 ambient）。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 來源有出入</span></td>
+  <td><a href="https://www.embien.com/technology-insights/aec-q100-automotive-ic-qualification-guide">embien 的 AEC-Q100 整理</a>
+  將溫度寫為 T<sub>j</sub>、且 Grade 3 下限寫成 0 °C，與上述兩份不一致。
+  正式引用請以 AEC-Q100 本文為準（付費文件）。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 僅取得標題</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-28">JESD28</a> 與
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-28-1">JESD28-1</a>：
+  本頁對其內容的描述（DC 應力量測程序、資料分析）根據標題與業界通行用法，<b>未取得全文核對</b>。
+  應力流程的五個步驟為業界通行做法的整理，非逐條引自標準條文。
+  各機制活化能的正負號為教科書共識，數值範圍未逐一核對，請以 JEP122 為準。</td></tr>
+<tr><td class="nw"><span class="badge bad">模型輸出</span></td>
+  <td>本頁互動圖表的溫度倍率由本教材的簡化模型計算，<b>非量測資料</b>。
+  該模型<b>很可能高估</b>倍率（未納入 LDD、二維摻雜、實際遷移率溫度依賴等效應）；
+  文獻常見的 125 °C → −40 °C 實測比值多為個位數到十幾倍。
+  <b>定性結論（HCI 低溫較嚴重、高溫 HTOL 抓不到）穩固；倍率絕對值不可直接引用。</b></td></tr>
+</tbody>
+</table>
+
+<div class="pager"><a class="prev" href="hci-4-formula.html"><div class="d">← 上一課 · 階段 4</div><div class="t">公式階梯</div></a><a class="next" href="hci-6-fix.html"><div class="d">下一課 · 階段 6 →</div><div class="t">如何防治</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<h2>The three-way division of labor for HCI data</h2>
+<table>
+<thead><tr><th class="nw">Role</th><th>What they owe on HCI</th><th class="nw">Basis</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>Foundry</b></td>
+  <td>Age function parameters (m, A<sub>i</sub>, B<sub>i</sub>), lifetime extrapolation curves, E<sub>a</sub> together with the temperature and bias range it applies to,
+  and a recommended criterion. <b>They deliver a model, not a single lifetime number.</b></td>
+  <td class="nw">JESD28, JP-001, JEP122</td></tr>
+<tr><td class="nw"><b>IC design</b></td>
+  <td>Take the foundry's model plus their own circuit's actual waveform, integrate it in a reliability simulator,
+  and prove the circuit stays within spec after ten years.</td>
+  <td class="nw">The PDK's reliability model</td></tr>
+<tr><td class="nw"><b>Product / QA</b></td>
+  <td>Post-package system-level qualification and grade declarations to customers. <b>HCI is essentially invisible at this layer</b> —
+  it's already been handled by the two layers before it.</td>
+  <td class="nw">JESD47, AEC-Q100</td></tr>
+</tbody>
+</table>
+<p class="note"><b>The seams are where things go wrong:</b> when the foundry's model's valid range, the design side's mission profile,
+and the product side's test conditions carry mismatched assumptions, nobody notices — until the return rate climbs after volume production.
+This is especially true for HCI, since it's the one major mechanism that "product-level testing can't see."</p>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why does HCI's lifetime criterion for V<sub>TH</sub> use "a 50 mV change" while the other parameters use "a 10% change"?</summary><div class="a">Because for a circuit, it's V<sub>t</sub>'s <b>absolute drift</b> that matters. A 50 mV shift becomes an offset in an analog circuit or directly eats into noise margin in a digital circuit — regardless of whether V<sub>t</sub> started at 0.4 V or 0.8 V.<br><br>By contrast, the absolute values of current and transconductance vary by orders of magnitude across device sizes, so only a percentage is comparable. <b>The form of the criterion (absolute vs. percentage) reflects the circuit function it corresponds to — it's not arbitrary.</b></div></details><details><summary>I<sub>DLIN</sub> hits its limit while I<sub>DSAT</sub> still has plenty of margin — is something wrong with the device?</summary><div class="a"><b>No, this is the inevitable outcome.</b> HCI's damage is concentrated in a few tens of nanometers at the drain. A linear-region measurement uniformly inverts the whole channel, putting the damaged region directly in series with the current path (equivalent series resistance + local V<sub>t</sub> shift) → extremely sensitive; a saturation-region measurement is dominated by the source-side barrier and velocity saturation → insensitive. Ratios of 3-10× are common in the literature.<br><br>The real question is: <b>which region does this device actually operate in?</b> Linear-region operation (switches, pass devices, where R<sub>on</sub> is the function itself) should be gated on I<sub>DLIN</sub>; saturation-region operation (amplifiers, current sources) has I<sub>DSAT</sub> and G<sub>M</sub> as its functional parameters.</div></details><details><summary>Why does HCI stress use DC instead of directly simulating the customer's AC waveform?</summary><div class="a">Because HCI is <b>quasi-static</b> (carrier heating completes in sub-picoseconds) and has <b>no recovery</b>, so the damage from any waveform equals the integral of the DC damage rate along that waveform.<br><br>So the correct division of labor is: <b>the foundry builds model parameters from DC stress, and the design side integrates along their own waveform.</b> One set of DC data can serve every customer circuit — if you instead measured against one specific AC waveform, that data would only be valid for that one circuit.<br><br>(As an aside: NBTI does have a recovery effect, so this "model with DC, integrate AC" logic can't be applied to it directly.)</div></details><details><summary>Why stress at peak I<sub>sub</sub>? Is that where the damage is worst?</summary><div class="a"><b>Not exactly.</b> Peak I<sub>sub</sub> is the condition with the <b>easiest signal to measure, the most stable acceleration, and the best repeatability</b>, which is why it became standard practice.<br><br>But since the damage rate ∝ I<sub>sub</sub><sup>m</sup>/I<sub>D</sub><sup>m−1</sup>, the I<sub>D</sub><sup>m−1</sup> in the denominator pulls the true peak toward <b>a lower V<sub>G</sub></b> (lower current, higher field). It's normal for the two peaks not to coincide; in practice, sweep both conditions rather than assuming they're the same.</div></details><details><summary>A customer says "your device passed 1000 hours of 125 °C HTOL, so HCI isn't a problem." Is that right?</summary><div class="a"><b>Completely wrong, and one of the most dangerous misunderstandings out there.</b> HTOL relies on high temperature for acceleration, which holds for NBTI, TDDB, and electromigration (positive activation energy), <b>but HCI's activation energy is negative</b> — HCI's damage rate at 125 °C is lower than at room temperature.<br><br>In other words, HTOL isn't just a non-accelerated test for HCI — it's <b>precisely the condition least likely to catch a problem</b>. HCI has to be tested separately at wafer level using the JESD28 method, covering the spec's <b>low-temperature end</b>.</div></details><details><summary>As a foundry, what HCI data should you hand to customers?</summary><div class="a"><b>A model, not a single lifetime number.</b> The customer (the IC design side) needs parameters they can plug into a reliability simulator: the Age function's m, A<sub>i</sub>, B<sub>i</sub>, plus E<sub>a</sub> and each one's <b>valid range</b> (voltage range, temperature range, the valid range of ΔL/L).<br><br>Because the design side's circuit waveforms vary endlessly, only a model lets them integrate along their own waveform. Telling them "our device is fine for ten years" is useless — that statement only holds under the mission profile you assumed.</div></details></div>
+<h2>Sources and verification status</h2>
+<p class="note">Following the principle that "the facts presented must match the source," the verification status of each item is noted below.</p>
+<table>
+<thead><tr><th class="nw">Status</th><th>Content and source</th></tr></thead>
+<tbody>
+<tr><td class="nw"><span class="badge ok">✓ Verified verbatim</span></td>
+  <td><a href="https://www.tek.com/en/documents/application-note/evaluating-hot-carrier-induced-degradation-mosfet-devices">Evaluating Hot Carrier Induced Degradation of MOSFET Devices (Tektronix App Note)</a>:
+  monitored parameters are threshold voltage (V<sub>TH</sub>), transconductance (G<sub>M</sub>), linear (I<sub>DLIN</sub>) and
+  saturation (I<sub>DSAT</sub>) drain current; lifetime is defined as
+  "a 10% parameter change or, in the case of V<sub>TH</sub>, a change of 50 mV from its unstressed value."
+  <i>This document doesn't explain why linear- and saturation-region sensitivity differ — this page's localized-damage explanation isn't sourced from it.</i></td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verified verbatim</span></td>
+  <td><a href="https://www.guerrilla-rf.com/includes/pdfs/general/JESD47I.pdf">JESD47I, "Stress-Test-Driven Qualification of Integrated Circuits"</a>:
+  HTOL conditions are 1000 hours, T<sub>J</sub> ≤ 125 °C, V<sub>cc</sub> ≤ V<sub>cc</sub> max;
+  it cites <b>JEP122</b>, <b>JP-001</b>, and <b>JESD91</b> for wafer-level wear-out mechanisms (hot carrier injection included).</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verified</span></td>
+  <td><a href="https://media.monolithicpower.com/mps_cms_document/w/e/Webinar_-_Fundamentals_of_AEC-Q100-6Nov2018.pdf">Fundamentals of AEC-Q100 (MPS webinar slides)</a>
+  and the <a href="https://www.spilma.com/en/guides/aec-q100-q101-automotive-semiconductors">spilma AEC-Q100 guide</a>:
+  Grade 0 = −40 to 150 °C, Grade 1 = −40 to 125 °C, Grade 2 = −40 to 105 °C, Grade 3 = −40 to 85 °C (the latter noted as ambient).</td></tr>
+<tr><td class="nw"><span class="badge warn">! Sources disagree</span></td>
+  <td><a href="https://www.embien.com/technology-insights/aec-q100-automotive-ic-qualification-guide">embien's AEC-Q100 summary</a>
+  labels the temperature as T<sub>j</sub> and gives Grade 3's lower bound as 0 °C, inconsistent with the two sources above.
+  For formal citation, defer to the AEC-Q100 text itself (a paywalled document).</td></tr>
+<tr><td class="nw"><span class="badge warn">! Title only</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-28">JESD28</a> and
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-28-1">JESD28-1</a>:
+  this page's description of their contents (the DC stress measurement procedure, data analysis) is based on their titles and common industry usage, <b>not verified against the full text</b>.
+  The five stress-procedure steps are a summary of common industry practice, not quoted clause-by-clause from the standard.
+  The sign of each mechanism's activation energy is textbook consensus; the numeric ranges haven't been individually verified — defer to JEP122.</td></tr>
+<tr><td class="nw"><span class="badge bad">Model output</span></td>
+  <td>This page's interactive chart's temperature ratios are computed by this course's simplified model, <b>not measured data</b>.
+  The model likely <b>overstates</b> the ratio (it omits LDD, 2D doping, the real temperature dependence of mobility, and similar effects);
+  measured 125 °C → −40 °C ratios reported in the literature are usually in the single digits to low teens.
+  <b>The qualitative conclusion (HCI is worse at low temperature; high-temperature HTOL doesn't catch it) is solid; don't cite the ratio's absolute value directly.</b></td></tr>
+</tbody>
+</table>
+
+<div class="pager"><a class="prev" href="hci-4-formula.html"><div class="d">← Previous · Stage 4</div><div class="t">Formula Ladder</div></a><a class="next" href="hci-6-fix.html"><div class="d">Next · Stage 6 →</div><div class="t">Mitigation</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+var D={tox:20,xj:200,L:1.0,VD:5.0,VG:2.5,Tc:25,Vt0:0.7,W:10};
+function mk(o){return model(Object.assign({},P,D,o||{}));}
+var GRADES=[{n:'Grade 0',lo:-40,hi:150},{n:'Grade 1',lo:-40,hi:125},{n:'Grade 2',lo:-40,hi:105},{n:'Grade 3',lo:-40,hi:85}];
+
+function drawG(){
+  var rHot=mk({Tc:150}).rate, rCold=mk({Tc:-40}).rate, r25=mk({Tc:25}).rate, r125=mk({Tc:125}).rate;
+  var ratio=rHot>0?rCold/rHot:NaN, r2=r125>0?r25/r125:NaN;
+  $('tiles5').innerHTML=[
+    [L('損傷率 @ +150 °C','Damage rate @ +150 °C'),(rHot>0?'1.0×':'—'),L('基準','baseline')],
+    [L('損傷率 @ +125 °C（HTOL 條件）','Damage rate @ +125 °C (HTOL condition)'),(isFinite(r125/rHot)?(r125/rHot).toFixed(2)+'×':'—'),''],
+    [L('損傷率 @ +25 °C（室溫）','Damage rate @ +25 °C (room temp)'),(isFinite(r25/rHot)?(r25/rHot).toFixed(2)+'×':'—'),''],
+    [L('損傷率 @ −40 °C（Grade 0/1 下限）','Damage rate @ −40 °C (Grade 0/1 lower bound)'),(isFinite(ratio)?ratio.toFixed(2)+'×':'—'),
+      '<span class="badge bad">worst case</span>',1],
+    [L('HTOL 相對室溫','HTOL relative to room temp'),(isFinite(r125/r25)?(r125/r25).toFixed(2)+'×':'—'),
+      (isFinite(r125/r25)&&r125<r25)?'<span class="badge warn">'+L('! 高溫反而減速','! high temp actually decelerates it')+'</span>':'']
+  ].map(function(t){return '<div class="tile'+(t[3]?' hl':'')+'"><div class="k">'+t[0]+'</div><div class="v">'+t[1]+'</div>'+
+      (t[2]?'<div style="margin-top:4px">'+t[2]+'</div>':'')+'</div>';}).join('');
+
+  var W=1000,H=290,Mg={t:16,r:150,b:48,l:96},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var lo=-50,hi=165,N=90,dat=[];
+  for(var i=0;i<=N;i++){var tc=lo+(hi-lo)*i/N; dat.push({tc:tc,r:mk({Tc:tc}).rate});}
+  var rs=dat.map(function(d){return d.r;}).filter(function(v){return v>0;});
+  if(!rs.length){$('cG').innerHTML='<p class="note">'+L('目前偏壓沒有夾止區 —— 把 V<sub>D</sub> 調高。','No pinch-off at the current bias — raise V<sub>D</sub>.')+'</p>';return;}
+  var base=rHot>0?rHot:Math.max.apply(null,rs);
+  var norm=dat.map(function(d){return {tc:d.tc,y:d.r/base};});
+  var ymax=Math.max.apply(null,norm.map(function(d){return d.y;}))*1.1;
+  var X=function(v){return Mg.l+iw*(v-lo)/(hi-lo);}, Y=function(v){return Mg.t+ih*(1-v/ymax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,ymax,5).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),v.toFixed(1)+'×',{ta:'end',db:'middle'}));});
+  ticks(lo,hi,6).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+16,v.toFixed(0)+'°C',{ta:'middle'}));});
+  /* 溫度等級帶 */
+  GRADES.forEach(function(g,i){
+    svg.appendChild(el('line',{x1:X(g.hi),x2:X(g.hi),y1:Mg.t,y2:Mg.t+ih,stroke:css('--muted'),
+      'stroke-width':1,'stroke-dasharray':'3 4',opacity:.8}));
+    svg.appendChild(txt(X(g.hi)-4,Mg.t+13+i*15,g.n+L(' 上限',' max'),{ta:'end',fs:10.5,fill:css('--muted')}));});
+  svg.appendChild(el('rect',{x:X(120),y:Mg.t,width:Math.max(X(130)-X(120),2),height:ih,fill:css('--warn'),opacity:.16}));
+  svg.appendChild(txt(X(125),Mg.t+ih-8,'HTOL 125°C',{ta:'middle',fs:10.5,fw:700,fill:css('--warn')}));
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-6,L('溫度','Temperature'),{ta:'middle',fs:12,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,L('損傷率（以 150 °C 為 1）','Damage rate (150 °C = 1)'),{ta:'middle',fs:11.5,fill:css('--ink2'),db:'middle',rot:-90}));
+  var d='';norm.forEach(function(q){d+=(d?'L':'M')+X(q.tc).toFixed(2)+' '+Y(q.y).toFixed(2);});
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--h'),'stroke-width':2.6}));
+  [[-40,'−40 °C',css('--h')],[25,'25 °C',css('--ink2')],[150,'150 °C',css('--ink2')]].forEach(function(t){
+    var yv=mk({Tc:t[0]}).rate/base;
+    svg.appendChild(el('circle',{cx:X(t[0]),cy:Y(yv),r:5.5,fill:t[2],stroke:css('--surface'),'stroke-width':2}));
+    svg.appendChild(txt(X(t[0])+8,Y(yv),t[1]+' : '+yv.toFixed(2)+'×',{db:'middle',fs:11,fw:650,fill:t[2]}));});
+  $('cG').innerHTML='';$('cG').appendChild(svg);
+  var M=mk();
+  $('legG').innerHTML='<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('HCI 損傷率 vs 溫度（正規化）','HCI damage rate vs temperature (normalized)')+'</span>'+
+    '<span style="color:var(--ink)">E<sub>m</sub> = <b>'+fmtEng(M.Em,'V/cm',2)+'</b> · E<sub>a</sub> = <b>'+
+    activationEnergy(Object.assign({},P,D)).toFixed(3)+' eV</b></span>';
+  var Ea=activationEnergy(Object.assign({},P,D));
+  var arr=Math.exp(-Ea/K*(1/233.15-1/423.15));
+  $('gnote').innerHTML = L(
+    '從 Grade 0 的上限（+150 °C）降到下限（−40 °C），本模型算出損傷率變成 <b>'+
+      (isFinite(ratio)?ratio.toFixed(1):'—')+' 倍</b>；'+
+      '而 HTOL 的 125 °C 只有室溫的 <b>'+(isFinite(r125/r25)?(r125/r25).toFixed(2):'—')+' 倍</b> —— '+
+      '<b>對 HCI，高溫測試是減速，不是加速。</b>'+
+      '<br><br><b>兩個必須一起講的但書：</b>'+
+      '<br>① <b>這不是純 Arrhenius。</b>用上面標的 E<sub>a</sub> = '+Ea.toFixed(3)+' eV 直接外推只會得到約 <b>'+
+      arr.toFixed(0)+' 倍</b>，比模型實算的 '+(isFinite(ratio)?ratio.toFixed(0):'—')+' 倍小。'+
+      '因為 λ(T)=λ<sub>0</sub>tanh(E<sub>p</sub>/2kT) 不是指數形式，<b>E<sub>a</sub> 本身會隨溫度變化</b>，'+
+      '標示的值只是 25 °C 附近的切線斜率。這就是為什麼報告 E<sub>a</sub> 一定要附上量測的溫度區間。'+
+      '<br>② <b>倍率本身要打折看。</b>本模型未納入的效應（LDD、二維摻雜、實際的遷移率溫度依賴、'+
+      '低溫下載子凍結與封裝熱阻）都會壓低這個比值；文獻上 125 °C → −40 °C 的實測比值通常落在'+
+      '<b>個位數到十幾倍</b>，而不是數百倍。<b>「低溫較嚴重、HTOL 抓不到」這個定性結論很穩固；'+
+      '倍率的絕對值請以你自己的實測為準。</b>'+
+      '<br><br>另外把 V<sub>D</sub> 調低（更接近真實使用條件），會看到曲線變陡 —— '+
+      '因為 |E<sub>a</sub>| 在低電場時更大。<b>用高壓應力量到的 E<sub>a</sub> 去外推，會低估使用條件下低溫的風險。</b>',
+    'Going from Grade 0\'s upper bound (+150 °C) down to its lower bound (−40 °C), this model computes the damage rate changing by <b>'+
+      (isFinite(ratio)?ratio.toFixed(1):'—')+'×</b>; '+
+      'while HTOL\'s 125 °C is only <b>'+(isFinite(r125/r25)?(r125/r25).toFixed(2):'—')+'×</b> room temperature — '+
+      '<b>for HCI, a high-temperature test decelerates it, rather than accelerating it.</b>'+
+      '<br><br><b>Two caveats that always need to travel together:</b>'+
+      '<br>① <b>This isn\'t pure Arrhenius behavior.</b> Extrapolating directly with the E<sub>a</sub> = '+Ea.toFixed(3)+' eV shown above only gives about <b>'+
+      arr.toFixed(0)+'×</b>, smaller than the model\'s actual '+(isFinite(ratio)?ratio.toFixed(0):'—')+'×. '+
+      'Because λ(T)=λ<sub>0</sub>tanh(E<sub>p</sub>/2kT) isn\'t exponential in form, <b>E<sub>a</sub> itself changes with temperature</b> — '+
+      'the value shown is just the tangent slope near 25 °C. That\'s exactly why reporting E<sub>a</sub> always needs to come with the temperature range it was measured over.'+
+      '<br>② <b>Take the ratio itself with a grain of salt.</b> Effects this model omits (LDD, 2D doping, the real temperature dependence of mobility, '+
+      'carrier freeze-out at low temperature, and package thermal resistance) would all pull this ratio down; literature-reported 125 °C → −40 °C measured ratios usually fall in the '+
+      '<b>single digits to low teens</b>, not hundreds. <b>The qualitative conclusion (worse at low temperature, HTOL doesn\'t catch it) is solid; '+
+      'defer to your own measurements for the ratio\'s absolute value.</b>'+
+      '<br><br>Also, lowering V<sub>D</sub> (closer to a real use condition) makes the curve steeper — '+
+      'because |E<sub>a</sub>| is larger at lower fields. <b>Extrapolating from an E<sub>a</sub> measured under high-voltage stress will underestimate the low-temperature risk at use conditions.</b>'
+  );
+}
+$('rVD5').addEventListener('input',function(e){D.VD=parseFloat(e.target.value);$('vVD5').textContent=D.VD.toFixed(2)+' V';drawG();});
+$('rTox5').addEventListener('input',function(e){D.tox=Math.pow(10,parseFloat(e.target.value));
+  $('vTox5').textContent=D.tox.toFixed(1)+' nm';drawG();});
+$('vVD5').textContent=D.VD.toFixed(2)+' V'; $('vTox5').textContent=D.tox.toFixed(1)+' nm';
+window.__rebuild=drawG; drawG();
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

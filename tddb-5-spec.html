@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 5：TDDB 規格 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 5：TDDB 規格 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html" aria-current="page"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:71%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 5 / 7</p>
+<h1>TDDB 的規格：JEDEC 怎麼規定、車規又加嚴了什麼</h1>
+<p class="lede">前三頁講的是物理與統計。這一頁講<b>業界怎麼把它寫成可以驗收的條文</b> ——
+以及一件很多人還不知道的事：<b>TDDB 的 JEDEC 標準在 2024 年整個重組了</b>。</p>
+
+<div class="tldr"><h3>先講結論</h3><ul>
+<li><b>JESD263《Gate Dielectric Breakdown》（2024 年 3 月）已經取代 JESD35A、JESD35-1、JESD35-2 與 JESD92</b>；
+    後四份在 2024 年 6 月同時被 rescinded（廢止）。還在引用 JESD92 的文件都該更新了。</li>
+<li>TDDB 的規格語言是<b>「在使用條件下、整顆晶片面積、十年內累積失效率 ≤ 某個 ppm」</b>，
+    而不是像 HCI 那樣的「參數退化 10%」。</li>
+<li>量測方法分兩大類：<b>晶圓層級的快速篩選</b>（V-Ramp / J-Ramp，測 Q<sub>BD</sub>、V<sub>BD</sub>）
+    與<b>定電壓長時間應力</b>（真正的 TDDB，測 t<sub>BD</sub> 分布）。前者管製程穩定度，後者才給壽命外推。</li>
+<li><b>TDDB 的 E<sub>a</sub> 是正的，所以高溫 HTOL（JESD47，125 °C / 1000 h）對它是有效加速</b> ——
+    這一點跟 HCI 完全相反。</li>
+<li>AEC-Q100 沒有直接寫「TDDB 要撐幾年」。它定的是<b>溫度等級與應力測試條件</b>；
+    年限來自車廠的 mission profile。</li>
+</ul></div>
+
+<h2>標準地圖（2024 年重組後）</h2>
+<table>
+<thead><tr><th class="nw">角色</th><th class="nw">文件</th><th>內容與狀態</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>TDDB 現行主標準</b></td>
+  <td class="nw"><b><a href="https://www.jedec.org/standards-documents/docs/jesd263">JESD263</a></b></td>
+  <td>《Gate Dielectric Breakdown》，2024 年 3 月發行，狀態 Published，委員會 JC-14 / JC-14.2。
+  官方說明：<i>“This document describes procedures developed for estimating the overall integrity of gate dielectrics.”</i>
+  並註明<b>取代 JESD35A、JESD35-1、JESD35-2、JESD92</b>。</td></tr>
+<tr><td class="nw">舊·定電壓 TDDB</td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a></td>
+  <td>《Procedure for Characterizing Time-Dependent Dielectric Breakdown of Ultra-Thin Gate Dielectrics》，
+  2003 年 8 月，<b>2024 年 6 月已 Rescinded</b>。原範圍是<i>定電壓應力</i>，
+  目的在取得<b>電壓與溫度加速參數</b>以外推正常工作條件下的氧化層壽命；
+  附錄涵蓋測試結構設計、超薄膜電場的判定、統計模型、外推與失效率計算範例。</td></tr>
+<tr><td class="nw">舊·晶圓層級快篩</td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jesd-35">JESD35A</a> /
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-1">-1</a> /
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-2">-2</a></td>
+  <td>《Procedure for Wafer-Level-Testing of Thin Dielectrics》，2001 年 4 月，<b>2024 年 6 月 Rescinded</b>。
+  原文描述三種測試：<b>Voltage-Ramp（V-Ramp）、Current-Ramp（J-Ramp）、Constant Current（Bounded J-Ramp）</b>。
+  Addendum 1 講測試結構設計，Addendum 2 講判定準則（尤其是 end point 的認定）。</td></tr>
+<tr><td class="nw">失效模型與 E<sub>a</sub></td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jep-122e">JEP122H</a></td>
+  <td>《Failure Mechanisms and Models for Semiconductor Devices》，2016 年 9 月，Published。
+  提供各機制的<b>活化能與加速因子</b>，用 Sum-of-the-Failure-Rates 方法估系統失效率。
+  TDDB 的模型形式與 E<sub>a</sub> 引用這一份。</td></tr>
+<tr><td class="nw">產品級認證</td>
+  <td class="nw"><a href="https://www.guerrilla-rf.com/includes/pdfs/general/JESD47I.pdf">JESD47</a></td>
+  <td>封裝後的 stress-test-driven qualification。HTOL：1000 小時、T<sub>J</sub> ≤ 125 °C、V<sub>cc</sub> ≤ V<sub>cc</sub>max。
+  <b>因為 TDDB 的 E<sub>a</sub> 為正，這個高溫條件對 TDDB 是有效加速</b>（對 HCI 則不是）。</td></tr>
+<tr><td class="nw">介層介電質</td>
+  <td class="nw"><a href="https://www.jedec.org/taxonomy/term/3219">JEP159A</a></td>
+  <td>《Procedure for the Evaluation of Low-k/Metal Inter/Intra-Level Dielectric Integrity》，2015 年 7 月。
+  管的是<b>後段 low-k 層間介電質</b>的 TDDB，不是閘極氧化層 —— 兩者常被混為一談。</td></tr>
+<tr><td class="nw">車用加嚴</td>
+  <td class="nw"><a href="http://www.aecouncil.com/Documents/AEC_Q100_Rev_H_Base_Document.pdf">AEC-Q100</a></td>
+  <td>定義溫度等級與應力測試矩陣。<b>不直接規定 TDDB 年限</b>，而是把使用溫度上限往上拉，
+  再由車廠的 mission profile 決定壽命目標。</td></tr>
+</tbody>
+</table>
+
+<h2>兩類量測，用途完全不同</h2>
+<div class="cmp">
+<div class="col"><div class="h">晶圓層級快篩：V-Ramp / J-Ramp</div>
+<div style="font-size:15.5px;line-height:1.85">
+把電壓（或電流）一路拉上去直到崩潰，量 <b>V<sub>BD</sub></b> 或 <b>Q<sub>BD</sub></b>（崩潰前總通過電荷）。<br>
+<b>幾秒鐘一顆</b>，可以在每一片 wafer 上量幾百點。<br>
+<span class="badge ok">用途</span> 製程穩定度監控、外質缺陷篩檢、批次比較。<br>
+<span class="badge bad">不能</span> 直接外推十年壽命 —— 崩潰時的電場遠高於使用電場，外推距離太遠。</div></div>
+<div class="col"><div class="h">定電壓 TDDB：t<sub>BD</sub> 分布</div>
+<div style="font-size:15.5px;line-height:1.85">
+固定一個（或數個）應力電壓，量到崩潰的<b>時間</b>，得到 Weibull 分布的 β 與 η。<br>
+<b>幾小時到幾百小時一組</b>，每個條件要幾十顆才能定出 β。<br>
+<span class="badge ok">用途</span> 取得電壓與溫度加速參數，做壽命外推 —— <b>這才是規格數字的來源</b>。<br>
+<span class="badge bad">代價</span> 慢、貴，而且應力電壓選太高會偏離使用條件的物理。</div></div>
+</div>
+<p class="note">實務上兩者是搭配的：V-Ramp / J-Ramp 天天跑當製程哨兵，定電壓 TDDB 在製程定版與週期性可靠度驗證時做。</p>
+
+<h2>一份 TDDB 規格到底寫了什麼</h2>
+<div class="spec"><div class="t">TDDB 規格必須同時講清楚這六件事</div>
+<table style="margin:8px 0 0"><tbody>
+<tr><td class="nw"><b>① 使用條件</b></td><td>V<sub>use</sub>（含 overdrive / 突波）與 T<sub>use</sub>。少寫溫度，數字沒有意義。</td></tr>
+<tr><td class="nw"><b>② 面積</b></td><td>產品的<b>閘極總面積</b>（不是測試電容面積）。差幾個數量級的東西不能省略。</td></tr>
+<tr><td class="nw"><b>③ 目標壽命</b></td><td>10 年？15 年？加上有效工作時數（duty cycle）。</td></tr>
+<tr><td class="nw"><b>④ 目標失效率</b></td><td>例如 ≤ 100 ppm（商規）或 ≤ 1 ppm（車規）。<b>這是 TDDB 規格的核心量。</b></td></tr>
+<tr><td class="nw"><b>⑤ 加速模型與參數</b></td><td>E-model / 1-E / 冪次律，以及 γ、G、n、E<sub>a</sub>。<b>沒寫模型的壽命數字無法查核。</b></td></tr>
+<tr><td class="nw"><b>⑥ 信心水準</b></td><td>例如「60% 信心下」。樣本數有限，點估計必須配信心區間。</td></tr>
+</tbody></table></div>
+
+<div class="key"><b>對照一下 HCI。</b>HCI 的規格是「V<sub>D</sub> = 某值、10 年後 ΔI<sub>dsat</sub> ≤ 10%」——
+一個<b>參數門檻</b>。TDDB 的規格是「10 年後失效率 ≤ 1 ppm」—— 一個<b>機率</b>。
+兩者不能互相翻譯，因為背後的失效型態根本不同（連續漂移 vs 一次性崩潰）。
+這也是為什麼 TDDB 報告一定要附 Weibull 圖，而 HCI 報告附的是退化曲線。</div>
+
+<h2>商規 vs 車規：同一顆元件，判定會不一樣</h2>
+<p>下面用階段 4 的模型實際算：固定一顆元件與一個實測校正點，
+把使用溫度換成各 AEC-Q100 等級的<b>上限</b>，看十年 1 ppm 的判定怎麼翻盤。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 5 / 7</p>
+<h1>TDDB specs: what JEDEC requires, and what automotive grade tightens</h1>
+<p class="lede">The previous three pages covered physics and statistics. This page covers <b>how industry turns that into acceptance-testable requirements</b> —
+plus something many people still don't know: <b>the JEDEC standards for TDDB were completely reorganized in 2024</b>.</p>
+
+<div class="tldr"><h3>The bottom line first</h3><ul>
+<li><b>JESD263 "Gate Dielectric Breakdown" (March 2024) has replaced JESD35A, JESD35-1, JESD35-2, and JESD92</b>;
+    all four of the latter were rescinded simultaneously in June 2024. Any document still citing JESD92 needs updating.</li>
+<li>TDDB specs speak in <b>"cumulative failure rate ≤ some ppm within ten years, at use condition, over the whole chip's gate area"</b>,
+    not "10% parameter degradation" the way HCI does.</li>
+<li>Measurement splits into two broad categories: <b>fast wafer-level screening</b> (V-Ramp / J-Ramp, measuring Q<sub>BD</sub>, V<sub>BD</sub>)
+    and <b>constant-voltage long-duration stress</b> (the real TDDB test, measuring the t<sub>BD</sub> distribution). The former monitors process stability; only the latter feeds lifetime extrapolation.</li>
+<li><b>TDDB's E<sub>a</sub> is positive, so high-temperature HTOL (JESD47, 125 °C / 1000 h) is an effective accelerated test for it</b> —
+    the exact opposite of HCI.</li>
+<li>AEC-Q100 doesn't directly state "how many years TDDB must survive." It defines <b>temperature grades and stress-test conditions</b>;
+    the actual year target comes from the automaker's mission profile.</li>
+</ul></div>
+
+<h2>The standards map (after the 2024 reorganization)</h2>
+<table>
+<thead><tr><th class="nw">Role</th><th class="nw">Document</th><th>Content & status</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>Current primary TDDB standard</b></td>
+  <td class="nw"><b><a href="https://www.jedec.org/standards-documents/docs/jesd263">JESD263</a></b></td>
+  <td>"Gate Dielectric Breakdown," published March 2024, status Published, committee JC-14 / JC-14.2.
+  Official scope statement: <i>"This document describes procedures developed for estimating the overall integrity of gate dielectrics."</i>
+  Noted as <b>superseding JESD35A, JESD35-1, JESD35-2, and JESD92</b>.</td></tr>
+<tr><td class="nw">Former constant-voltage TDDB</td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a></td>
+  <td>"Procedure for Characterizing Time-Dependent Dielectric Breakdown of Ultra-Thin Gate Dielectrics,"
+  August 2003, <b>rescinded June 2024</b>. Its original scope was <i>constant-voltage stress</i>,
+  aimed at obtaining <b>voltage and temperature acceleration parameters</b> to extrapolate oxide lifetime under normal operating conditions;
+  the appendices covered test structure design, field determination for ultra-thin films, statistical models, extrapolation, and failure-rate calculation examples.</td></tr>
+<tr><td class="nw">Former wafer-level fast screen</td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jesd-35">JESD35A</a> /
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-1">-1</a> /
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-2">-2</a></td>
+  <td>"Procedure for Wafer-Level-Testing of Thin Dielectrics," April 2001, <b>rescinded June 2024</b>.
+  The original text describes three tests: <b>Voltage-Ramp (V-Ramp), Current-Ramp (J-Ramp), Constant Current (Bounded J-Ramp)</b>.
+  Addendum 1 covers test structure design; Addendum 2 covers pass/fail criteria (especially defining the end point).</td></tr>
+<tr><td class="nw">Failure models & E<sub>a</sub></td>
+  <td class="nw"><a href="https://www.jedec.org/standards-documents/docs/jep-122e">JEP122H</a></td>
+  <td>"Failure Mechanisms and Models for Semiconductor Devices," September 2016, Published.
+  Provides <b>activation energies and acceleration factors</b> for various mechanisms, using the Sum-of-the-Failure-Rates method to estimate system failure rate.
+  TDDB's model forms and E<sub>a</sub> are cited from this document.</td></tr>
+<tr><td class="nw">Product-level qualification</td>
+  <td class="nw"><a href="https://www.guerrilla-rf.com/includes/pdfs/general/JESD47I.pdf">JESD47</a></td>
+  <td>Stress-test-driven qualification after packaging. HTOL: 1000 hours, T<sub>J</sub> ≤ 125 °C, V<sub>cc</sub> ≤ V<sub>cc</sub>max.
+  <b>Because TDDB's E<sub>a</sub> is positive, this high-temperature condition is an effective accelerant for TDDB</b> (unlike for HCI).</td></tr>
+<tr><td class="nw">Inter-level dielectric</td>
+  <td class="nw"><a href="https://www.jedec.org/taxonomy/term/3219">JEP159A</a></td>
+  <td>"Procedure for the Evaluation of Low-k/Metal Inter/Intra-Level Dielectric Integrity," July 2015.
+  Covers TDDB of <b>back-end-of-line low-k inter-level dielectrics</b>, not the gate oxide — the two are often conflated.</td></tr>
+<tr><td class="nw">Automotive tightening</td>
+  <td class="nw"><a href="http://www.aecouncil.com/Documents/AEC_Q100_Rev_H_Base_Document.pdf">AEC-Q100</a></td>
+  <td>Defines temperature grades and the stress-test matrix. <b>Doesn't directly specify a TDDB year requirement</b> — instead it raises the use-temperature ceiling,
+  and the automaker's mission profile then sets the actual lifetime target.</td></tr>
+</tbody>
+</table>
+
+<h2>Two kinds of measurement, completely different purposes</h2>
+<div class="cmp">
+<div class="col"><div class="h">Wafer-level fast screen: V-Ramp / J-Ramp</div>
+<div style="font-size:15.5px;line-height:1.85">
+Ramp voltage (or current) up until breakdown, measuring <b>V<sub>BD</sub></b> or <b>Q<sub>BD</sub></b> (total charge passed before breakdown).<br>
+<b>Seconds per device</b> — hundreds of points can be measured on a single wafer.<br>
+<span class="badge ok">Used for</span> process-stability monitoring, extrinsic-defect screening, lot-to-lot comparison.<br>
+<span class="badge bad">Cannot</span> extrapolate a ten-year lifetime directly — the field at breakdown is far above the use field, so the extrapolation distance is too large.</div></div>
+<div class="col"><div class="h">Constant-voltage TDDB: the t<sub>BD</sub> distribution</div>
+<div style="font-size:15.5px;line-height:1.85">
+Hold one (or several) stress voltages fixed and measure the <b>time</b> to breakdown, obtaining the Weibull β and η.<br>
+<b>Hours to hundreds of hours per set</b>, needing dozens of devices per condition to pin down β.<br>
+<span class="badge ok">Used for</span> obtaining voltage and temperature acceleration parameters for lifetime extrapolation — <b>this is where spec numbers actually come from</b>.<br>
+<span class="badge bad">Cost</span> slow and expensive, and choosing too high a stress voltage drifts away from use-condition physics.</div></div>
+</div>
+<p class="note">In practice the two are paired: V-Ramp / J-Ramp runs daily as a process sentinel, while constant-voltage TDDB is done at process qualification and periodic reliability audits.</p>
+
+<h2>What a TDDB spec actually has to state</h2>
+<div class="spec"><div class="t">A TDDB spec must cover all six of these at once</div>
+<table style="margin:8px 0 0"><tbody>
+<tr><td class="nw"><b>① Use condition</b></td><td>V<sub>use</sub> (including overdrive / surges) and T<sub>use</sub>. Leave out temperature and the number is meaningless.</td></tr>
+<tr><td class="nw"><b>② Area</b></td><td>The product's <b>total gate area</b> (not the test capacitor's area). Something that differs by orders of magnitude can't be omitted.</td></tr>
+<tr><td class="nw"><b>③ Target lifetime</b></td><td>10 years? 15 years? Plus the effective duty cycle.</td></tr>
+<tr><td class="nw"><b>④ Target failure rate</b></td><td>E.g. ≤ 100 ppm (commercial) or ≤ 1 ppm (automotive). <b>This is the core quantity in a TDDB spec.</b></td></tr>
+<tr><td class="nw"><b>⑤ Acceleration model & parameters</b></td><td>E-model / 1/E / power law, plus γ, G, n, E<sub>a</sub>. <b>A lifetime number with no stated model cannot be verified.</b></td></tr>
+<tr><td class="nw"><b>⑥ Confidence level</b></td><td>E.g. "at 60% confidence." Sample sizes are limited, so a point estimate must come with a confidence interval.</td></tr>
+</tbody></table></div>
+
+<div class="key"><b>Compare this to HCI.</b> HCI's spec reads "at V<sub>D</sub> = some value, ΔI<sub>dsat</sub> ≤ 10% after 10 years" —
+a <b>parameter threshold</b>. TDDB's spec reads "failure rate ≤ 1 ppm after 10 years" — a <b>probability</b>.
+The two can't be translated into each other, because the underlying failure modes are fundamentally different (continuous drift vs. one-shot breakdown).
+That's also why a TDDB report always comes with a Weibull plot, while an HCI report comes with a degradation curve.</div>
+
+<h2>Commercial vs. automotive grade: the same device, a different verdict</h2>
+<p>Below, using Stage 4's model: fix one device and one measured calibration point,
+swap in each AEC-Q100 grade's <b>ceiling</b> use temperature, and watch the ten-year 1-ppm verdict flip.</p>
+</div>
+
+<div class="card">
+<div class="ctrls" style="margin-bottom:12px">
+<div class="ctrl"><label><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub>（決定 β = t<sub>ox</sub>/a₀）</span><span lang="en">Oxide thickness t<sub>ox</sub> (sets β = t<sub>ox</sub>/a₀)</span></label>
+  <div class="row"><input type="range" id="sTox" min="1.5" max="8" step="0.1" value="3.5"><span class="val" id="svTox"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">使用電壓 V<sub>use</sub></span><span lang="en">Use voltage V<sub>use</sub></span></label>
+  <div class="row"><input type="range" id="sVu" min="0.6" max="4" step="0.05" value="1.8"><span class="val" id="svVu"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">產品閘極總面積</span><span lang="en">Product total gate area</span></label>
+  <div class="row"><input type="range" id="sA" min="-3" max="0.3" step="0.05" value="-1"><span class="val" id="svA"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">目標壽命</span><span lang="en">Target lifetime</span></label>
+  <div class="row"><input type="range" id="sY" min="1" max="20" step="1" value="10"><span class="val" id="svY"></span></div></div>
+</div>
+<p class="note" lang="zh-Hant" style="margin:0 0 10px">校正點固定為：應力 4.0 V @ 125 °C 量到 t<sub>63</sub> = 10 小時，
+測試電容 1×10⁻⁴ cm²，E-model（γ = 2.0 cm/MV）、E<sub>a</sub> = 0.75 eV。</p>
+<p class="note" lang="en" style="margin:0 0 10px">Calibration point fixed at: stress 4.0 V @ 125 °C giving t<sub>63</sub> = 10 hours,
+test capacitor 1×10⁻⁴ cm², E-model (γ = 2.0 cm/MV), E<sub>a</sub> = 0.75 eV.</p>
+<table><thead><tr>
+<th class="nw"><span lang="zh-Hant">等級</span><span lang="en">Grade</span></th>
+<th class="nw"><span lang="zh-Hant">使用溫度上限</span><span lang="en">Use-temperature ceiling</span></th>
+<th class="nw"><span lang="zh-Hant">目標失效率</span><span lang="en">Target failure rate</span><br><span class="note" style="font-size:12.5px"><span lang="zh-Hant">（客戶端示意，非 AEC 條文）</span><span lang="en">(illustrative customer spec, not AEC wording)</span></span></th>
+<th class="nw"><span lang="zh-Hant">算出的壽命</span><span lang="en">Computed lifetime</span></th>
+<th class="nw"><span lang="zh-Hant">判定</span><span lang="en">Verdict</span></th>
+</tr></thead><tbody id="gradeTb"></tbody></table>
+<p class="note" id="gnote4" style="margin-top:10px"></p>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>注意判定翻盤的方式。</b>從商規（Grade 3 溫度 + 100 ppm）換到車規（Grade 0 溫度 + 1 ppm），
+壽命同時被<b>溫度</b>與<b>失效率</b>兩刀砍。
+其中失效率那一刀的大小完全由 β 決定 —— 也就是由 t<sub>ox</sub> 決定。
+<b>薄氧製程要進車規，難的通常不是平均壽命，是分布的尾巴。</b></div>
+
+<h2>TDDB 資料的三層分工</h2>
+<table><thead><tr><th class="nw">角色</th><th>對 TDDB 要交出什麼</th><th class="nw">依據</th></tr></thead><tbody>
+<tr><td class="nw"><b>Foundry</b></td>
+  <td>Weibull β 與 η、加速模型與參數（γ 或 n 或 G、E<sub>a</sub>）、面積縮放的驗證、
+  以及本質／外質雙分布的分離結果。<b>交的是分布與模型，不是單一壽命數字。</b>
+  另外要交<b>製程監控資料</b>（V-Ramp / J-Ramp 的 wafer map 與趨勢）證明外質缺陷受控。</td>
+  <td class="nw">JESD263、JEP122H</td></tr>
+<tr><td class="nw"><b>IC 設計</b></td>
+  <td>算出自家電路的<b>實際閘極總面積</b>與各節點的真實電壓應力
+  （包含 overdrive、上電突波、charge pump 節點），代進 foundry 的模型求失效率。</td>
+  <td class="nw">PDK 可靠度模型</td></tr>
+<tr><td class="nw"><b>產品 / 品保</b></td>
+  <td>HTOL 與 burn-in。<b>這一層對 TDDB 是看得到的</b> —— 高溫高壓確實會加速 TDDB，
+  burn-in 更是專門用來燒掉外質早夭品。</td>
+  <td class="nw">JESD47、AEC-Q100</td></tr>
+</tbody></table>
+<p class="note"><b>跟 HCI 的關鍵差異：</b>HCI 在產品級測試裡幾乎看不到（E<sub>a</sub> 為負），
+TDDB 則會在 HTOL 與 burn-in 中真實地被加速。所以 TDDB 有一個 HCI 沒有的工具 ——
+<b>burn-in 可以篩掉外質失效</b>，但對本質 TDDB 無效（本質壽命還遠得很，burn-in 只是消耗了一點點）。</p>
+
+<h2>來源與查證狀態</h2>
+<p class="note">依照「呈現的資料事實必須與來源相同」的原則，以下標明每一項的查證狀態。</p>
+<table><thead><tr><th class="nw">狀態</th><th>內容與出處</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd263">JEDEC JESD263</a> 官方頁面：
+  標題 <i>Gate Dielectric Breakdown</i>、2024 年 3 月、狀態 Published、委員會 JC-14 / JC-14.2、
+  scope <i>“This document describes procedures developed for estimating the overall integrity of gate dielectrics.”</i>、
+  並註明 supersedes JESD35A / JESD35-1 / JESD35-2 / JESD92。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a> 官方頁面：
+  2003 年 8 月、<b>Rescinded (June 2024)</b>、superseded by JESD263；
+  scope 為 <i>“a constant voltage stress test procedure for characterizing time-dependent dielectric breakdown
+  or ‘wear-out’ of thin gate dielectrics”</i>，並說明附錄涵蓋測試結構、電場判定、統計模型、外推與失效率計算。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-35">JESD35A</a>：2001 年 4 月、Rescinded (June 2024)、JC-14.2；
+  原文 <i>“Three basic test procedures are described, the Voltage-Ramp (V-Ramp), the Current-Ramp (J-Ramp)
+  and the new Constant Current (Bounded J-Ramp) test.”</i>
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-2">JESD35-2</a>：1996 年 2 月、Rescinded (June 2024)，
+  內容為補充 end point 判定準則。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已核對</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jep-122e">JEP122H</a>：2016 年 9 月、Published、
+  《Failure Mechanisms and Models for Semiconductor Devices》，提供活化能與加速因子並採 Sum-of-the-Failure-Rates 方法。
+  <a href="https://www.jedec.org/taxonomy/term/3219">JEP159A</a>（2015 年 7 月）為 low-k 層間介電質，非閘極氧化層。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 未取得全文</span></td>
+  <td><b>JESD263 全文未取得</b>（需註冊下載）。本頁對其涵蓋範圍的描述僅根據官方頁面的標題、scope 與取代關係，
+  <b>沒有逐條核對條文</b>。實際引用請以標準本文為準。
+  「一份 TDDB 規格要寫哪六件事」是業界通行做法的整理，<b>不是 JESD263 的條文</b>。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 業界慣例</span></td>
+  <td>「商規 100 ppm / 車規 1 ppm」「車規 10～15 年 mission profile」為<b>常見數量級示意</b>，
+  各家客戶規格差異很大，<b>並非 AEC-Q100 或 JEDEC 的條文</b>。AEC-Q100 定的是溫度等級與應力測試條件。
+  溫度等級（Grade 0 = −40~150 °C、1 = −40~125 °C、2 = −40~105 °C、3 = −40~85 °C）
+  已於 HCI 模組的規格頁核對過來源。</td></tr>
+<tr><td class="nw"><span class="badge bad">模型輸出</span></td>
+  <td>上方「商規 vs 車規」表格中的壽命數字，全部由本教材的簡化模型計算，<b>不是量測資料</b>，
+  且對加速模型與參數極度敏感（見階段 4：換一個模型可以差 10⁵ 倍）。
+  <b>可以用來理解各項因素的方向與量級，不可作為任何判定依據。</b></td></tr>
+</tbody></table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>同事拿一份 2019 年寫的可靠度報告，引用 JESD92 作為 TDDB 的依據。要更新嗎？</summary><div class="a">要。<a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a> 已於 2024 年 6 月 rescinded，由 2024 年 3 月發行的 <a href="https://www.jedec.org/standards-documents/docs/jesd263">JESD263《Gate Dielectric Breakdown》</a> 取代，同時被取代的還有 JESD35A、JESD35-1、JESD35-2。報告的<b>物理與方法未必要改</b>（定電壓應力仍然是定電壓應力），但引用的文件編號必須更新，而且應該回頭確認 JESD263 有沒有引入新的判定準則。</div></details><details><summary>為什麼 V-Ramp 的 V<sub>BD</sub> 資料很漂亮，卻不能拿來保證十年壽命？</summary><div class="a">因為 V-Ramp 在<b>遠高於使用電場</b>的條件下崩潰（通常 10 MV/cm 以上），而使用電場可能只有 4～6 MV/cm。從那裡外推到十年，等於把階段 4 的「加速模型分歧」放大到極致 —— 不同模型可以差 10 個數量級以上。V-Ramp 的價值在<b>相對比較</b>（這批 vs 上批、這台機台 vs 那台），不在絕對壽命。</div></details><details><summary>HTOL（125 °C / 1000 h）對 TDDB 和 HCI 的意義為什麼相反？</summary><div class="a">因為活化能的正負號相反。TDDB 的 E<sub>a</sub> ≈ +0.75 eV，高溫加速崩潰，所以 125 °C 的 HTOL 對 TDDB 是<b>真的在加速</b>。HCI 的 E<sub>a</sub> 是<b>負的</b>（低溫更嚴重），125 °C 反而是 HCI 最溫和的條件之一 —— HTOL 過了不代表 HCI 沒問題。同一份 HTOL 資料，對兩個機制的解釋完全不同。</div></details><details><summary>Burn-in 能不能改善 TDDB？</summary><div class="a">要分本質與外質。<b>外質失效</b>（針孔、微粒、電漿損傷造成的局部薄點）壽命很短，burn-in 的高溫高壓確實會把它們燒出來，出貨前就被篩掉 —— 這是 burn-in 的主要價值。<b>本質 TDDB</b> 的壽命遠長於 burn-in 時間，burn-in 只消耗掉可忽略的一小段，改善不了。而且 burn-in 本身就在累積 TDDB 損傷，條件太兇反而會傷到好品。</div></details><details><summary>身為 foundry，客戶問「你們這個製程的閘極氧化層可以撐幾年？」，該怎麼回答？</summary><div class="a">不能直接給年數 —— 那個數字取決於<b>客戶自己的</b>使用電壓、溫度、閘極總面積與目標失效率，這四項你都不知道。正確的交付是<b>模型與分布</b>：Weibull β 與 η、加速模型形式與參數（γ / n / G、E<sub>a</sub>）、各參數的適用範圍、面積縮放的驗證資料，以及製程監控證明外質缺陷受控。再附上一組「典型條件下的示範計算」讓客戶知道怎麼用。這跟 HCI 的邏輯完全一樣：<b>foundry 交模型，不交結論。</b></div></details></div>
+<div class="pager"><a class="prev" href="tddb-4-model.html"><div class="d">← 上一課 · 階段 4</div><div class="t">統計與外推</div></a><a class="next" href="tddb-6-fix.html"><div class="d">下一課 · 階段 6 →</div><div class="t">如何防治</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<div class="key"><b>Notice how the verdict flips.</b> Moving from commercial grade (Grade 3 temperature + 100 ppm) to automotive grade (Grade 0 temperature + 1 ppm),
+lifetime gets cut twice — once by <b>temperature</b> and once by <b>failure rate</b>.
+The size of the failure-rate cut is entirely determined by β — which is to say, by t<sub>ox</sub>.
+<b>For a thin-oxide process to reach automotive grade, the hard part usually isn't the average lifetime — it's the tail of the distribution.</b></div>
+
+<h2>The three-tier division of TDDB responsibility</h2>
+<table><thead><tr><th class="nw">Role</th><th>What they must deliver for TDDB</th><th class="nw">Basis</th></tr></thead><tbody>
+<tr><td class="nw"><b>Foundry</b></td>
+  <td>Weibull β and η, the acceleration model and its parameters (γ or n or G, E<sub>a</sub>), verification of area scaling,
+  and the separated intrinsic/extrinsic two-population fit. <b>What's delivered is a distribution and a model, not a single lifetime number.</b>
+  Also required: <b>process monitoring data</b> (V-Ramp / J-Ramp wafer maps and trends) proving extrinsic defects are under control.</td>
+  <td class="nw">JESD263, JEP122H</td></tr>
+<tr><td class="nw"><b>IC design</b></td>
+  <td>Computes the circuit's own <b>actual total gate area</b> and the real voltage stress at each node
+  (including overdrive, power-up surges, charge-pump nodes), and plugs these into the foundry's model to get a failure rate.</td>
+  <td class="nw">PDK reliability model</td></tr>
+<tr><td class="nw"><b>Product / quality</b></td>
+  <td>HTOL and burn-in. <b>This is the layer where TDDB is actually visible</b> — high temperature and high voltage genuinely accelerate it,
+  and burn-in is specifically used to burn out extrinsic early failures.</td>
+  <td class="nw">JESD47, AEC-Q100</td></tr>
+</tbody></table>
+<p class="note"><b>The key difference from HCI:</b> HCI is nearly invisible in product-level testing (its E<sub>a</sub> is negative),
+while TDDB genuinely does get accelerated during HTOL and burn-in. So TDDB has a tool HCI doesn't —
+<b>burn-in can screen out extrinsic failures</b>, though it has no effect on intrinsic TDDB (the intrinsic lifetime is still far away; burn-in only consumes a negligible sliver of it).</p>
+
+<h2>Sources and verification status</h2>
+<p class="note">Following the principle that "the facts presented must match the source," each item below is labeled with its verification status.</p>
+<table><thead><tr><th class="nw">Status</th><th>Content and source</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ Verified word-for-word</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd263">JEDEC JESD263</a> official page:
+  title <i>Gate Dielectric Breakdown</i>, March 2024, status Published, committee JC-14 / JC-14.2,
+  scope <i>"This document describes procedures developed for estimating the overall integrity of gate dielectrics,"</i>
+  and it's noted as superseding JESD35A / JESD35-1 / JESD35-2 / JESD92.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verified word-for-word</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a> official page:
+  August 2003, <b>Rescinded (June 2024)</b>, superseded by JESD263;
+  scope is <i>"a constant voltage stress test procedure for characterizing time-dependent dielectric breakdown
+  or 'wear-out' of thin gate dielectrics,"</i> with appendices covering test structures, field determination, statistical models, extrapolation, and failure-rate calculation.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verified word-for-word</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jesd-35">JESD35A</a>: April 2001, Rescinded (June 2024), JC-14.2;
+  original text: <i>"Three basic test procedures are described, the Voltage-Ramp (V-Ramp), the Current-Ramp (J-Ramp)
+  and the new Constant Current (Bounded J-Ramp) test."</i>
+  <a href="https://www.jedec.org/standards-documents/docs/jesd-35-2">JESD35-2</a>: February 1996, Rescinded (June 2024),
+  content supplements end-point pass/fail criteria.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verified</span></td>
+  <td><a href="https://www.jedec.org/standards-documents/docs/jep-122e">JEP122H</a>: September 2016, Published,
+  "Failure Mechanisms and Models for Semiconductor Devices," provides activation energies and acceleration factors using the Sum-of-the-Failure-Rates method.
+  <a href="https://www.jedec.org/taxonomy/term/3219">JEP159A</a> (July 2015) covers low-k inter-level dielectrics, not the gate oxide.</td></tr>
+<tr><td class="nw"><span class="badge warn">! Full text not obtained</span></td>
+  <td><b>The full text of JESD263 was not obtained</b> (requires registration to download). This page's description of its scope is based only on the official page's title, scope statement, and supersession record —
+  <b>the clauses themselves were not checked line by line</b>. For actual citation, refer to the standard's own text.
+  "The six things a TDDB spec must state" is a summary of common industry practice, <b>not clauses from JESD263</b>.</td></tr>
+<tr><td class="nw"><span class="badge warn">! Industry convention</span></td>
+  <td>"100 ppm commercial / 1 ppm automotive" and "10–15 year automotive mission profile" are <b>illustrative, commonly cited orders of magnitude</b>;
+  actual customer specs vary widely and <b>these are not clauses from AEC-Q100 or JEDEC</b>. AEC-Q100 defines temperature grades and stress-test conditions.
+  The temperature grades (Grade 0 = −40 to 150 °C, 1 = −40 to 125 °C, 2 = −40 to 105 °C, 3 = −40 to 85 °C)
+  were already verified against their source on the HCI module's spec page.</td></tr>
+<tr><td class="nw"><span class="badge bad">Model output</span></td>
+  <td>The lifetime numbers in the "commercial vs. automotive" table above are all computed by this coursework's simplified model, <b>not measured data</b>,
+  and are extremely sensitive to the acceleration model and its parameters (see Stage 4: swapping models can shift the answer by 10⁵×).
+  <b>Use them to understand the direction and magnitude of each factor — never as a basis for any actual pass/fail decision.</b></td></tr>
+</tbody></table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>A colleague has a 2019 reliability report citing JESD92 as the basis for TDDB. Does it need updating?</summary><div class="a">Yes. <a href="https://www.jedec.org/standards-documents/docs/jesd-92">JESD92</a> was rescinded in June 2024, replaced by <a href="https://www.jedec.org/standards-documents/docs/jesd263">JESD263 "Gate Dielectric Breakdown"</a> (published March 2024), which also replaced JESD35A, JESD35-1, and JESD35-2. The report's <b>physics and method don't necessarily need to change</b> (constant-voltage stress is still constant-voltage stress), but the cited document numbers must be updated, and it's worth checking whether JESD263 introduced any new pass/fail criteria.</div></details><details><summary>Why can't beautiful V-Ramp V<sub>BD</sub> data be used to guarantee a ten-year lifetime?</summary><div class="a">Because V-Ramp breaks down under a field <b>far above the use field</b> (usually above 10 MV/cm), while the use field might only be 4–6 MV/cm. Extrapolating from there to ten years pushes Stage 4's "acceleration-model divergence" to its extreme — different models can disagree by more than 10 orders of magnitude. V-Ramp's value is in <b>relative comparison</b> (this lot vs. the last one, this tool vs. that one), not absolute lifetime.</div></details><details><summary>Why does HTOL (125 °C / 1000 h) mean opposite things for TDDB and HCI?</summary><div class="a">Because their activation energies have opposite signs. TDDB's E<sub>a</sub> ≈ +0.75 eV, so high temperature accelerates breakdown, meaning 125 °C HTOL is <b>genuinely accelerating</b> for TDDB. HCI's E<sub>a</sub> is <b>negative</b> (worse at low temperature), so 125 °C is actually one of HCI's gentlest conditions — passing HTOL says nothing about whether HCI is fine. The same HTOL data means something completely different for the two mechanisms.</div></details><details><summary>Can burn-in improve TDDB?</summary><div class="a">You have to separate intrinsic from extrinsic. <b>Extrinsic failures</b> (local thin spots from pinholes, particles, plasma damage) have short lifetimes, and burn-in's high temperature and voltage genuinely burn them out before shipment — that's burn-in's main value. <b>Intrinsic TDDB</b>'s lifetime is far longer than the burn-in duration, so burn-in only consumes a negligible sliver of it and can't improve it. And burn-in itself accumulates TDDB damage — push the conditions too hard and it can actually damage good parts.</div></details><details><summary>As a foundry, a customer asks "how many years can your process's gate oxide last?" How should you answer?</summary><div class="a">You can't give a year number directly — that number depends on <b>the customer's own</b> use voltage, temperature, total gate area, and target failure rate, none of which you know. The correct deliverable is <b>a model and a distribution</b>: Weibull β and η, the acceleration model's form and parameters (γ / n / G, E<sub>a</sub>), each parameter's valid range, area-scaling verification data, and process-monitoring evidence that extrinsic defects are controlled. Attach a worked example under typical conditions so the customer knows how to use it. The logic is exactly the same as HCI: <b>the foundry delivers a model, not a conclusion.</b></div></details></div>
+<div class="pager"><a class="prev" href="tddb-4-model.html"><div class="d">← Previous · Stage 4</div><div class="t">Statistics & Extrapolation</div></a><a class="next" href="tddb-6-fix.html"><div class="d">Next · Stage 6 →</div><div class="t">Mitigation</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+const S4={tox:3.5,Vu:1.8,A:0.1,Y:10};
+const VS4=4.0, TS4=125, TA4=10*3600, ATEST=1e-4, GAM4=2.0, EA4=0.75;
+const GRADES=[
+  {n:'Grade 0',T:150,F:1e-6,tag:['車規最嚴（引擎艙）','Strictest automotive grade (engine bay)']},
+  {n:'Grade 1',T:125,F:1e-6,tag:['車規主流','Mainstream automotive']},
+  {n:'Grade 2',T:105,F:1e-5,tag:['車艙內','Passenger cabin']},
+  {n:'Grade 3',T:85, F:1e-4,tag:['商規 / 一般車艙','Commercial / general cabin']}];
+function life4(g){
+  const b=beta_of(S4.tox);
+  const dE=Eox(VS4,S4.tox)-Eox(S4.Vu,S4.tox);
+  const fV=Math.exp(GAM4*dE);
+  const fT=Math.exp(EA4/KB*(1/(g.T+273.15)-1/(TS4+273.15)));
+  const t63use=TA4*fV*fT;
+  const fA=Math.pow(ATEST/S4.A,1/b);
+  const fF=Math.pow(-Math.log(1-g.F),1/b);
+  return {b:b,t:t63use*fA*fF,t63:t63use,fA:fA,fF:fF,fV:fV,fT:fT};
+}
+function upd4(){
+  $('svTox').textContent=S4.tox.toFixed(1)+' nm (β≈'+beta_of(S4.tox).toFixed(1)+')';
+  $('svVu').textContent=S4.Vu.toFixed(2)+' V ('+Eox(S4.Vu,S4.tox).toFixed(1)+' MV/cm)';
+  $('svA').textContent=S4.A.toPrecision(2)+' cm²';
+  $('svY').textContent=S4.Y+' '+L('年','yr');
+  const target=S4.Y*365.25*86400;
+  let h='';
+  GRADES.forEach(function(g){
+    const r=life4(g), ok=r.t>=target;
+    h+='<tr><td class="nw"><b>'+g.n+'</b><br><span class="note" style="font-size:13px">'+L(g.tag[0],g.tag[1])+'</span></td>'+
+       '<td class="nw">'+g.T+' °C</td>'+
+       '<td class="nw">'+(g.F*1e6)+' ppm</td>'+
+       '<td class="nw">'+fmtYears(r.t)+'</td>'+
+       '<td class="nw"><span class="badge '+(ok?'ok">✓ '+L('通過','pass'):'bad">✗ '+L('不過','fail'))+'</span></td></tr>';
+  });
+  $('gradeTb').innerHTML=h;
+  const r0=life4(GRADES[0]), r3=life4(GRADES[3]);
+  $('gnote4').innerHTML=L(
+    '拆解一下 Grade 0 相對 Grade 3 的差距：'+
+    '溫度從 85 °C 到 150 °C 讓壽命變成 <b>'+(r0.fT/r3.fT).toFixed(3)+'</b> 倍；'+
+    '失效率從 100 ppm 收到 1 ppm 讓壽命再變成 <b>'+(r0.fF/r3.fF).toFixed(3)+'</b> 倍。'+
+    '（β = '+r0.b.toFixed(1)+'）　'+
+    (r0.fF/r3.fF < r0.fT/r3.fT
+      ? '<b>此時失效率那一刀比溫度更痛 —— 這是薄氧製程的典型情況。</b>'
+      : '<b>此時溫度那一刀比失效率更痛 —— 厚氧製程 β 大，尾巴短，比較耐得住 ppm 要求。</b>'),
+    'Breaking down the gap between Grade 0 and Grade 3: '+
+    'going from 85 °C to 150 °C changes lifetime by <b>'+(r0.fT/r3.fT).toFixed(3)+'×</b>; '+
+    'tightening the failure rate from 100 ppm to 1 ppm changes it by another <b>'+(r0.fF/r3.fF).toFixed(3)+'×</b>. '+
+    '(β = '+r0.b.toFixed(1)+')　'+
+    (r0.fF/r3.fF < r0.fT/r3.fT
+      ? '<b>Here the failure-rate cut hurts more than the temperature cut — typical for a thin-oxide process.</b>'
+      : '<b>Here the temperature cut hurts more than the failure-rate cut — a thick-oxide process has a large β, a short tail, and tolerates the ppm requirement better.</b>')
+  );
+}
+[['sTox',v=>S4.tox=v],['sVu',v=>S4.Vu=v],['sA',v=>S4.A=Math.pow(10,v)],['sY',v=>S4.Y=v]]
+  .forEach(function(p){$(p[0]).addEventListener('input',function(e){p[1](parseFloat(e.target.value));upd4();});});
+window.__rebuild=upd4;
+upd4();
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

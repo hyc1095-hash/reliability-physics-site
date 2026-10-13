@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Black 方程式與常見金屬互連材料（Al、Al-Cu、Cu 介電質/金屬 cap、W）的晶界擴散與介面擴散活化能對照表。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 2 · Black 方程式與材料活化能">
+<meta property="og:description" content="Al、Cu 各種 cap 製程的晶界／介面擴散活化能，附逐項來源。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 2 · Black 方程式與材料活化能 · 電遷移</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">EM · 電遷移</span><div class="steps"><a href="em.html"><span class="n">0</span>課程地圖</a><a href="em-1-intuition.html"><span class="n">1</span>直覺</a><a href="em-2-model.html" aria-current="page"><span class="n">2</span>Black 方程式與材料</a><a href="em-3-blech.html"><span class="n">3</span>Blech 長度</a><a href="em-4-spec.html"><span class="n">4</span>統計與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:40%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 2 / 4 · Black 方程式與材料活化能</p>
+<h1>業界標準壽命模型，以及「材料到底怎麼選」</h1>
+<p class="lede">Black 方程式把電流密度與溫度兩個應力參數整理成一個壽命式。
+但式子裡的 E<sub>a</sub> 高度材料與製程相依 —— 這一頁把常見金屬系統的晶界擴散與介面擴散活化能整理成表，
+這也是你在製程選擇（Al vs Cu、介電質 cap vs 金屬 cap）時真正在動的那個參數。</p>
+
+<div class="eq"><span class="lbl">Black 方程式</span>
+MTF = A · J<sup>−n</sup> · exp( E<sub>a</sub> / kT )
+<span class="say">MTF：中位數失效時間。A：製程相關前置係數（未校準，見下方誠實邊界）。
+n：電流密度指數，典型 1（純空洞成核主導）～2（經典空洞成長主導，設計上常保守取 2）。
+E<sub>a</sub>：主導擴散路徑的活化能 —— <b>這是材料選擇真正影響的參數</b>。</span></div>
+
+<h2>材料活化能對照表（晶界擴散 vs 介面擴散）</h2>
+<p>下表整理常見金屬互連系統，區分<b>晶界擴散</b>與<b>介面擴散</b>兩條路徑各自報告的活化能量級。
+比照本站材料表的規則：來源分歧就兩個都列，查不到就寫「未查證」。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 2 / 4 · The Black Equation & Material Activation Energy</p>
+<h1>The industry-standard lifetime model, and "how to actually pick a material"</h1>
+<p class="lede">The Black equation folds two stress parameters — current density and temperature — into a single lifetime formula.
+But the E<sub>a</sub> inside it is highly material- and process-dependent — this page tables the grain-boundary and interface diffusion activation energies for common metal systems,
+which is also the exact parameter you're actually moving when you choose a process (Al vs. Cu, dielectric cap vs. metal cap).</p>
+
+<div class="eq"><span class="lbl">The Black equation</span>
+MTF = A · J<sup>−n</sup> · exp( E<sub>a</sub> / kT )
+<span class="say">MTF: median time to failure. A: a process-dependent prefactor (uncalibrated — see the honesty note below).
+n: the current-density exponent, typically 1 (pure void-nucleation-dominated) to 2 (classic void-growth-dominated; design work often conservatively uses 2).
+E<sub>a</sub>: the activation energy of the dominant diffusion path — <b>this is the parameter material choice actually affects</b>.</span></div>
+
+<h2>Material activation-energy table (grain-boundary vs. interface diffusion)</h2>
+<p>The table below covers common metal-interconnect systems, separating the activation-energy scale reported for the <b>grain-boundary diffusion</b> path from the <b>interface diffusion</b> path.
+Following this site's standard convention for material tables: list both values where sources disagree, and mark "unverified" where nothing could be found.</p>
+</div>
+
+<table class="tbl-sm"><thead><tr>
+<th class="nw"><span lang="zh-Hant">材料系統</span><span lang="en">Material system</span></th>
+<th class="nw"><span lang="zh-Hant">主導擴散路徑</span><span lang="en">Dominant diffusion path</span></th>
+<th class="n">E<sub>a</sub>（eV）</th>
+<th><span lang="zh-Hant">備註與來源</span><span lang="en">Notes & sources</span></th>
+</tr></thead><tbody>
+<tr><td class="nw"><b><span lang="zh-Hant">純 Al</span><span lang="en">Pure Al</span></b></td><td class="nw"><span lang="zh-Hant">晶界擴散</span><span lang="en">Grain-boundary diffusion</span></td><td class="n">0.4–0.5</td>
+ <td><span lang="zh-Hant">純鋁幾乎完全依賴晶界擴散（表面氧化層封住表面路徑）。精密量測法（陽極位移法，排除混雜路徑）給 0.43–0.47。
+ 早期各種量測技術報告範圍可達 0.3–1.2，該類回顧文章指出多數方法本身有系統誤差，不建議直接引用寬範圍</span>
+ <span lang="en">Pure Al depends almost entirely on grain-boundary diffusion (the native surface oxide seals off the surface path). Precision methods (anode-displacement, which excludes mixed paths) give 0.43–0.47.
+ Early measurement techniques of various kinds report a range up to 0.3–1.2; a review of that literature notes most of those methods carry their own systematic error, and cautions against citing the wide range directly.</span>
+ <span class="src">ScienceDirect：Al 晶界電遷移活化能回顧（Eg=0.4–0.5±0.04 eV）；同系列精密量測法論文（0.43–0.47 eV）</span></td></tr>
+<tr><td class="nw"><b><span lang="zh-Hant">Al–Cu 合金</span><span lang="en">Al–Cu alloy</span></b>（0.5–4 wt% Cu）</td><td class="nw"><span lang="zh-Hant">晶界擴散（Cu 偏析釘扎晶界）</span><span lang="en">Grain-boundary diffusion (Cu segregation pins the boundaries)</span></td>
+ <td class="n"><span class="badge warn">分歧</span> 0.6 / 0.7 / 0.95</td>
+ <td><span lang="zh-Hant">三種說法都在流通：IBM 早期量測認為 <b>E<sub>a</sub> 與純 Al 相同（0.6 eV）</b>，但遷移速率降低達 100 倍；
+ 另一批文獻報告 E<sub>a</sub> 本身提升到 <b>0.7 eV</b>；第一原理計算給 Cu 在晶界的擴散 E<sub>a</sub> ≈ 0.95 eV，
+ 解釋為何 Cu 優先擴散、暫時抑制 Al 的晶界路徑（incubation 效應）。
+ <b>Cu 摻雜的具體機制近年仍有文獻互相挑戰，未有共識</b>，請勿只引用單一數字</span>
+ <span lang="en">Three accounts all circulate: early IBM measurements found <b>E<sub>a</sub> equal to pure Al (0.6 eV)</b>, but with the migration rate cut by up to 100×;
+ another body of literature reports E<sub>a</sub> itself rising to <b>0.7 eV</b>; first-principles calculations give Cu's grain-boundary diffusion E<sub>a</sub> ≈ 0.95 eV,
+ explaining why Cu diffuses preferentially and temporarily suppresses Al's grain-boundary path (the incubation effect).
+ <b>The specific mechanism of Cu doping is still actively contested in recent literature, with no consensus</b> — don't cite a single number here.</span>
+ <span class="src">IBM J. Res. Dev. 15,378 (1971)；ScienceDirect 第一原理計算論文（Cu 偏析 GB）</span></td></tr>
+<tr><td class="nw"><b>Cu</b>（damascene，<span lang="zh-Hant">多晶／晶界主導，線寬 &gt; 1 μm</span><span lang="en">polycrystalline / grain-boundary dominated, width &gt; 1 μm</span>）</td><td class="nw"><span lang="zh-Hant">晶界擴散</span><span lang="en">Grain-boundary diffusion</span></td>
+ <td class="n">0.65–0.80</td>
+ <td><span lang="zh-Hant">較舊文獻曾報告約 1.2（可能未分離介面路徑，高估了晶界擴散本身的 E<sub>a</sub>）</span>
+ <span lang="en">Older literature once reported around 1.2 (likely because the interface path wasn't separated out, overestimating grain-boundary diffusion's own E<sub>a</sub>).</span>
+ <span class="src">J. Appl. Phys. 93,192 (2003)：晶界 vs 介面擴散證據；MRS OPL 427,121 (1996)：1.2 eV 舊值</span></td></tr>
+<tr><td class="nw"><b>Cu</b>（damascene，<span lang="zh-Hant">窄線／準竹狀，<b>介電質覆蓋層</b> SiN／SiCN</span><span lang="en">narrow / quasi-bamboo, <b>dielectric capping layer</b> SiN / SiCN</span>）</td>
+ <td class="nw"><span lang="zh-Hant">Cu／cap 介面擴散</span><span lang="en">Cu/cap interface diffusion</span></td><td class="n">0.80–1.06</td>
+ <td><span lang="zh-Hant">多組獨立文獻收斂在同一量級（0.85–1.1、約 1.0 皆有報告）；這是傳統 Cu 製程裡最弱的環節，
+ 比晶界擴散本身還弱 —— 也是先進節點 Cu EM 的主要瓶頸</span>
+ <span lang="en">Multiple independent studies converge on the same scale (0.85–1.1, and about 1.0, are both reported); this is the weakest link in a conventional Cu process,
+ weaker even than grain-boundary diffusion itself — and the main bottleneck for Cu EM in advanced nodes.</span>
+ <span class="src">J. Appl. Phys. 93,192 (2003)；Cadence 技術文件（surface/介面 0.7–0.9 一般性引用）</span></td></tr>
+<tr><td class="nw"><b>Cu</b>（<span lang="zh-Hant"><b>金屬覆蓋層</b> CoWP／CoSnP／Pd，取代介電質 cap</span><span lang="en"><b>metal capping layer</b> CoWP / CoSnP / Pd, replacing the dielectric cap</span>）</td>
+ <td class="nw"><span lang="zh-Hant">介面擴散被抑制，晶界／體擴散轉為主導</span><span lang="en">Interface diffusion is suppressed; grain-boundary/bulk diffusion takes over as dominant</span></td>
+ <td class="n"><span class="badge ok"><span lang="zh-Hant">顯著提升</span><span lang="en">Substantial improvement</span></span> 0.72–2.2</td>
+ <td><span lang="zh-Hant">金屬 cap 是單一改動裡對 Cu EM 壽命效果最大的一項（文獻報告可達 300 倍以上壽命改善），
+ 但活化能本身<b>強烈依賴晶粒結構</b>：同一批 CoWP 覆蓋樣品裡，近竹狀晶粒結構量到 2.2 eV、
+ 竹狀-多晶混合 1.7 eV、多晶為主 1.5 eV、<b>純多晶只剩 0.72 eV</b> —— 晶粒結構本身才是決定 E<sub>a</sub> 的關鍵變因，
+ 不是 cap 材料單獨決定。另一批獨立樣品（竹狀線）報告 CoWP cap 約 1.9–2.4，PVD Ta／Ta-TaN／Pd cap 約 1.4</span>
+ <span lang="en">A metal cap is the single most effective change for Cu EM lifetime (literature reports lifetime improvements of 300× or more),
+ but the activation energy itself is <b>strongly dependent on grain structure</b>: within the same batch of CoWP-capped samples, near-bamboo grain structure measured 2.2 eV,
+ mixed bamboo-polycrystalline 1.7 eV, mostly-polycrystalline 1.5 eV, and <b>pure polycrystalline only 0.72 eV</b> — grain structure itself is the key variable that determines E<sub>a</sub>,
+ not the cap material alone. A separate independent batch (bamboo-grain lines) reports CoWP cap around 1.9–2.4 and PVD Ta / Ta-TaN / Pd cap around 1.4.</span>
+ <span class="src">AIP Conf. Proc. 1601,67 (2014)：晶粒結構相依性；J. Appl. Phys. 系列 CoWP/Ta cap 比較（1.9–2.4、1.4 eV）；
+ ScienceDirect 綜述表（SiCN→CoWP：~1.0→~2.0 eV）</span></td></tr>
+<tr><td class="nw"><b>W</b>（<span lang="zh-Hant">鎢，via／local interconnect／contact 常用</span><span lang="en">tungsten, commonly used for vias / local interconnect / contacts</span>）</td>
+ <td class="nw">—</td><td class="n"><span class="badge warn"><span lang="zh-Hant">未查證</span><span lang="en">Unverified</span></span></td>
+ <td><span lang="zh-Hant">業界普遍認知鎢因熔點高、體擴散為主導而 EM 抗性遠優於 Al／Cu，實務上鎢栓塞很少被列為 EM 風險項；
+ 但本次查證<b>未取得具體活化能數字</b>，請不要把「業界共識鎢抗 EM」誤植為某個精確 eV 數值</span>
+ <span lang="en">It's commonly understood in industry that tungsten's high melting point and bulk-diffusion-dominated behavior make it far more EM-resistant than Al/Cu, and W plugs are rarely flagged as an EM risk in practice;
+ but this verification pass <b>could not find a specific activation-energy number</b> — don't mistake "industry consensus that W resists EM" for a precise eV value.</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<div class="key"><div class="t">這張表在說什麼</div>
+<p style="margin:0">Al→Al-Cu 是「堵住晶界」；Cu 的介電質 cap→金屬 cap 是「堵住介面」——
+兩次製程演進都是同一個邏輯：<b>把 E<sub>a</sub> 最低的那條擴散路徑升級成次低的路徑</b>。
+Black 方程式裡 E<sub>a</sub> 每提升約 0.1 eV，在 105°C 下 MTF 大約提升 30–50%（指數項的量級感）。</p></div>
+
+<h2>互動：Black 方程式計算器</h2>
+</div>
+<div lang="en">
+<div class="key"><div class="t">What this table is really saying</div>
+<p style="margin:0">Al→Al-Cu is "plug the grain boundary"; Cu's dielectric cap→metal cap is "plug the interface" —
+both process advances follow the exact same logic: <b>upgrade whichever diffusion path currently has the lowest E<sub>a</sub> to the next-lowest one</b>.
+For a sense of scale: in the Black equation, each roughly 0.1 eV increase in E<sub>a</sub> raises MTF at 105°C by about 30–50% (the exponential term's order of magnitude).</p></div>
+
+<h2>Interactive: Black-equation calculator</h2>
+</div>
+
+<div class="card">
+<div class="ctrls">
+  <div class="ctrl"><label for="J2"><span lang="zh-Hant">電流密度 J（MA/cm²）</span><span lang="en">Current density J (MA/cm²)</span></label>
+    <div class="row"><input type="range" id="J2" min="1" max="10" step="0.1" value="3"><span class="val" id="vJ2">3.0</span></div></div>
+  <div class="ctrl"><label for="T2"><span lang="zh-Hant">溫度 T（°C）</span><span lang="en">Temperature T (°C)</span></label>
+    <div class="row"><input type="range" id="T2" min="25" max="150" step="1" value="105"><span class="val" id="vT2">105</span></div></div>
+  <div class="ctrl"><label for="n2s"><span lang="zh-Hant">指數 n</span><span lang="en">Exponent n</span></label>
+    <div class="row"><input type="range" id="n2s" min="1" max="2" step="0.1" value="2"><span class="val" id="vn2">2.0</span></div></div>
+  <div class="ctrl"><label for="Ea2"><span lang="zh-Hant">材料 E<sub>a</sub>（eV）</span><span lang="en">Material E<sub>a</sub> (eV)</span></label>
+    <div class="row"><input type="range" id="Ea2" min="0.4" max="2.2" step="0.01" value="0.9"><span class="val" id="vEa2">0.90</span></div></div>
+</div>
+<div class="tiles" style="margin-top:14px">
+<div class="tile hl"><div class="k"><span lang="zh-Hant">相對 MTF（log₁₀，任意單位）</span><span lang="en">Relative MTF (log₁₀, arbitrary units)</span></div><div class="v" id="outMTF">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">材料參考</span><span lang="en">Material reference</span></div><div class="v" id="outMat" style="font-size:16px">—</div></div>
+</div>
+<p class="note" lang="zh-Hant" style="margin-top:10px">拖動「材料 E<sub>a</sub>」滑桿會顯示最接近的參考材料系統 —— 只是方便對照，
+不代表滑桿真的在切換材料模型（A 前置係數、Z*、ρ 都沒有跟著材料改變）。</p>
+<p class="note" lang="en" style="margin-top:10px">Dragging the "material E<sub>a</sub>" slider shows the closest reference material system — this is just for convenient comparison,
+it doesn't mean the slider is actually switching the material model (the prefactor A, Z*, and ρ don't change along with it).</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼設計上常保守取 n = 2，即使有些文獻報告 n ≈ 1？</summary>
+<div class="a">n = 1 通常對應「空洞已經存在、只是在成核」的階段，n = 2 對應經典的空洞穩態成長模型。
+保守取 n = 2 代表<b>假設對電流密度更敏感</b>，在同樣的良率目標下算出來的允許電流密度上限會更嚴（更保守）。
+用較小的 n 去外推等於假設系統對電流密度不那麼敏感，容易高估允許的電流密度。</div></details>
+<details><summary>Cu 明明活化能比 Al 高，為什麼還要加金屬 cap？不是已經比 Al 好了嗎？</summary>
+<div class="a">「比 Al 好」是相對於 Al 的晶界擴散（0.4–0.5 eV）而言。但 Cu 用<b>介電質 cap</b> 時的介面擴散
+（0.8–1.06 eV）其實沒有比 Al-Cu 合金的晶界擴散（0.6–0.95 eV）好太多 —— Cu 真正的優勢要靠金屬 cap
+把介面路徑堵住之後才充分發揮出來（可以到 1.5–2.2 eV 量級）。這也是為什麼業界會為了 EM
+額外多做一道 CoWP／CoSnP 電鍍製程，即使它會犧牲一些 RC。</div></details>
+<details><summary>同樣是「金屬 cap」，為什麼活化能可以從 0.72 到 2.2 eV 差這麼多？</summary>
+<div class="a">因為表格裡那組數據刻意控制了晶粒結構這個變因：同一種 cap 材料，晶粒結構從近竹狀（每個晶粒橫跨整個線寬，
+幾乎沒有晶界可以當擴散路徑）到純多晶（晶界密集）之間，量到的活化能差了 3 倍。
+<b>金屬 cap 只解決介面路徑；晶界路徑的強弱仍然由晶粒結構決定</b> —— 兩者是獨立的變因，要一起控制才有效。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-1-intuition.html"><div class="d">← 上一課 · 階段 1</div><div class="t">直覺</div></a><a class="next" href="em-3-blech.html"><div class="d">下一課 · 階段 3 →</div><div class="t">Blech 長度</div></a></div>
+<div class="foot"><b>模型範圍</b>：本模組的 Black 方程式與 Blech length 計算採文獻常見量級的代表值，<b>不是任何製程的實測資料</b>；材料活化能表已逐項附來源，分歧處兩個都列。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。電流擁擠（current crowding）、應力誘發空洞化（SIV）、先進封裝层級 EM（RDL／凸塊）未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why does design work often conservatively use n = 2, even though some literature reports n ≈ 1?</summary>
+<div class="a">n = 1 usually corresponds to a stage where "voids already exist and are merely nucleating"; n = 2 corresponds to the classic steady-state void-growth model.
+Conservatively choosing n = 2 means <b>assuming greater sensitivity to current density</b>, which produces a stricter (more conservative) upper bound on allowed current density for the same yield target.
+Extrapolating with a smaller n implicitly assumes the system is less sensitive to current density, which tends to overestimate the allowed current density.</div></details>
+<details><summary>Cu already has a higher activation energy than Al — why bother adding a metal cap? Isn't it already better than Al?</summary>
+<div class="a">"Better than Al" is relative to Al's grain-boundary diffusion (0.4–0.5 eV). But Cu's interface diffusion under a <b>dielectric cap</b>
+(0.8–1.06 eV) isn't actually much better than an Al-Cu alloy's grain-boundary diffusion (0.6–0.95 eV) — Cu's real advantage only comes out fully once a metal cap
+plugs the interface path (reaching the 1.5–2.2 eV range). That's exactly why industry adds an extra CoWP/CoSnP plating step purely for EM, even though it costs some RC.</div></details>
+<details><summary>Both are called "metal cap" — why does the activation energy swing all the way from 0.72 to 2.2 eV?</summary>
+<div class="a">Because that dataset deliberately controls for grain structure as a variable: with the same cap material, as grain structure moves from near-bamboo (each grain spans the full line width,
+leaving almost no grain boundary to serve as a diffusion path) to pure polycrystalline (dense grain boundaries), the measured activation energy differs by 3×.
+<b>A metal cap only solves the interface path; the strength of the grain-boundary path is still set by grain structure</b> — the two are independent variables, and both must be controlled together to be effective.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-1-intuition.html"><div class="d">← Previous · Stage 1</div><div class="t">Intuition</div></a><a class="next" href="em-3-blech.html"><div class="d">Next · Stage 3 →</div><div class="t">Blech Length</div></a></div>
+<div class="foot"><b>Model scope</b>: this module's Black-equation and Blech-length calculations use representative literature-scale values — <b>not measured data from any specific process</b>; the material activation-energy table cites sources item by item, and lists both values where the literature disagrees. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules. Current crowding, stress-induced voiding (SIV), and advanced-packaging-level EM (RDL / bumps) are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script>
+(function(){
+var MATS=[
+  {lo:0.35,hi:0.55,name:['純 Al（晶界）','Pure Al (grain boundary)']},
+  {lo:0.55,hi:0.80,name:['Al-Cu 合金 ／ Cu 晶界','Al-Cu alloy / Cu grain boundary']},
+  {lo:0.80,hi:1.10,name:['Cu ／ 介電質 cap 介面','Cu / dielectric-cap interface']},
+  {lo:1.10,hi:1.60,name:['Cu ／ PVD Ta 系金屬 cap','Cu / PVD Ta-based metal cap']},
+  {lo:1.60,hi:2.30,name:['Cu ／ CoWP 金屬 cap（竹狀晶粒）','Cu / CoWP metal cap (bamboo grain)']}
+];
+var J2=document.getElementById('J2'),T2=document.getElementById('T2'),n2s=document.getElementById('n2s'),Ea2=document.getElementById('Ea2');
+function upd(){
+  var J=parseFloat(J2.value),Tc=parseFloat(T2.value),n=parseFloat(n2s.value),Ea=parseFloat(Ea2.value);
+  document.getElementById('vJ2').textContent=J.toFixed(1);
+  document.getElementById('vT2').textContent=Tc.toFixed(0);
+  document.getElementById('vn2').textContent=n.toFixed(1);
+  document.getElementById('vEa2').textContent=Ea.toFixed(2);
+  var k=8.617e-5, Tk=Tc+273.15;
+  var logMTF = -n*Math.log10(J) + (Ea/(k*Tk))*Math.log10(Math.E);
+  document.getElementById('outMTF').textContent=logMTF.toFixed(2);
+  var mat=L('介於分類之間','between categories');
+  for(var i=0;i<MATS.length;i++){ if(Ea>=MATS[i].lo&&Ea<MATS[i].hi){mat=L(MATS[i].name[0],MATS[i].name[1]);break;} }
+  document.getElementById('outMat').textContent=mat;
+}
+[J2,T2,n2s,Ea2].forEach(function(el){el.addEventListener('input',upd);});
+window.__rebuild=upd;
+upd();
+})();
+</script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可調模型：結構、閘極材料、摻雜、偏壓與壽命統計外推。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 7：可調模型 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="MOSFET 熱載子注入（HCI）可調模型：結構、閘極材料、摻雜、偏壓與壽命統計外推。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 7：可調模型 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+.structschemawrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:10px 0 18px}
+.structschemawrap svg{max-width:640px;margin:0 auto;display:block}
+
+
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:7px 14px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+button[aria-pressed=true]{border-color:var(--e);border-width:1.5px;color:var(--e);
+  background:color-mix(in srgb,var(--e) 9%,var(--surface))}
+select,input[type=text]{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:7px 10px;font:inherit;font-size:15px;color:var(--ink);width:100%}
+select:focus,input[type=text]:focus{outline:2px solid color-mix(in srgb,var(--e) 45%,transparent);outline-offset:1px}
+/* --- sticky KPI --- */
+.kpi{position:sticky;top:46px;z-index:40;background:color-mix(in srgb,var(--surface) 94%,transparent);
+  backdrop-filter:blur(9px);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin:14px 0 4px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px 12px}
+.kpi .c{min-width:0}
+.kpi .k{font-size:12px;color:var(--ink2);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .v{font-size:17.5px;font-weight:680;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .v.hl{color:var(--e)} .kpi .v.bad{color:var(--crit)} .kpi .v.good{color:var(--gtext)}
+/* --- tabs --- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 0}
+.tabs button{flex:1;min-width:150px;text-align:left;border-radius:11px 11px 0 0;padding:10px 14px;
+  border-bottom-color:transparent}
+.tabs button[aria-selected=true]{border-color:var(--e);border-width:1.5px;border-bottom-color:var(--surface);
+  color:var(--e);background:var(--surface);margin-bottom:-1px}
+.tabs .n{display:block;font-size:12px;font-weight:750;letter-spacing:.07em;color:var(--e);margin-bottom:1px}
+.tabs .t{display:block;font-size:15px;font-weight:650}
+.panel{border:1.5px solid var(--e);border-radius:0 12px 12px 12px;padding:18px 20px;background:var(--surface)}
+.panel[hidden]{display:none}
+.panel h3{margin:0 0 4px;font-size:16.5px}
+.panel h3.sec{margin:20px 0 6px;padding-top:14px;border-top:1px solid var(--grid)}
+.panel h3.sec:first-of-type{border-top:none;padding-top:0;margin-top:2px}
+/* --- doping input --- */
+.dop{margin:10px 0 2px}
+.dop label{display:block;font-size:13.5px;color:var(--ink2);margin-bottom:4px;font-weight:600}
+.dop .row{display:flex;align-items:center;gap:9px}
+.dop input[type=range]{flex:1;min-width:80px;accent-color:var(--e)}
+.dop input[type=text]{width:92px;flex:none;text-align:right;font-variant-numeric:tabular-nums}
+.dop .u{font-size:14px;color:var(--ink2);white-space:nowrap}
+.dop .hint{font-size:13px;color:var(--muted);margin-top:3px;min-height:15px}
+.dop .hint.warn{color:var(--warn)} .dop .hint.bad{color:var(--crit)}
+.matnote{font-size:14px;color:var(--ink2);line-height:1.65;background:var(--plane);border-radius:8px;
+  padding:9px 12px;margin:8px 0 0}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.two2{grid-template-columns:1fr}}
+.crit td.nw{white-space:nowrap}
+.crit tr.on{background:color-mix(in srgb,var(--e) 7%,transparent)}
+.eqbox{background:var(--plane);border-radius:9px;padding:10px 13px;margin:10px 0;font-size:15px;line-height:2}
+.eqbox .num{color:var(--e);font-weight:650}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html" aria-current="page"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:100%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<div class="tldr"><div class="t">怎麼用這一頁</div>
+<p>前六個階段的所有東西在這裡合成一個工作台。四個分頁：
+<b>① 結構與材料</b> 決定你在模擬哪一種元件、<b>② 摻雜與製程</b> 決定電場分布、
+<b>③ 偏壓與環境</b> 決定應力有多兇、<b>④ 壽命與統計</b> 把損傷率換成年數與失效率。<br>
+最上面那條數值列會一直跟著你。建議玩法：<b>一次只動一根滑桿，動之前先預測哪個數字會怎麼變。</b></p></div>
+
+<p class="eyebrow">階段 7 / 7 · 可調模型</p>
+<h1>可調模型工作台</h1>
+</div>
+
+<div lang="en">
+<div class="tldr"><div class="t">How to use this page</div>
+<p>Everything from the first six stages comes together here as one workbench. Four tabs:
+<b>① Structure & materials</b> decides which device you're simulating, <b>② Doping & process</b> decides the field distribution,
+<b>③ Bias & environment</b> decides how hard the stress is, <b>④ Lifetime & statistics</b> converts the damage rate into years and failure rates.<br>
+The row of numbers at the top always tracks you. Suggested way to play: <b>move one slider at a time, and predict how a number will change before you move it.</b></p></div>
+
+<p class="eyebrow">Stage 7 / 7 · Tunable Model</p>
+<h1>Tunable model workbench</h1>
+</div>
+
+<div class="kpi" id="kpi"></div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" data-tab="0" aria-selected="true"><span class="n"><span lang="zh-Hant">分頁 ①</span><span lang="en">Tab ①</span></span><span class="t"><span lang="zh-Hant">結構與材料</span><span lang="en">Structure & Materials</span></span></button>
+  <button role="tab" data-tab="1" aria-selected="false"><span class="n"><span lang="zh-Hant">分頁 ②</span><span lang="en">Tab ②</span></span><span class="t"><span lang="zh-Hant">摻雜與製程</span><span lang="en">Doping & Process</span></span></button>
+  <button role="tab" data-tab="2" aria-selected="false"><span class="n"><span lang="zh-Hant">分頁 ③</span><span lang="en">Tab ③</span></span><span class="t"><span lang="zh-Hant">偏壓與環境</span><span lang="en">Bias & Environment</span></span></button>
+  <button role="tab" data-tab="3" aria-selected="false"><span class="n"><span lang="zh-Hant">分頁 ④</span><span lang="en">Tab ④</span></span><span class="t"><span lang="zh-Hant">壽命與統計</span><span lang="en">Lifetime & Statistics</span></span></button>
+</div>
+
+<!-- ================= 分頁 1 ================= -->
+<div class="panel" id="p0">
+<h3 class="sec"><span lang="zh-Hant">元件結構</span><span lang="en">Device structure</span></h3>
+<div class="two2">
+  <div>
+    <select id="selS" aria-label="元件結構"></select>
+    <div class="matnote" id="sNote"></div>
+  </div>
+  <div>
+    <table style="margin:0"><tbody>
+      <tr><td class="nw"><span lang="zh-Hant">最糟偏壓</span><span lang="en">Worst-case bias</span></td><td id="sWorst"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">損傷位置</span><span lang="en">Damage location</span></td><td id="sDmg"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">主要監控參數</span><span lang="en">Primary monitor</span></td><td id="sMon"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">自我發熱熱阻</span><span lang="en">Self-heating R<sub>th</sub></span></td><td id="sRth"></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="matnote" id="sFacts" style="margin-top:12px"></div>
+
+<h3 class="sec"><span lang="zh-Hant">閘極介電層</span><span lang="en">Gate dielectric</span></h3>
+<div class="two2">
+  <div>
+    <select id="selD" aria-label="閘極介電層"></select>
+    <div class="ctrl" style="margin-top:12px"><label><span lang="zh-Hant">等效氧化層厚度 EOT</span><span lang="en">Equivalent oxide thickness (EOT)</span></label>
+      <div class="row"><input type="range" id="rEOT" min="0.5" max="30" step="0.1"><span class="val" id="vEOT"></span></div></div>
+    <div class="matnote" id="dNote"></div>
+  </div>
+  <div>
+    <table style="margin:0"><tbody>
+      <tr><td class="nw"><span lang="zh-Hant">介電常數 k</span><span lang="en">Dielectric constant k</span></td><td id="dK"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">能隙 E<sub>g</sub></span><span lang="en">Bandgap E<sub>g</sub></span></td><td id="dEg"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">對 Si 的導帶偏移 ΔE<sub>c</sub></span><span lang="en">Conduction-band offset to Si ΔE<sub>c</sub></span></td><td id="dDec"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">同 EOT 下的<b>物理厚度</b></span><span lang="en">Physical thickness at the same EOT</span></td><td id="dTp"></td></tr>
+      <tr><td class="nw"><span lang="zh-Hant">特徵長度 l = √(3·EOT·x<sub>j</sub>)</span><span lang="en">Characteristic length l = √(3·EOT·x<sub>j</sub>)</span></td><td id="dL2"></td></tr>
+    </tbody></table>
+    <p class="note" style="margin:8px 0 0"><span lang="zh-Hant">注意最後兩列：<b>換 high-k 不會改變 l，也不會改變 C<sub>ox</sub></b>
+    —— 兩者都只看 EOT。high-k 真正改變的是 <b>ΔE<sub>c</sub></b>（閘極注入位障）與漏電。</span><span lang="en">Notice the last two rows: <b>switching to high-k changes neither l nor C<sub>ox</sub></b>
+    — both only care about EOT. What high-k actually changes is <b>ΔE<sub>c</sub></b> (the gate-injection barrier) and leakage.</span></p>
+  </div>
+</div>
+
+<h3 class="sec"><span lang="zh-Hant">閘極電極</span><span lang="en">Gate electrode</span></h3>
+<div class="two2">
+  <div>
+    <select id="selM" aria-label="閘極電極"></select>
+    <div class="matnote" id="mNote"></div>
+  </div>
+  <div><div class="cap"><span lang="zh-Hant">能帶對齊（真空能階為 0，向下為結合更緊）</span><span lang="en">Band alignment (vacuum level = 0, downward = more tightly bound)</span></div><div id="band"></div></div>
+</div>
+<p class="note"><span lang="zh-Hant">設計目標（Appl. Sci. 9, 2388）：平面 CMOS 需要 nMOS ≈ 4.2 eV、pMOS ≈ 5.0 eV（離中能隙 0.4 eV）；
+<b>未摻雜通道的 FinFET / GAA 只需要 nMOS ≈ 4.4、pMOS ≈ 4.85 eV（離中能隙 0.2 eV）</b> ——
+因為 V<sub>t</sub> 不再靠通道摻雜調，而是靠金屬功函數。
+<a href="materials.html">完整材料表與逐項出處 →</a></span><span lang="en">Design targets (Appl. Sci. 9, 2388): planar CMOS needs nMOS ≈ 4.2 eV, pMOS ≈ 5.0 eV (0.4 eV off midgap);
+<b>FinFET / GAA with an undoped channel only need nMOS ≈ 4.4, pMOS ≈ 4.85 eV (0.2 eV off midgap)</b> —
+because V<sub>t</sub> is no longer tuned by channel doping, but by the metal work function.
+<a href="materials.html">Full materials table with per-item sourcing →</a></span></p>
+</div>
+
+<!-- ================= 分頁 2 ================= -->
+<div class="panel" id="p1" hidden>
+<h3 class="sec"><span lang="zh-Hant">摻雜濃度</span><span lang="en">Doping concentration</span></h3>
+<p class="note" style="margin:0 0 6px"><span lang="zh-Hant">三個欄位都可以直接<b>打數字</b>（例如 <code>3e18</code>）。
+下限是矽的本質載子濃度 <b>1×10¹⁰ cm⁻³</b>，上限是矽的原子密度 <b>5×10²² cm⁻³</b>（Ioffe NSM Archive）——
+超過後者在物理上不可能，超過固溶度在製程上做不到。</span><span lang="en">All three fields accept <b>typed-in numbers</b> directly (e.g. <code>3e18</code>).
+The lower bound is silicon's intrinsic carrier concentration, <b>1×10¹⁰ cm⁻³</b>; the upper bound is silicon's atomic density, <b>5×10²² cm⁻³</b> (Ioffe NSM Archive) —
+exceeding the latter is physically impossible, and exceeding solid solubility isn't manufacturable.</span></p>
+<div class="two2">
+  <div>
+    <div class="dop" data-k="Nsub"><label><span lang="zh-Hant">N<sub>sub</sub>　通道 / 井區摻雜（p 型）</span><span lang="en">N<sub>sub</sub>  channel / well doping (p-type)</span></label>
+      <div class="row"><input type="range" id="rNsub" min="10" max="22.7" step="0.01">
+      <input type="text" id="tNsub"><span class="u">cm⁻³</span></div>
+      <div class="hint" id="hNsub"></div></div>
+    <div class="dop" data-k="Nldd"><label><span lang="zh-Hant">N<sub>LDD</sub>　n⁻ 延伸區摻雜</span><span lang="en">N<sub>LDD</sub>  n⁻ extension doping</span></label>
+      <div class="row"><input type="range" id="rNldd" min="10" max="22.7" step="0.01">
+      <input type="text" id="tNldd"><span class="u">cm⁻³</span></div>
+      <div class="hint" id="hNldd"></div></div>
+    <div class="dop" data-k="Nhalo"><label><span lang="zh-Hant">N<sub>halo</sub>　pocket / halo 局部 p 型摻雜</span><span lang="en">N<sub>halo</sub>  pocket / halo local p-type doping</span></label>
+      <div class="row"><input type="range" id="rNhalo" min="10" max="22.7" step="0.01">
+      <input type="text" id="tNhalo"><span class="u">cm⁻³</span></div>
+      <div class="hint" id="hNhalo"></div></div>
+  </div>
+  <div>
+    <div class="tools" style="margin:0 0 10px">
+      <button id="bLDD"><span lang="zh-Hant">LDD n⁻ 延伸</span><span lang="en">LDD n⁻ extension</span></button>
+      <button id="bHALO"><span lang="zh-Hant">pocket / halo</span><span lang="en">pocket / halo</span></button>
+      <button id="bLBL" aria-pressed="true"><span lang="zh-Hant">剖面圖標註</span><span lang="en">Cross-section labels</span></button>
+    </div>
+    <div class="ctrl"><label><span lang="zh-Hant">L<sub>ext</sub>　n⁻ 延伸區長度</span><span lang="en">L<sub>ext</sub>  n⁻ extension length</span></label>
+      <div class="row"><input type="range" id="rLext" min="4" max="300" step="1"><span class="val" id="vLext"></span></div></div>
+    <div class="ctrl" style="margin-top:10px"><label><span lang="zh-Hant">x<sub>j</sub>　接面深度</span><span lang="en">x<sub>j</sub>  junction depth</span></label>
+      <div class="row"><input type="range" id="rxj" min="10" max="600" step="1"><span class="val" id="vxj"></span></div></div>
+    <div class="eqbox" id="eqDop"></div>
+  </div>
+</div>
+<p class="note"><span lang="zh-Hant"><b>預設值：LDD 與 pocket 都是開的</b>，而且濃度刻意訂得溫和
+（N<sub>LDD</sub> = 3×10¹⁸、N<sub>halo</sub> = 2×10¹⁷ cm⁻³）——
+真實製程的 LDD 常在 10¹⁸～10¹⁹、halo 在 3×10¹⁷～10¹⁸。把它們關掉就是「裸元件」對照組。
+取捨的完整討論在<a href="hci-6-fix.html">階段 6</a>。</span><span lang="en"><b>Defaults: both LDD and pocket are on</b>, and the concentrations are set deliberately mild
+(N<sub>LDD</sub> = 3×10¹⁸, N<sub>halo</sub> = 2×10¹⁷ cm⁻³) —
+real processes commonly run LDD at 10¹⁸–10¹⁹ and halo at 3×10¹⁷–10¹⁸. Turning them off gives the "bare device" control.
+The full trade-off discussion is in <a href="hci-6-fix.html">Stage 6</a>.</span></p>
+</div>
+
+<!-- ================= 分頁 3 ================= -->
+<div class="panel" id="p2" hidden>
+<h3 class="sec"><span lang="zh-Hant">偏壓</span><span lang="en">Bias</span></h3>
+<div class="ctrls" id="ctrlBias"></div>
+<h3 class="sec"><span lang="zh-Hant">環境與自我發熱</span><span lang="en">Environment & self-heating</span></h3>
+<div class="two2">
+<div>
+  <div class="ctrls" id="ctrlEnv"></div>
+  <div class="tools" style="margin-top:12px"><button id="bSH"><span lang="zh-Hant">計入自我發熱</span><span lang="en">Include self-heating</span></button></div>
+  <div class="ctrl" style="margin-top:10px"><label><span lang="zh-Hant">熱阻 R<sub>th</sub>（K per mW/µm）</span><span lang="en">Thermal resistance R<sub>th</sub> (K per mW/µm)</span></label>
+    <div class="row"><input type="range" id="rRth" min="0" max="40" step="0.1"><span class="val" id="vRth"></span></div></div>
+  <p class="note" style="margin-top:8px"><span lang="zh-Hant">預設熱阻是<b>校準到文獻量級</b>的示意值，不是量測值：
+  14 nm bulk FinFET 實測 nominal &lt; 3 °C、極端應力 &lt; 18 °C；GAA 在 sub-10 nm 可達 100 K 以上。</span><span lang="en">The default thermal resistance is an illustrative value <b>calibrated to literature order-of-magnitude</b>, not a measurement:
+  measured 14 nm bulk FinFET is nominal &lt; 3 °C, &lt; 18 °C under extreme stress; GAA at sub-10 nm can reach over 100 K.</span></p>
+</div>
+<div>
+  <div class="eqbox" id="eqSH"></div>
+  <div class="key" style="margin:12px 0 0" lang="zh-Hant"><b>自我發熱對 HCI 的方向是反直覺的。</b>
+  溫度升高 → 聲子散射變多 → 熱載子跑不遠 → <b>損傷率下降</b>（這就是 HCI 的負活化能）。
+  所以自我發熱本身<b>不會讓 HCI 變糟</b>。
+  真正的危險在於：你在高加速條件下量到的資料被自我發熱「幫忙」壓低了，
+  拿去擬合出來的<b>電壓加速因子與活化能都會偏高</b>，外推到使用條件就偏樂觀 ——
+  GAA 文獻的實測正是「修正自我發熱後 VAF 與 E<sub>A</sub> 都變小」。</div>
+  <div class="key" style="margin:12px 0 0" lang="en"><b>Self-heating's effect on HCI is counter-intuitive.</b>
+  Higher temperature → more phonon scattering → hot carriers travel less far → <b>the damage rate drops</b> (this is HCI's negative activation energy).
+  So self-heating by itself <b>doesn't make HCI worse</b>.
+  The real danger is that data measured under high-acceleration conditions gets "helped" lower by self-heating,
+  and fitting to it <b>overstates both the voltage-acceleration factor and the activation energy</b>, making the extrapolation to use conditions overly optimistic —
+  GAA measurements in the literature show exactly this: "after correcting for self-heating, both VAF and E<sub>A</sub> shrink."</div>
+</div>
+</div>
+<h3 class="sec"><span lang="zh-Hant">物理常數（進階）</span><span lang="en">Physical constants (advanced)</span></h3>
+<div class="ctrls" id="ctrlPhi"></div>
+</div>
+
+<!-- ================= 分頁 4 ================= -->
+<div class="panel" id="p3" hidden>
+<div lang="zh-Hant">
+<h3 class="sec">① 退化的時間律</h3>
+<div class="fx" style="margin:6px 0 12px">
+<div class="big">ΔP(t) <span class="op">∝</span> t<sup>n</sup>　，
+壽命 τ <span class="op">=</span> H <span class="op">·</span> (W / I<sub>D</sub>) <span class="op">·</span>
+( I<sub>sub</sub> / I<sub>D</sub> )<sup>−m</sup> <span class="op">·</span> (C / C<sub>ref</sub>)<sup>1/n</sup></div>
+<p class="why">右邊那條是 <b>Hu 等人 1985</b> 的幸運電子壽命式（IEEE TED 32(2), 375）。
+指數 <b>m = φ<sub>it</sub>/φ<sub>i</sub></b>：理論 3.7/1.3 ≈ 2.85，SiO₂ 實測 2.9–3.3，
+<b>但 28 nm 疊層 high-k 實測只有約 1.1</b>。左邊的 <b>n</b> 是時間指數，
+把「量到的退化」換算成「到達判準的時間」。</p>
+</div>
+</div>
+<div lang="en">
+<h3 class="sec">① The time law of degradation</h3>
+<div class="fx" style="margin:6px 0 12px">
+<div class="big">ΔP(t) <span class="op">∝</span> t<sup>n</sup>　,
+lifetime τ <span class="op">=</span> H <span class="op">·</span> (W / I<sub>D</sub>) <span class="op">·</span>
+( I<sub>sub</sub> / I<sub>D</sub> )<sup>−m</sup> <span class="op">·</span> (C / C<sub>ref</sub>)<sup>1/n</sup></div>
+<p class="why">The equation on the right is the lucky-electron lifetime formula from <b>Hu et al. 1985</b> (IEEE TED 32(2), 375).
+The exponent <b>m = φ<sub>it</sub>/φ<sub>i</sub></b>: theoretically 3.7/1.3 ≈ 2.85, measured 2.9–3.3 for SiO₂,
+<b>but only about 1.1 measured for a 28 nm high-k stack</b>. The <b>n</b> on the left is the time exponent,
+converting "measured degradation" into "time to reach a criterion."</p>
+</div>
+</div>
+<div class="two2">
+<div>
+  <div class="ctrl"><label><span lang="zh-Hant">時間指數 n</span><span lang="en">Time exponent n</span></label>
+    <div class="row"><input type="range" id="rN" min="0.10" max="0.85" step="0.01"><span class="val" id="vN"></span></div></div>
+  <p class="note" id="nHint" style="margin:4px 0 12px"></p>
+  <div class="ctrl"><label><span lang="zh-Hant">幸運電子指數 m</span><span lang="en">Lucky-electron exponent m</span></label>
+    <div class="row"><input type="range" id="rM" min="0.8" max="4" step="0.05"><span class="val" id="vM"></span></div></div>
+  <p class="note" style="margin:4px 0 12px"><span lang="zh-Hant">模型由 φ<sub>it</sub>/φ<sub>i</sub> 推出的值顯示在括號裡。</span><span lang="en">The value the model derives from φ<sub>it</sub>/φ<sub>i</sub> is shown in parentheses.</span>
+  <button id="bMauto" style="padding:3px 10px;font-size:14px">↺ <span lang="zh-Hant">用模型推導值</span><span lang="en">Use the model-derived value</span></button></p>
+  <div class="ctrl"><label><span lang="zh-Hant">I<sub>dlin</sub> 對 I<sub>dsat</sub> 的敏感度比</span><span lang="en">I<sub>dlin</sub>-to-I<sub>dsat</sub> sensitivity ratio</span></label>
+    <div class="row"><input type="range" id="rR" min="1" max="10" step="0.1"><span class="val" id="vR"></span></div></div>
+  <p class="note" style="margin:4px 0 12px"><span lang="zh-Hant">同樣的 N<sub>it</sub>，線性區退化比飽和區大幾倍。
+  損傷集中在汲極端，線性區這一端是串聯電阻、飽和區則被夾止區遮蔽 —— 所以這個比值 &gt; 1。</span><span lang="en">For the same N<sub>it</sub>, linear-region degradation is several times larger than saturation-region degradation.
+  The damage is concentrated at the drain: in the linear region it acts as series resistance, while in saturation it's shielded by the pinch-off region — so this ratio is &gt; 1.</span></p>
+  <div class="ctrl"><label><span lang="zh-Hant">ΔV<sub>t</sub> 對 ΔI<sub>dlin</sub> 的換算</span><span lang="en">ΔV<sub>t</sub>-to-ΔI<sub>dlin</sub> conversion</span></label>
+    <div class="row"><input type="range" id="rVK" min="1" max="15" step="0.5"><span class="val" id="vVK"></span></div></div>
+</div>
+<div>
+  <h3 style="margin:0 0 6px"><span lang="zh-Hant">校準點（把任意單位換成真實時間）</span><span lang="en">Calibration point (turning arbitrary units into real time)</span></h3>
+  <p class="note" style="margin:0 0 8px"><span lang="zh-Hant">在<b>目前分頁 ③ 的偏壓</b>下，你量到 ΔI<sub>dlin</sub> 達到參考值所需的時間。</span><span lang="en">Under the <b>current bias from Tab ③</b>, the time you measured for ΔI<sub>dlin</sub> to reach a reference value.</span></p>
+  <div class="ctrl"><label><span lang="zh-Hant">參考退化量（ΔI<sub>dlin</sub>）</span><span lang="en">Reference degradation (ΔI<sub>dlin</sub>)</span></label>
+    <div class="row"><input type="range" id="rCref" min="1" max="20" step="0.5"><span class="val" id="vCref"></span></div></div>
+  <div class="ctrl" style="margin-top:10px"><label><span lang="zh-Hant">達到該退化量所需時間</span><span lang="en">Time to reach that degradation</span></label>
+    <div class="row"><input type="range" id="rTref" min="1" max="9" step="0.05"><span class="val" id="vTref"></span></div></div>
+  <div class="eqbox" id="eqCal"></div>
+  <h3 style="margin:16px 0 6px"><span lang="zh-Hant">使用條件</span><span lang="en">Use condition</span></h3>
+  <div class="ctrls" id="ctrlUse"></div>
+</div>
+</div>
+
+<h3 class="sec"><span lang="zh-Hant">② 五個判準各自的壽命</span><span lang="en">② Lifetime under each of the five criteria</span></h3>
+<p class="note" style="margin:0 0 8px"><span lang="zh-Hant">判準取自 Keithley AN 2197（其依據為 JESD28）：
+「target device lifetime is defined as a <b>10% parameter change</b> or, in the case of V<sub>TH</sub>,
+a change of <b>50 mV</b> from its unstressed value」。監控參數為 V<sub>T</sub>、I<sub>DLIN</sub>、I<sub>DSAT</sub>。</span><span lang="en">Criteria taken from Keithley AN 2197 (based on JESD28):
+"target device lifetime is defined as a <b>10% parameter change</b> or, in the case of V<sub>TH</sub>,
+a change of <b>50 mV</b> from its unstressed value." Monitored parameters are V<sub>T</sub>, I<sub>DLIN</sub>, I<sub>DSAT</sub>.</span></p>
+<table class="crit"><thead><tr>
+<th class="nw"><span lang="zh-Hant">判準</span><span lang="en">Criterion</span></th>
+<th class="nw"><span lang="zh-Hant">等效 ΔI<sub>dlin</sub></span><span lang="en">Equivalent ΔI<sub>dlin</sub></span></th>
+<th class="nw"><span lang="zh-Hant">中位壽命 t<sub>50</sub></span><span lang="en">Median lifetime t<sub>50</sub></span></th>
+<th class="nw"><span lang="zh-Hant">目標失效率下的壽命</span><span lang="en">Lifetime at target failure rate</span></th>
+<th class="nw"><span lang="zh-Hant">對 10 年</span><span lang="en">Vs. 10 years</span></th>
+</tr></thead>
+<tbody id="critTb"></tbody></table>
+<div class="key" id="critKey" style="margin-top:12px"></div>
+
+<h3 class="sec"><span lang="zh-Hant">③ 統計分布：HCI 用對數常態，不是 Weibull</span><span lang="en">③ Statistical distribution: HCI uses lognormal, not Weibull</span></h3>
+<div class="two2">
+<div>
+  <div class="ctrl"><label><span lang="zh-Hant">對數常態形狀參數 σ</span><span lang="en">Lognormal shape parameter σ</span></label>
+    <div class="row"><input type="range" id="rSig" min="0.15" max="1.6" step="0.01"><span class="val" id="vSig"></span></div></div>
+  <p class="note" style="margin:4px 0 10px"><span lang="zh-Hant">SEMATECH：<b>σ ≈ 0.5 屬磨耗型、σ ≈ 1.5 屬缺陷型</b>，
+  且「lognormal is the preferred distribution for most failure mechanisms」。
+  實用估計式 σ = ln(t<sub>50</sub>/t<sub>16</sub>)。</span><span lang="en">SEMATECH: <b>σ ≈ 0.5 is typical of wear-out, σ ≈ 1.5 of defect-driven</b> failures,
+  and "lognormal is the preferred distribution for most failure mechanisms."
+  A practical estimator is σ = ln(t<sub>50</sub>/t<sub>16</sub>).</span></p>
+  <div class="ctrl"><label><span lang="zh-Hant">目標累積失效率 F</span><span lang="en">Target cumulative failure rate F</span></label>
+    <div class="row"><input type="range" id="rF" min="-6" max="-0.4" step="0.05"><span class="val" id="vF"></span></div></div>
+  <div class="eqbox" id="eqStat"></div>
+  <div class="cmp" style="margin-top:12px">
+    <div class="col"><div class="h"><span lang="zh-Hant">HCI → 對數常態</span><span lang="en">HCI → lognormal</span></div>
+      <div style="font-size:15px;line-height:1.75"><span lang="zh-Hant">單顆元件參數的<b>連續乘性退化</b>。
+      NIST/SEMATECH：對數常態來自「退化量每一步的增量正比於目前已累積的退化量」。</span><span lang="en">A <b>continuous multiplicative degradation</b> of a single device's parameter.
+      NIST/SEMATECH: lognormal arises from "the increment of degradation at each step being proportional to the degradation already accumulated."</span></div></div>
+    <div class="col"><div class="h">TDDB → Weibull</div>
+      <div style="font-size:15px;line-height:1.75"><span lang="zh-Hant">大量獨立區塊<b>取最小值</b>（最弱環節）。
+      Weibull 是極值分布。<a href="tddb-2-percolation.html">滲流模擬直接長出它</a>。</span><span lang="en">A large number of independent regions, <b>taking the minimum</b> (weakest link).
+      Weibull is an extreme-value distribution. <a href="tddb-2-percolation.html">A percolation simulation grows it directly</a>.</span></div></div>
+  </div>
+</div>
+<div><div class="cap"><span lang="zh-Hant">壽命分布：同一組 (t<sub>50</sub>, t<sub>10</sub>) 用兩種分布外推</span><span lang="en">Lifetime distribution: the same (t<sub>50</sub>, t<sub>10</sub>) pair, extrapolated with two distributions</span></div>
+  <div id="cDist"></div><div class="legend" id="lgD"></div>
+  <p class="note" id="distNote" style="margin-top:6px"></p></div>
+</div>
+
+<h3 class="sec"><span lang="zh-Hant">④ 退化曲線與電壓外推</span><span lang="en">④ Degradation curve and voltage extrapolation</span></h3>
+<div class="two2">
+<div><div class="cap"><span lang="zh-Hant">退化 vs 時間（雙對數，斜率就是 n）</span><span lang="en">Degradation vs. time (log-log; the slope is n)</span></div><div id="cDeg"></div>
+  <div class="legend" id="lgG"></div></div>
+<div><div class="cap"><span lang="zh-Hant">壽命 vs 1/V<sub>D</sub>（經典的 HCI 外推圖）</span><span lang="en">Lifetime vs. 1/V<sub>D</sub> (the classic HCI extrapolation plot)</span></div><div id="cVext"></div>
+  <p class="note" id="vextNote" style="margin-top:6px"></p></div>
+</div>
+</div>
+
+<!-- ================= 永遠可見的視覺 ================= -->
+<h2><span lang="zh-Hant">結構示意 + 元件剖面與熱載子動態</span><span lang="en">Structure schematic + device cross-section & hot-carrier dynamics</span></h2>
+<div class="structschemawrap">
+  <div class="cap" style="margin-bottom:6px"><span lang="zh-Hant">結構示意圖 ——</span><span lang="en">Structure schematic —</span> <b id="schemaName">Planar bulk MOSFET</b>
+  <span class="note" style="margin-left:8px"><span lang="zh-Hant">幾何示意，隨下拉選單即時切換</span><span lang="en">Geometric illustration, switches live with the dropdown</span></span></div>
+  <div id="structSchema"></div>
+  <p class="note" style="margin:8px 0 0"><span lang="zh-Hant"><b>誠實邊界</b>：這張圖只換幾何輪廓，讓你看出來現在選的是哪種結構。
+  下方的<b>定量橫向電場剖面與熱載子動態</b>仍然是同一套平面 pseudo-2D 模型算出來的數字 ——
+  選 FinFET／GAA／LDMOS 不會讓計算變成該結構真正的 3D／環繞閘極電靜學解。細節見本頁最下方的模型範圍說明。</span><span lang="en"><b>Honest boundary</b>: this diagram only swaps the geometric outline, so you can see which structure is currently selected.
+  The <b>quantitative lateral-field profile and hot-carrier dynamics</b> below are still numbers from the same planar pseudo-2D model —
+  selecting FinFET / GAA / LDMOS doesn't turn the calculation into that structure's real 3D / gate-all-around electrostatic solution. See the model-scope note at the bottom of the page for details.</span></p>
+</div>
+<p class="note" style="margin-top:18px"><span lang="zh-Hant">前方切面上發生所有物理：電子由源極漂移 → 進入 pinch-off 高場區 → 撞擊游離產生電子電洞對
+（電洞流向基板成為 I<sub>sub</sub>）→ 少數能量夠高的電子越過 Si/SiO₂ 位障注入閘極 →
+打斷 Si–H 鍵留下界面態 N<sub>it</sub>（✕，會累積）。粒子的產生率由目前的模型數值即時決定，<b>不是裝飾動畫</b>。</span><span lang="en">All the physics happens on the front cross-section: electrons drift from the source → enter the pinch-off high-field region → impact ionization produces electron-hole pairs
+(the hole flows to the substrate, becoming I<sub>sub</sub>) → the rare electron with enough energy clears the Si/SiO₂ barrier and injects into the gate →
+breaking a Si–H bond leaves behind an interface trap N<sub>it</sub> (✕, which accumulates). Particle generation rates are decided live by the current model values — <b>this isn't a decorative animation</b>.</span></p>
+<div class="tools"><button id="bPlay" aria-pressed="true">▮▮ <span lang="zh-Hant">暫停動畫</span><span lang="en">Pause animation</span></button>
+<button id="bClr"><span lang="zh-Hant">清除累積損傷</span><span lang="en">Clear accumulated damage</span></button></div>
+<div id="viz"></div><div class="legend" id="legV"></div>
+
+<p class="note" id="clipNote" style="margin:10px 0 0"></p>
+<div class="two2" style="margin-top:20px">
+<div><div class="cap"><span lang="zh-Hant">沿 pinch-off 區的橫向電場 E(y) 與游離係數 α<sub>i</sub></span><span lang="en">Lateral field E(y) and ionization coefficient α<sub>i</sub> along the pinch-off region</span></div><div id="cE"></div>
+  <div class="legend" id="lgE"></div></div>
+<div><div class="cap"><span lang="zh-Hant">固定 V<sub>D</sub> 掃 V<sub>G</sub>：I<sub>sub</sub>／I<sub>G</sub>／損傷率</span><span lang="en">Sweeping V<sub>G</sub> at fixed V<sub>D</sub>: I<sub>sub</sub> / I<sub>G</sub> / damage rate</span></div><div id="cV"></div>
+  <div class="legend" id="lgV"></div>
+  <p class="note" id="vNote" style="margin-top:6px"></p></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>把介電層從 SiON 換成 HfO₂、EOT 維持不變，模型裡哪些量會變、哪些不會？</summary><div class="a"><b>不變</b>：特徵長度 l = √(3·EOT·x<sub>j</sub>)、氧化層電容 C<sub>ox</sub> = ε<sub>ox</sub>/EOT、因此峰值電場 E<sub>m</sub> 與 I<sub>sub</sub> 幾乎不動 —— 這兩個量只認 EOT。<br><b>會變</b>：物理厚度變成 EOT×(k/3.9)（漏電大幅下降），以及<b>閘極注入位障 ΔE<sub>c</sub> 從 3.2 eV 掉到 1.4 eV</b>，I<sub>G</sub>/I<sub>D</sub> 因此暴增。<br>這正是 high-k 的真面目：它解決的是<b>穿隧漏電</b>（看物理厚度），不是通道電場（看 EOT）。</div></details><details><summary>為什麼 TiN 在下拉選單裡的真空功函數 4.33 eV 跟它在 HfO₂ 上的 4.4–4.9 eV 對不起來？</summary><div class="a">因為 4.33 eV 是<b>「Ti 元素」</b>的多晶真空功函數（Michaelson 1977），不是 TiN 這個化合物的，更不是 TiN 在某個疊構上的有效功函數。<br>真正的原因是<b>費米能階釘扎</b>：金屬與高k 界面的偶極與缺陷會把有效功函數往中能隙拉。同一個 ALD Pt 在 SiO₂ 上量到 5.52 eV、在 ZrO₂ 上只有 4.76 eV —— 差 0.76 eV。<b>真空功函數只能當排序參考；設計必須用該疊構的實測 EWF。</b></div></details><details><summary>打開自我發熱之後，界面態生成率下降了。這是好消息嗎？</summary><div class="a">對元件本身是，對<b>你的外推</b>不是。HCI 的活化能是負的（溫度升高 → 聲子散射變多 → 熱載子跑不遠），所以自我發熱確實會壓低瞬時損傷率。<br>危險在於：你在高加速條件量到的資料被自我發熱「幫忙」壓低了，拿去擬合出來的<b>電壓加速因子與活化能都會偏高</b>，外推到使用條件（自我發熱小得多）就會偏樂觀。GAA 文獻的實測正是「做完自我發熱修正後，VAF 與 E<sub>A</sub> 都變小」，EOL ΔI<sub>dsat</sub>% 的修正量達 10%～35%。</div></details><details><summary>把 N<sub>halo</sub> 從 2×10¹⁷ 調到 1×10¹⁸，E<sub>m</sub> 與壽命各變多少？為什麼還要做 halo？</summary><div class="a">自己拉一次看。halo 讓空乏區縮短 → 有效特徵長度 l 變小 → 峰值電場升高 → 壽命明顯變差。<br>做 halo 不是為了 HCI，是為了<b>抑制短通道效應</b>（roll-off、DIBL、punch-through）。它是效能／短通道控制與 HCI 之間的直接取捨 —— 跟氮化在 TDDB 與 NBTI 之間的取捨是同一類問題。<b>可靠度參數彼此耦合，單獨最佳化任何一項都會把別的弄壞。</b></div></details><details><summary>判準表裡 I<sub>dsat</sub> 10% 的壽命遠長於 I<sub>dlin</sub> 10%。這代表 I<sub>dlin</sub> 判準比較嚴格 —— 那該用哪一個？</summary><div class="a">兩者都不是「比較對」，差別在<b>元件在電路裡實際工作在哪一區</b>。<br>損傷集中在汲極端：線性區時那一段直接落在導通路徑上（等效串聯電阻），退化被完整看見；飽和區時那一段被夾止區遮住，退化被稀釋 —— 所以 ΔI<sub>dlin</sub> 天生就是 ΔI<sub>dsat</sub> 的幾倍。<br>判準應該跟著應用走：<b>差動對、電流鏡、cascode、共源放大、主動負載這類飽和區元件，功能參數是 I<sub>dsat</sub>、g<sub>m</sub> 與匹配漂移，卡 I<sub>dlin</sub> 沒有對應的電路後果</b>；傳輸閘、開關、導通電阻型應用才該卡 I<sub>dlin</sub>。這張表可以直接拿去跟 RD／business 說明「同一份資料，換判準差幾倍」。</div></details><details><summary>這一頁選了 FinFET 或 GAA，算出來的數字可以拿去用嗎？</summary><div class="a">不可以。<b>電靜學核心仍然是平面 pseudo-2D 模型</b> —— 選結構改變的是預設參數、加速指數、自我發熱熱阻與說明文字，不是換成該架構的三維解。<br>它能給你的是<b>方向與量級</b>：哪一個旋鈕最有力、m 從 2.9 掉到 1.1 會讓外推差多少、自我發熱怎麼污染擬合。真正的數字必須來自你自己的量測與 TCAD。</div></details></div>
+<div class="pager"><a class="prev" href="hci-6-fix.html"><div class="d">← 上一課 · 階段 6</div><div class="t">如何防治</div></a><a class="next" href="materials.html"><div class="d">延伸 →</div><div class="t">材料與結構參考表</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。<b>電靜學核心是平面元件模型</b> —— 選 FinFET / GAA / LDMOS 時，改變的是預設參數、加速指數、自我發熱與已知差異的說明，<b>不是換成該架構的三維電靜學</b>。教學用途，不是校準過的元件模型，不能取代 TCAD。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Switch the dielectric from SiON to HfO₂ while keeping EOT fixed — which quantities in the model change, and which don't?</summary><div class="a"><b>Unchanged</b>: the characteristic length l = √(3·EOT·x<sub>j</sub>), the oxide capacitance C<sub>ox</sub> = ε<sub>ox</sub>/EOT, and so the peak field E<sub>m</sub> and I<sub>sub</sub> barely move — both of these quantities only care about EOT.<br><b>Changed</b>: the physical thickness becomes EOT×(k/3.9) (leakage drops sharply), and the <b>gate-injection barrier ΔE<sub>c</sub> falls from 3.2 eV to 1.4 eV</b>, so I<sub>G</sub>/I<sub>D</sub> shoots up.<br>This is high-k's real story: it solves <b>tunneling leakage</b> (which cares about physical thickness), not the channel field (which cares about EOT).</div></details><details><summary>Why doesn't TiN's vacuum work function of 4.33 eV in the dropdown match its 4.4–4.9 eV on HfO₂?</summary><div class="a">Because 4.33 eV is the polycrystalline vacuum work function of <b>"elemental Ti"</b> (Michaelson 1977) — not of the compound TiN, and certainly not TiN's effective work function on some particular stack.<br>The real cause is <b>Fermi-level pinning</b>: dipoles and defects at the metal/high-k interface pull the effective work function toward midgap. The very same ALD Pt measures 5.52 eV on SiO₂ but only 4.76 eV on ZrO₂ — a 0.76 eV difference. <b>The vacuum work function is only a rough ranking reference; a design must use the measured EWF for its actual stack.</b></div></details><details><summary>After turning on self-heating, the interface-trap generation rate drops. Is that good news?</summary><div class="a">For the device itself, yes; for <b>your extrapolation</b>, no. HCI's activation energy is negative (higher temperature → more phonon scattering → hot carriers travel less far), so self-heating genuinely does suppress the instantaneous damage rate.<br>The danger: data measured under high-acceleration conditions gets "helped" lower by self-heating, so fitting to it <b>overstates both the voltage-acceleration factor and the activation energy</b>, making the extrapolation to use conditions (where self-heating is much smaller) overly optimistic. GAA measurements in the literature show exactly this — "after correcting for self-heating, both VAF and E<sub>A</sub> shrink" — with the correction to EOL ΔI<sub>dsat</sub>% reaching 10%–35%.</div></details><details><summary>Turn N<sub>halo</sub> from 2×10¹⁷ up to 1×10¹⁸ — how much do E<sub>m</sub> and lifetime change? So why bother with halo at all?</summary><div class="a">Try it yourself. Halo shortens the depletion region → the effective characteristic length l shrinks → the peak field rises → lifetime clearly worsens.<br>Halo isn't there for HCI — it's there to <b>suppress short-channel effects</b> (roll-off, DIBL, punch-through). It's a direct trade-off between performance/short-channel control and HCI — the same category of problem as nitridation's trade-off between TDDB and NBTI. <b>Reliability parameters are coupled to each other; optimizing any one in isolation breaks another.</b></div></details><details><summary>In the criteria table, the lifetime at I<sub>dsat</sub> 10% is far longer than at I<sub>dlin</sub> 10%. Does that mean the I<sub>dlin</sub> criterion is stricter — so which one should be used?</summary><div class="a">Neither one is "more correct" — the difference comes down to <b>which region the device actually operates in within the circuit</b>.<br>The damage is concentrated at the drain: in the linear region, that spot sits directly in the conduction path (as equivalent series resistance), so the degradation is fully visible; in saturation, that spot is shielded by the pinch-off region, so the degradation is diluted — which is why ΔI<sub>dlin</sub> is inherently several times ΔI<sub>dsat</sub>.<br>The criterion should follow the application: <b>for saturation-region devices like differential pairs, current mirrors, cascodes, common-source amplifiers, and active loads, the functional parameters are I<sub>dsat</sub>, g<sub>m</sub>, and matching drift — gating on I<sub>dlin</sub> has no corresponding circuit consequence</b>; transmission gates, switches, and R<sub>on</sub>-type applications are the ones that should gate on I<sub>dlin</sub>. This table is something you can take straight to R&D or business stakeholders to show "the same data, off by however many times depending on which criterion you pick."</div></details><details><summary>This page has FinFET or GAA selected — can the resulting numbers actually be used?</summary><div class="a">No. <b>The electrostatic core is still the planar pseudo-2D model</b> — selecting a structure changes the default parameters, the acceleration exponents, the self-heating thermal resistance, and the explanatory text, not the underlying calculation into that architecture's real 3D solution.<br>What it can give you is <b>direction and order of magnitude</b>: which knob has the most leverage, how much the extrapolation shifts when m drops from 2.9 to 1.1, how self-heating contaminates a fit. The real numbers have to come from your own measurements and TCAD.</div></details></div>
+<div class="pager"><a class="prev" href="hci-6-fix.html"><div class="d">← Previous · Stage 6</div><div class="t">Mitigation</div></a><a class="next" href="materials.html"><div class="d">Further →</div><div class="t">Materials & Structure Reference</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. <b>The electrostatic core is a planar device model</b> — selecting FinFET / GAA / LDMOS changes the default parameters, acceleration exponents, self-heating, and known-differences notes, <b>not the underlying calculation into that architecture's 3D electrostatics</b>. For education only; not a calibrated device model, and cannot substitute for TCAD.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+/* ================= 教科書式 MOSFET 剖面圖（含 LDD / pocket） ================= */
+const VW=1320, VH=452;
+const DZ=88, KX=0.52, KY=-0.42;
+const OX=272, OY=196;
+/* 橫向配置（px） */
+const STI_W=72, SD_W=106, SP_W=46, CHW=300;
+const xST0=-(STI_W+SD_W+SP_W), xS0=-(SD_W+SP_W), xSP0=-SP_W, xC0=0,
+      xC1=CHW, xSP1=CHW+SP_W, xD1=CHW+SP_W+SD_W, xST1=CHW+SP_W+SD_W+STI_W;
+const SIH=168;
+let parts=[], nits=[], playing=true, tPrev=0;
+let STAGE=9, SHOWLBL=true;
+
+const proj=(x,y,z)=>[OX+x+z*KX, OY+y+z*KY];
+function el2(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function poly(pts,fill,stroke,extra){
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('')+'Z';
+  return el2('path',Object.assign({d,fill:fill||'none',stroke:stroke||'none','stroke-width':1,
+    'stroke-linejoin':'round'},extra||{}));
+}
+/* 立體方塊：前面 + 頂面 + 右面 */
+function blk(x0,x1,y0,y1,fill,stroke,op,dz){
+  dz=dz===undefined?DZ:dz;
+  const g=el2('g',{});
+  const f =[[x0,y0,0],[x1,y0,0],[x1,y1,0],[x0,y1,0]].map(a=>proj(a[0],a[1],a[2]));
+  const tp=[[x0,y0,0],[x1,y0,0],[x1,y0,dz],[x0,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  const rt=[[x1,y0,0],[x1,y1,0],[x1,y1,dz],[x1,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  g.appendChild(poly(tp,fill,stroke,{opacity:(op||1)*0.70}));
+  g.appendChild(poly(rt,fill,stroke,{opacity:(op||1)*0.50}));
+  g.appendChild(poly(f ,fill,stroke,{opacity:op||1}));
+  return g;
+}
+function fieldColor(t){
+  const st=[[0,'#fde8d6',0],[0.35,'#f7b585',0.5],[0.68,'#ec7638',0.8],[1,'#c22c1c',0.97]];
+  let a=st[0],b=st[st.length-1];
+  for(let i=0;i<st.length-1;i++) if(t>=st[i][0]&&t<=st[i+1][0]){a=st[i];b=st[i+1];break;}
+  const f=(t-a[0])/Math.max(b[0]-a[0],1e-9);
+  return {c:f<0.5?a[1]:b[1], o:a[2]+(b[2]-a[2])*f};
+}
+/* 摻雜色（教科書慣例：n 型偏藍、p 型偏暖褐） */
+const DOP={
+  nplus:{l:'#7fb3ea',d:'#20456e'}, nldd:{l:'#c2dbf4',d:'#2f5a86'},
+  pwell:{l:'#ded9cd',d:'#2a2926'}, phalo:{l:'#e5b394',d:'#5e3a26'},
+  sti:{l:'#f0eee7',d:'#3a3937'}, poly:{l:'#cfccc2',d:'#3d3b37'},
+  sil:{l:'#a9a6a0',d:'#5a5852'}, ox:{l:'#b5b2a8',d:'#514f4a'},
+  m1:{l:'#b9b6ae',d:'#6a6862'}
+};
+const dark=()=>document.documentElement.getAttribute('data-theme')==='dark'
+  || (!document.documentElement.getAttribute('data-theme') &&
+      window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches);
+const dc=k=>dark()?DOP[k].d:DOP[k].l;
+
+function drawViz(M){
+  const svg=el2('svg',{viewBox:'0 0 '+VW+' '+VH,role:'img'});
+  const P_=P;
+  const stroke=css('--axis');
+  const xjPX  = Math.min(74, 20+(M.xj/1e-7)/600*66);
+  const xlddPX= xjPX*0.52;
+  const stiPX = Math.min(SIH-24, xjPX*2.0+18);
+  const oxT   = Math.max(4,Math.min(16,M.tox/1e-7/60*16));
+  const polyH = 42, silH=9, spH=polyH+oxT;
+
+  /* ---- 基板 ---- */
+  svg.appendChild(blk(xST0,xST1,0,SIH,dc('pwell'),stroke,1));
+  /* ---- STI ---- */
+  svg.appendChild(blk(xST0,xS0,0,stiPX,dc('sti'),stroke,1));
+  svg.appendChild(blk(xD1,xST1,0,stiPX,dc('sti'),stroke,1));
+
+  /* ---- halo / pocket（畫在 n 型之前，讓 n 型疊上去） ---- */
+  if(P_.halo){
+    const hd=xjPX*1.30;
+    [[xSP0-10, xC0+34],[xC1-34, xSP1+10]].forEach(function(r){
+      const a=proj(r[0],0,0), b=proj(r[1],0,0), c=proj(r[1],hd*0.55,0), d2=proj((r[0]+r[1])/2,hd,0), e2=proj(r[0],hd*0.55,0);
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1]+'L'+c[0]+' '+c[1]+
+        'Q'+d2[0]+' '+d2[1]+' '+e2[0]+' '+e2[1]+'Z',fill:dc('phalo'),opacity:.9}));
+    });
+  }
+  /* ---- LDD n- 延伸 ---- */
+  if(P_.ldd){
+    [[xSP0,xC0+4],[xC1-4,xSP1]].forEach(function(r){
+      svg.appendChild(blk(r[0],r[1],0,xlddPX,dc('nldd'),stroke,1,DZ));
+    });
+  }
+  /* ---- n+ 深源汲 ---- */
+  svg.appendChild(blk(xS0,xSP0+(P_.ldd?0:SP_W),0,xjPX,dc('nplus'),stroke,1));
+  svg.appendChild(blk(xSP1-(P_.ldd?0:SP_W),xD1,0,xjPX,dc('nplus'),stroke,1));
+  /* ---- 矽化物 ---- */
+  svg.appendChild(blk(xS0+6,xSP0-6,-6,0,dc('sil'),stroke,1));
+  svg.appendChild(blk(xSP1+6,xD1-6,-6,0,dc('sil'),stroke,1));
+
+  /* ---- 接面輪廓 ---- */
+  const jl=(x0,x1,d)=>{const a=proj(x0,d,0),b=proj(x1,d,0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:stroke,'stroke-width':1,opacity:.9}));};
+
+  /* ---- 空乏區邊界 ---- */
+  let dd='';
+  for(let i=0;i<=80;i++){
+    const x=xS0+(xD1-xS0)*i/80;
+    let dep;
+    const bulge=26*Math.min(1,M.dV/6)+ (P_.halo?-8:0) + (P_.ldd?6:0);
+    if(x<xSP0) dep=xjPX+14+bulge*0.35;
+    else if(x>xSP1) dep=xjPX+14+bulge;
+    else {const u=(x-xSP0)/(xSP1-xSP0); dep=xjPX*0.3+8+(xjPX+14+bulge-xjPX*0.3-8)*Math.pow(u,3);}
+    const pp=proj(x,dep,0); dd+=(i?'L':'M')+pp[0].toFixed(1)+' '+pp[1].toFixed(1);
+  }
+  svg.appendChild(el2('path',{d:dd,fill:'none',stroke:stroke,'stroke-width':1.2,'stroke-dasharray':'5 4',opacity:.85}));
+
+  /* ---- 高場區熱圖 ---- */
+  const frac=Math.min(M.dLoverL,1);
+  const hi0=xC1-(xC1-xC0)*frac;
+  const hiEnd=P_.ldd?xSP1:xC1;
+  const NB=48;
+  for(let i=0;i<NB;i++){
+    const u0=i/NB,u1=(i+1)/NB;
+    const x0=hi0+(hiEnd-hi0)*u0, x1=hi0+(hiEnd-hi0)*u1;
+    const y=M.dL*(u0+u1)/2;
+    const E=M.pinch?M.Esat*Math.cosh(Math.min(y/M.l,20)):M.Esat;
+    const t=Math.min(1,Math.log10(Math.max(E,1e3)/1e4)/Math.log10(3e6/1e4));
+    const cc=fieldColor(Math.max(0,t));
+    const q=[[x0,-1,0],[x1,-1,0],[x1,Math.max(xlddPX,22),0],[x0,Math.max(xlddPX,22),0]].map(a=>proj(a[0],a[1],a[2]));
+    svg.appendChild(poly(q,cc.c,null,{opacity:cc.o*0.88}));
+  }
+  /* ---- 反轉層 ---- */
+  const c0=proj(xC0,4,0), c1=proj(xC1,4,0);
+  svg.appendChild(el2('line',{x1:c0[0],y1:c0[1],x2:c1[0],y2:c1[1],
+    stroke:css('--e'),'stroke-width':2.6,opacity:M.Vgt>0.05?0.9:0.12}));
+
+  /* ---- 閘極堆疊 ---- */
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT,0,dc('ox'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH,-oxT,dc('poly'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH-silH,-oxT-polyH,dc('sil'),stroke,1));
+  /* ---- 側壁間隔物（梯形） ---- */
+  [[xC0-2,xSP0,-1],[xC1+2,xSP1,1]].forEach(function(sp){
+    const inner=sp[0], outer=sp[1];
+    const q=[[inner,-spH,0],[inner,0,0],[outer,0,0]].map(a=>proj(a[0],a[1],a[2]));
+    const cx=proj((inner+outer)/2,-spH*0.55,0);
+    const d='M'+q[0][0]+' '+q[0][1]+'Q'+cx[0]+' '+cx[1]+' '+q[2][0]+' '+q[2][1]+'L'+q[1][0]+' '+q[1][1]+'Z';
+    svg.appendChild(el2('path',{d,fill:dc('ox'),stroke:stroke,'stroke-width':1,opacity:.92}));
+  });
+  /* ---- 接觸窗 + M1 ---- */
+  const via=(xc)=>{
+    svg.appendChild(blk(xc-13,xc+13,-oxT-polyH-silH-40,-6,dc('m1'),stroke,1,DZ*0.5));
+  };
+  via((xS0+xSP0)/2); via((xSP1+xD1)/2);
+  svg.appendChild(blk(xS0-4,xD1+4,-oxT-polyH-silH-56,-oxT-polyH-silH-40,dc('m1'),stroke,.001,1));
+
+  /* ---- pinch-off 標記 ---- */
+  if(M.pinch&&frac>0.01){
+    const a=proj(hi0,-oxT-polyH-silH-8,0), b=proj(hi0,Math.max(xlddPX,26),0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:css('--h'),
+      'stroke-width':1.3,'stroke-dasharray':'4 3',opacity:.95}));
+    const lp=proj((hi0+hiEnd)/2,Math.max(xlddPX,26)+18,0);
+    svg.appendChild(txt(lp[0],lp[1],L('高場區 ΔL = ','High-field ΔL = ')+fmtEng(M.dL*1e-2,'m',1).replace(' ','')+
+      L('（L 的 '+(frac*100).toFixed(0)+'%）',' ('+(frac*100).toFixed(0)+'% of L)'),{ta:'middle',fs:11.5,fw:650,fill:css('--h')}));
+  }
+
+  /* ---- 標註 ---- */
+  if(SHOWLBL){
+    const lab=(x,y,s,o)=>{const p2=proj(x,y,0);
+      svg.appendChild(txt(p2[0],p2[1],s,Object.assign({fs:11,fill:css('--ink2')},o||{})));};
+    const lead=(x,y,tx,ty,s,col)=>{
+      const a=proj(x,y,0), b=[OX+tx,OY+ty];
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1],stroke:col||css('--muted'),
+        'stroke-width':1,opacity:.8}));
+      svg.appendChild(el2('circle',{cx:a[0],cy:a[1],r:2.4,fill:col||css('--muted')}));
+      svg.appendChild(txt(b[0]+(tx<0?-6:6),b[1],s,{ta:tx<0?'end':'start',db:'middle',fs:11,
+        fw:600,fill:col||css('--ink2')}));
+    };
+    lab((xS0+xSP0)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xSP1+xD1)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xST0+xS0)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xD1+xST1)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xC0+xC1)/2, -oxT-polyH*0.55,L('多晶矽閘極','Poly Gate'),{ta:'middle',db:'middle',fw:650,fs:12,fill:css('--ink')});
+    lab(xST0+16, SIH-16,L('p 型基板 / p-well  (N','p-substrate / p-well  (N')+'ₐ'+' = '+sci(P_.Nsub)+' cm⁻³)',{fs:11});
+    lab((xC0+xC1)/2, xjPX+40,L('通道  L = ','channel  L = ')+(P_.L<0.1?(P_.L*1000).toFixed(0)+' nm':P_.L.toFixed(3)+' µm'),
+      {ta:'middle',fs:11.5});
+    lead(xC1+2,-oxT/2, 600, -138, L('閘極氧化層  t','gate oxide  t')+'~ox~ = '+(M.tox*1e7).toFixed(1)+' nm');
+    lead((xC1+xSP1)/2,-spH*0.4, 600, -112, L('側壁間隔物','sidewall spacer'));
+    if(P_.ldd) lead((xC1+xSP1)/2, xlddPX*0.6, 600, -86,
+      L('LDD  n⁻ 延伸  (N = ','LDD  n⁻ extension  (N = ')+sci(P_.Nldd)+' cm⁻³)', css('--e'));
+    if(P_.halo) lead(xC1-12, xjPX*0.95, 600, -60,
+      L('pocket / halo  p 型  (N = ','pocket / halo  p-type  (N = ')+sci(P_.Nhalo)+' cm⁻³)', css('--h'));
+    lead((xSP1+xD1)/2,-3, 600, -34, L('矽化物','silicide'));
+  }
+  /* ---- 端點電壓 ---- */
+  const term=(x,y,name,volt,col)=>{
+    const q=proj(x,y,0);
+    svg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:4,fill:col,stroke:css('--surface'),'stroke-width':1.5}));
+    svg.appendChild(txt(q[0],q[1]-10,name+' = '+volt,{ta:'middle',fs:11.5,fw:650,fill:col}));
+  };
+  term((xC0+xC1)/2,-oxT-polyH-silH-64,'V~G~',P_.VG.toFixed(2)+' V',css('--e'));
+  term((xSP1+xD1)/2,-oxT-polyH-silH-64,'V~D~',P_.VD.toFixed(2)+' V',css('--h'));
+  term((xS0+xSP0)/2,-oxT-polyH-silH-64,'V~S~','0 V',css('--ink2'));
+  const bq=proj(xST0+16,SIH,0);
+  svg.appendChild(txt(bq[0],bq[1]+18,'V~B~ = 0 V',{fs:11,fw:650,fill:css('--ink2')}));
+
+  /* ---- 電場色標 ---- */
+  const cbx=VW-104, cby=52, cbw=16, cbh=150;
+  for(let i=0;i<40;i++){const t=1-i/39, cc=fieldColor(t);
+    svg.appendChild(el2('rect',{x:cbx,y:cby+cbh*i/40,width:cbw,height:cbh/40+0.6,fill:cc.c,opacity:cc.o}));}
+  svg.appendChild(el2('rect',{x:cbx,y:cby,width:cbw,height:cbh,fill:'none',stroke:stroke,'stroke-width':1}));
+  svg.appendChild(txt(cbx+cbw/2,cby-8,L('橫向電場','Lateral field'),{ta:'middle',fs:10.5,fill:css('--ink2')}));
+  svg.appendChild(txt(cbx+cbw+5,cby+4,'3 MV/cm',{fs:10}));
+  svg.appendChild(txt(cbx+cbw+5,cby+cbh,'10 kV/cm',{fs:10}));
+  const emT=Math.max(0,Math.min(1,Math.log10(Math.max(M.Em,1e4)/1e4)/Math.log10(3e6/1e4)));
+  svg.appendChild(el2('path',{d:'M'+(cbx-4)+' '+(cby+cbh*(1-emT))+'l-8 -5l0 10Z',fill:css('--ink')}));
+  svg.appendChild(txt(cbx-15,cby+cbh*(1-emT),'E~m~',{ta:'end',db:'middle',fs:10.5,fw:650,fill:css('--ink')}));
+
+  const pg=el2('g',{id:'pg'}); svg.appendChild(pg);
+  const ng=el2('g',{id:'ng'}); svg.appendChild(ng);
+  const host=document.getElementById('viz');
+  host.innerHTML=''; host.appendChild(svg);
+  const lv=document.getElementById('legV');
+  if(lv) lv.innerHTML=
+    '<span><i class="sw dot" style="background:'+css('--e')+'"></i>'+L('電子 e⁻','electron e⁻')+'</span>'+
+    '<span><i class="sw dot" style="background:'+css('--h')+'"></i>'+L('電洞 h⁺（→ I<sub>sub</sub>）','hole h⁺ (→ I<sub>sub</sub>)')+'</span>'+
+    '<span><span style="color:'+css('--nit')+';font-weight:700">✕</span> '+L('界面態 N<sub>it</sub>（累積）','interface trap N<sub>it</sub> (accumulated)')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:linear-gradient(90deg,#fde8d6,#c22c1c)"></i>'+L('橫向電場','lateral field')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:'+dc('nplus')+'"></i>n⁺</span>'+
+    (P.ldd?'<span><i class="sw" style="width:16px;background:'+dc('nldd')+'"></i>n⁻ LDD</span>':'')+
+    (P.halo?'<span><i class="sw" style="width:16px;background:'+dc('phalo')+'"></i>p halo</span>':'');
+  return {svg,pg,ng,hi0,oxT,polyH,silH,xjPX,xlddPX,hiEnd};
+}
+
+/* ---------- 動畫 ---------- */
+let VZ=null, MM=null;
+function spawn(){ if(VZ&&MM) parts.push({x:xS0+20,y:4+(Math.random()-0.5)*4,state:'e',en:0}); }
+function step(dt){
+  if(!VZ||!MM) return;
+  const M=MM, hi0=VZ.hi0, hiEnd=VZ.hiEnd, out=[];
+  for(const p of parts){
+    if(p.state==='e'){
+      let E=M.Esat*0.25, inPinch=false;
+      if(p.x>hi0&&p.x<=hiEnd&&M.pinch){
+        const u=(p.x-hi0)/Math.max(hiEnd-hi0,1e-6);
+        E=M.Esat*Math.cosh(Math.min(u*M.dL/M.l,20)); inPinch=true;
+      } else if(p.x<=hi0) E=M.Esat*(0.15+0.85*Math.max(p.x-xC0,0)/Math.max(hi0-xC0,1));
+      const v=(1.0+2.2*Math.min(1,Math.log10(Math.max(E,1e3)/1e3)/3))*(M.Vgt>0.05?1:0.25);
+      p.x+=v*dt*0.10;
+      if(inPinch&&STAGE>=3){
+        const dy=(v*dt*0.10)/Math.max(hiEnd-hi0,1)*M.dL;
+        const al=AI*Math.exp(-M.Bi/Math.max(E,1));
+        if(Math.random()<Math.min(0.6,al*dy*40)){
+          out.push({x:p.x,y:p.y,vy:1.6,state:'h'});
+          out.push({x:p.x,y:p.y+1,state:'e',en:0});
+          out.push({x:p.x,y:p.y,state:'flash',life:1});
+        }
+        const fox=1/(1+Math.exp(-(P.VG-P.VD+0.5)/0.35));
+        if(STAGE>=4&&Math.random()<Math.min(0.35,CG*fox*Math.exp(-M.Bg/Math.max(E,1))*6e4)){p.state='inj';p.vy=-2.2;}
+        if(STAGE>=5&&Math.random()<Math.min(0.25,Math.exp(-M.Bit/Math.max(E,1))*2.5e6)&&nits.length<170)
+          nits.push({x:p.x,a:0});
+      }
+      if(p.x>hiEnd+56) p.dead=true;
+    } else if(p.state==='inj'){ p.y+=p.vy*dt*0.10; p.x+=0.3*dt*0.10;
+      if(p.y<-VZ.oxT-VZ.polyH-10) p.dead=true;
+    } else if(p.state==='h'){ p.y+=p.vy*dt*0.10; p.x-=0.25*dt*0.10;
+      if(p.y>SIH-16) p.dead=true;
+    } else if(p.state==='flash'){ p.life-=dt*0.006; if(p.life<=0) p.dead=true; }
+  }
+  parts=parts.filter(p=>!p.dead).concat(out);
+  if(parts.length<105&&MM.Vgt>0.05) spawn();
+  if(parts.length>300) parts=parts.slice(-300);
+  nits.forEach(n=>{ if(n.a<1) n.a=Math.min(1,n.a+dt*0.004); });
+}
+function render(){
+  if(!VZ) return;
+  const pg=VZ.pg, ng=VZ.ng;
+  while(pg.firstChild) pg.removeChild(pg.firstChild);
+  while(ng.firstChild) ng.removeChild(ng.firstChild);
+  const ce=css('--e'), ch=css('--h'), cn=css('--nit'), cs=css('--surface');
+  for(const p of parts){
+    const q=proj(p.x,p.y,0);
+    if(p.state==='flash')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3+9*(1-p.life),fill:'none',stroke:ch,
+        'stroke-width':1.6,opacity:p.life*0.85}));
+    else if(p.state==='h')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ch,stroke:cs,'stroke-width':1}));
+    else if(p.state==='inj')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ce,stroke:'#fff','stroke-width':1.4}));
+    else
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:2.6,fill:ce,opacity:.9}));
+  }
+  for(const n of nits){
+    const q=proj(n.x,0.5,0), s=3.4;
+    ng.appendChild(el2('path',{d:'M'+(q[0]-s)+' '+(q[1]-s)+'L'+(q[0]+s)+' '+(q[1]+s)+
+      'M'+(q[0]+s)+' '+(q[1]-s)+'L'+(q[0]-s)+' '+(q[1]+s),
+      stroke:cn,'stroke-width':1.9,'stroke-linecap':'round',opacity:0.35+0.65*n.a}));
+  }
+  if(nits.length){
+    const q=proj(xST1,SIH,0);
+    ng.appendChild(txt(q[0],q[1]+18,L('累積 N~it~ : ','Accumulated N~it~: ')+nits.length+(nits.length>=170?L('（顯示上限）',' (display cap)'):''),
+      {ta:'end',fs:11.5,fw:650,fill:cn}));
+  }
+}
+function loop(ts){
+  const dt=Math.min(60,ts-(tPrev||ts)); tPrev=ts;
+  if(playing) step(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+/* ============ 已查證的材料與結構資料（出處見 materials.html） ============ */
+const SI={chi:4.05, Eg:1.12, eps:11.7, ni:1e10, Nat:5e22};   /* Ioffe NSM Archive */
+const SI_EC=SI.chi, SI_EV=SI.chi+SI.Eg, SI_MID=SI.chi+SI.Eg/2;
+
+/* 介電層：k / Eg(eV) / dEc 對 Si(eV)。主表採 Robertson EPJAP 28,265(2004) Table 2 */
+const DIEL=[
+ {id:'SiO2', name:['SiO₂（熱氧化）','SiO₂ (thermal oxide)'],   k:3.9, Eg:9.0,  dEc:3.2, src:'R04',
+  alt:['ΔEc 另有 3.5（Robertson 型計算表）與 3.3（Bersch 實測）；Eg 另有 8.9（Wilk、Bersch）',
+       'ΔEc is also reported as 3.5 (Robertson-type calculated table) and 3.3 (Bersch, measured); Eg is also reported as 8.9 (Wilk, Bersch)']},
+ {id:'SiON', name:['SiON（輕度氮化）','SiON (lightly nitrided)'],  k:4.5, Eg:8.0,  dEc:3.0, src:['內插','interpolated'],
+  alt:['k 隨氮含量由 3.9(3.8) 線性升到 7(7.8)；Eg 由 9 降到 5.3。此列為內插示意，非單一文獻值',
+       'k rises roughly linearly with nitrogen content from 3.9(3.8) to 7(7.8); Eg falls from 9 to 5.3. This row is an interpolated illustration, not a single literature value']},
+ {id:'Si3N4',name:['Si₃N₄','Si₃N₄'],           k:7,   Eg:5.3,  dEc:2.4, src:'R04',
+  alt:['Wilk：Eg 5.1、ΔEc 2.0；Robertson & Falabretti 後續計算 ΔEc 1.7',
+       'Wilk: Eg 5.1, ΔEc 2.0; a later Robertson & Falabretti calculation gives ΔEc 1.7']},
+ {id:'Al2O3',name:['Al₂O₃','Al₂O₃'],           k:9,   Eg:8.8,  dEc:2.8, src:'R04',
+  alt:['Robertson 原表註明「2.8（not ALD）」；Bersch 實測 ALD 薄膜 Eg 只有 7.0、ΔEc 2.7',
+       'Robertson\'s original table notes "2.8 (not ALD)"; Bersch\'s measurement of an ALD film gives Eg only 7.0, ΔEc 2.7']},
+ {id:'HfSiO',name:['HfSiO₄','HfSiO₄'],          k:11,  Eg:6.5,  dEc:1.8, src:'R04',
+  alt:['Bersch 實測 Hf₀.₇Si₀.₃O₂：Eg 6.0、ΔEc 2.1',
+       'Bersch measured Hf₀.₇Si₀.₃O₂: Eg 6.0, ΔEc 2.1']},
+ {id:'HfSiON',name:['HfSiON','HfSiON'],         k:11,  Eg:4.70, dEc:1.47,src:'Sayan05',
+  alt:['Eg 4.70±0.05 為實測；ΔEc 由 HfSiO 的 1.8 減去實測氮化降幅 0.33±0.05 推得；k 未查證',
+       'Eg 4.70±0.05 is measured; ΔEc is derived by subtracting the measured nitridation reduction of 0.33±0.05 from HfSiO\'s 1.8; k is unverified']},
+ {id:'HfO2', name:['HfO₂','HfO₂'],            k:25,  Eg:5.8,  dEc:1.4, src:'R04',
+  alt:['Eg 另有 5.7（Wilk、Bersch 實測）與 6.0（Robertson & Falabretti）；ΔEc 實測 1.9（Bersch）',
+       'Eg is also reported as 5.7 (Wilk, Bersch, measured) and 6.0 (Robertson & Falabretti); ΔEc measured at 1.9 (Bersch)']},
+ {id:'ZrO2', name:['ZrO₂','ZrO₂'],            k:25,  Eg:5.8,  dEc:1.5, src:'R04',
+  alt:['Wilk 印的 Eg 7.8 是離群值；Bersch 實測 5.5、ΔEc 1.7；Sayan 實測 5.68、ΔEc 1.16',
+       'Wilk\'s printed Eg of 7.8 is an outlier; Bersch measured 5.5, ΔEc 1.7; Sayan measured 5.68, ΔEc 1.16']},
+ {id:'La2O3',name:['La₂O₃','La₂O₃'],           k:30,  Eg:6.0,  dEc:2.3, src:'R04',
+  alt:['Wilk 印的 Eg 只有 4.3，與 Robertson 差 1.7 eV，未解決',
+       'Wilk\'s printed Eg is only 4.3, a 1.7 eV discrepancy with Robertson that remains unresolved']},
+ {id:'Ta2O5',name:['Ta₂O₅','Ta₂O₅'],           k:22,  Eg:4.4,  dEc:0.35,src:'R04',
+  alt:['Wilk：k 26、ΔEc 1～1.5。ΔEc 差距很大',
+       'Wilk: k 26, ΔEc 1–1.5. The spread in ΔEc is large']},
+ {id:'TiO2', name:['TiO₂','TiO₂'],            k:80,  Eg:3.5,  dEc:0.0, src:'R04',
+  alt:['Robertson 給 0（幾乎沒有電子位障，這是他反對 TiO₂ 的主要論點）；Wilk 給 1.2',
+       'Robertson gives 0 (essentially no electron barrier, his main argument against TiO₂); Wilk gives 1.2']}
+];
+
+/* 閘極電極：phi 真空功函數 / ewf 高k 上的有效功函數（範圍取中值） */
+const METAL=[
+ {id:'npoly', name:['n⁺ poly-Si','n⁺ poly-Si'], phi:4.05, ewf:null, rng:null, src:['推導','derived'],
+  note:['簡併 n 型，費米能階在導帶邊 → Φ ≈ χ_Si = 4.05 eV（由 Ioffe 的 χ 推得，非直接量測值）',
+        'Degenerate n-type, Fermi level at the conduction-band edge → Φ ≈ χ_Si = 4.05 eV (derived from Ioffe\'s χ, not a direct measurement)']},
+ {id:'ppoly', name:['p⁺ poly-Si','p⁺ poly-Si'], phi:5.17, ewf:null, rng:null, src:['推導','derived'],
+  note:['費米能階在價帶邊 → Φ ≈ χ + Eg = 4.05 + 1.12 = 5.17 eV',
+        'Fermi level at the valence-band edge → Φ ≈ χ + Eg = 4.05 + 1.12 = 5.17 eV']},
+ {id:'TiN',   name:['TiN','TiN'],        phi:4.33, ewf:4.65, rng:[4.4,4.9], src:'AS19', ewfOn:['HfO₂','HfO₂'],
+  note:['PVD TiN 在 HfO₂ 上 EWF 4.4–4.9 eV（厚度相依）；ALD TiCl₄/NH₃ 約 5.3、TDMAT/NH₃ 約 4.2。'+
+       '真空值 4.33 是「Ti 元素」的（Michaelson），不是 TiN —— 兩者不可混用',
+       'PVD TiN on HfO₂ has an EWF of 4.4–4.9 eV (thickness-dependent); ALD TiCl₄/NH₃ is about 5.3, TDMAT/NH₃ about 4.2. '+
+       'The vacuum value of 4.33 is for "elemental Ti" (Michaelson), not TiN — the two must not be conflated']},
+ {id:'TaN',   name:['TaN','TaN'],        phi:4.25, ewf:4.39, rng:[4.22,4.56], src:'JOS', ewfOn:['HfO₂（TiN/TaN 疊層）','HfO₂ (TiN/TaN stack)'],
+  note:['TiN/TaN 雙層疊構量到 EWF 4.22–4.56 eV，越薄越靠近 Si 導帶。真空值 4.25 是 Ta 元素值',
+        'A TiN/TaN bilayer stack measures an EWF of 4.22–4.56 eV, moving closer to the Si conduction band as it thins. The vacuum value of 4.25 is for elemental Ta']},
+ {id:'TiAl',  name:['TiAl','TiAl'],       phi:null, ewf:4.1,  rng:null, src:'AS19', ewfOn:['HfO₂','HfO₂'], note:['PVD TiAl 在 HfO₂ 上約 4.1 eV，nMOS 用','PVD TiAl on HfO₂ is about 4.1 eV, used for nMOS']},
+ {id:'TiAlC', name:['TiAlC','TiAlC'],      phi:null, ewf:4.64, rng:[4.24,4.79], src:'AS19', ewfOn:['HfO₂','HfO₂'],
+  note:['TMA 前驅物 4.49–4.79（厚度相依）；TEA 前驅物 4.46→4.24（250–375 °C）',
+        'TMA precursor gives 4.49–4.79 (thickness-dependent); TEA precursor gives 4.46→4.24 (250–375 °C)']},
+ {id:'TaAlC', name:['TaAlC','TaAlC'],      phi:null, ewf:4.45, rng:[4.26,4.65], src:'AS19', ewfOn:['HfO₂','HfO₂'], note:['TEA 前驅物，厚度相依','TEA precursor, thickness-dependent']},
+ {id:'W',     name:['W','W'],          phi:4.55, ewf:4.6,  rng:null, src:'M77/AS19', ewfOn:['high-k（文獻僅描述為近中能隙）','high-k (literature only describes it as "near midgap")'], note:['真空 4.55（Michaelson）；文獻描述為「近中能隙」約 4.6 eV','Vacuum value 4.55 (Michaelson); the literature describes it as "near midgap," about 4.6 eV']},
+ {id:'Mo',    name:['Mo','Mo'],         phi:4.6,  ewf:null, rng:null, src:'M77', note:['真空功函數 4.6 eV（Michaelson 1977 多晶推薦值）。高k 上的 EWF 未查證','Vacuum work function 4.6 eV (Michaelson 1977\'s recommended polycrystalline value). EWF on high-k is unverified']},
+ {id:'Ru',    name:['Ru','Ru'],         phi:4.71, ewf:null, rng:null, src:'M77', note:['真空 4.71 eV。高k 上的 EWF 未查證','Vacuum value 4.71 eV. EWF on high-k is unverified']},
+ {id:'Al',    name:['Al','Al'],         phi:4.28, ewf:null, rng:null, src:'M77', note:['真空 4.28 eV。與 HfO₂ 之間的位障約 1.58 eV，接近熱載子臨界能量','Vacuum value 4.28 eV. The barrier to HfO₂ is about 1.58 eV, close to the hot-carrier threshold energy']},
+ {id:'Ni',    name:['Ni（NiSi FUSI 之基底金屬）','Ni (base metal for NiSi FUSI)'], phi:5.15, ewf:null, rng:null, src:'M77',
+  note:['真空 5.15 eV 是「Ni 元素」值。NiSi 全矽化閘極的 EWF 未查證，不可用此值代替',
+        'The vacuum value 5.15 eV is for "elemental Ni." The EWF of a fully-silicided NiSi gate is unverified and must not be substituted with this value']},
+ {id:'Pt',    name:['Pt','Pt'],         phi:5.65, ewf:5.22, rng:null, src:'M77/AS19', ewfOn:['Al₂O₃（注意：不是 HfO₂ 上的值，HfO₂ 上未查證）','Al₂O₃ (note: not the value on HfO₂, which is unverified)'],
+  note:['真空 5.65（Michaelson）。ALD Pt 實測：Al₂O₃ 上 5.22、ZrO₂ 上 4.76、SiO₂ 上 5.52 —— 同一金屬差 0.76 eV，這就是費米能階釘扎',
+        'Vacuum value 5.65 (Michaelson). Measured ALD Pt: 5.22 on Al₂O₃, 4.76 on ZrO₂, 5.52 on SiO₂ — the same metal varies by 0.76 eV, which is exactly Fermi-level pinning']}
+];
+/* EWF 設計目標（Appl. Sci. 9, 2388） */
+const WFTGT={planar:{n:4.2,p:5.0,sep:0.4}, undoped:{n:4.4,p:4.85,sep:0.2}, midgap:4.6};
+
+/* 元件結構 */
+const STRUCTS=[
+ {id:'planar', name:['Planar bulk MOSFET（poly / SiON）','Planar bulk MOSFET (poly / SiON)'], short:'Planar',
+  diel:'SiON', metal:'npoly',
+  d:{L:0.5, EOT:12, xj:150, W:10, Vt0:0.45, VG:2.7, VD:6.0, Tc:25,
+     Nsub:1e17, ldd:true, Nldd:3e18, Lext:50, halo:true, Nhalo:2e17},
+  rng:{VG:[0,8], VD:[0.1,10]}, u:{VD:4.0, VG:2.0, T:105},
+  rth:0.3, mdef:null, ndef:0.55, tref:4.5,
+  worst:['V<sub>G</sub> ≈ V<sub>D</sub>/2（DAHC，I<sub>sub</sub> 峰值）','V<sub>G</sub> ≈ V<sub>D</sub>/2 (DAHC, I<sub>sub</sub> peak)'],
+  dmg:['汲極端局部（pinch-off 區）','Localized at the drain (pinch-off region)'],
+  mon:['V<sub>t</sub> / I<sub>dlin</sub> / I<sub>dsat</sub> / g<sub>m</sub>','V<sub>t</sub> / I<sub>dlin</sub> / I<sub>dsat</sub> / g<sub>m</sub>'],
+  facts:[['最大 I<sub>sub</sub> 出現在 V<sub>gs</sub> ≈ V<sub>ds</sub>/2（TU Wien IUE）','Peak I<sub>sub</sub> occurs at V<sub>gs</sub> ≈ V<sub>ds</sub>/2 (TU Wien IUE)'],
+         ['幸運電子指數 m = φ<sub>it</sub>/φ<sub>i</sub> ≈ 2.85（理論），SiO₂ 實測 2.9–3.3','Lucky-electron exponent m = φ<sub>it</sub>/φ<sub>i</sub> ≈ 2.85 (theory); measured 2.9–3.3 for SiO₂'],
+         ['基板是良好散熱路徑，自我發熱基本上可忽略','The substrate is a good heat sink, so self-heating is essentially negligible'],
+         ['Hu 1985 提出 LDD 作為主要對策','Hu 1985 proposed LDD as the primary countermeasure']]},
+ {id:'hkmg', name:['Planar HKMG（high-k / metal gate）','Planar HKMG (high-k / metal gate)'], short:'HKMG',
+  diel:'HfO2', metal:'TiN',
+  d:{L:0.028, EOT:1.3, xj:35, W:1, Vt0:0.35, VG:1.05, VD:1.80, Tc:25,
+     Nsub:5e17, ldd:true, Nldd:5e18, Lext:20, halo:true, Nhalo:8e17},
+  rng:{VG:[0,3], VD:[0.1,3]}, u:{VD:0.90, VG:0.90, T:105},
+  rth:0.5, mdef:1.1, ndef:0.5, tref:6.5,
+  worst:['V<sub>G</sub> ≈ V<sub>D</sub>/2，但已開始往 V<sub>G</sub> ≈ V<sub>D</sub> 移動','V<sub>G</sub> ≈ V<sub>D</sub>/2, but already starting to shift toward V<sub>G</sub> ≈ V<sub>D</sub>'],
+  dmg:['汲極端，但界面層 SiO₂ 才是弱點','At the drain, but the interfacial SiO₂ layer is the actual weak point'],
+  mon:['I<sub>dlin</sub> / I<sub>dsat</sub>（BTI 耦合明顯）','I<sub>dlin</sub> / I<sub>dsat</sub> (clear BTI coupling)'],
+  facts:[['28 nm 疊層 high-k nMOSFET 實測 <b>m ≈ 1.1</b>（不是 2.9–3.3）—— 界面態變得容易生成','Measured 28 nm high-k stack nMOSFETs give <b>m ≈ 1.1</b> (not 2.9–3.3) — interface traps have become much easier to generate'],
+         ['原因：Al 閘極與 HfO₂ 之間位障僅約 1.58 eV，接近熱載子臨界能量','Reason: the barrier between an Al gate and HfO₂ is only about 1.58 eV, close to the hot-carrier threshold energy'],
+         ['用教科書的 m ≈ 3 去外推 HKMG 壽命會<b>高估</b>','Extrapolating HKMG lifetime with the textbook m ≈ 3 will <b>overstate</b> it'],
+         ['28 nm 平面 HKMG 實測：ΔI<sub>d,lin</sub>(T) 在 150–300 K 是溫度的<b>遞減</b>函數','Measured 28 nm planar HKMG: ΔI<sub>d,lin</sub>(T) is a <b>decreasing</b> function of temperature over 150–300 K']]},
+ {id:'finfet', name:['FinFET（3D 鰭式）','FinFET (3D fin-based)'], short:'FinFET',
+  diel:'HfO2', metal:'TiAlC',
+  d:{L:0.020, EOT:0.9, xj:25, W:0.1, Vt0:0.30, VG:1.40, VD:1.50, Tc:25,
+     Nsub:1e15, ldd:true, Nldd:8e18, Lext:12, halo:false, Nhalo:1e17},
+  rng:{VG:[0,2.5], VD:[0.1,2.5]}, u:{VD:0.75, VG:0.75, T:105},
+  rth:5.0, mdef:1.1, ndef:0.20, tref:6.0,
+  worst:['短通道已移到 <b>V<sub>G</sub> = V<sub>D</sub></b>','Short-channel worst case has shifted to <b>V<sub>G</sub> = V<sub>D</sub></b>'],
+  dmg:['不只汲極端 —— 缺陷注入分布在<b>整個通道長度</b>','Not just the drain end — defect injection is distributed across <b>the entire channel length</b>'],
+  mon:['I<sub>dlin</sub> / I<sub>dsat</sub>（與 BTI 難分離）','I<sub>dlin</sub> / I<sub>dsat</sub> (hard to separate from BTI)'],
+  facts:[['長通道最糟在 V<sub>G</sub> ~ V<sub>D</sub>/2；<b>短通道最糟移到 V<sub>G</sub> = V<sub>D</sub></b>（Springer / 短通道 n-FinFET 建模）','Long-channel worst case sits at V<sub>G</sub> ~ V<sub>D</sub>/2; <b>the short-channel worst case shifts to V<sub>G</sub> = V<sub>D</sub></b> (Springer / short-channel n-FinFET modeling)'],
+         ['時間指數實測 <b>n = 0.19–0.20</b> —— 低 n 代表主宰的是既有介電缺陷的電荷捕捉，不是界面態生成','Measured time exponent <b>n = 0.19–0.20</b> — a low n means the dominant process is charge trapping at pre-existing dielectric defects, not interface-trap generation'],
+         ['文獻範圍：n 由 0.1（純電荷注入）到 0.6（純界面態生成）','Literature range: n from 0.1 (pure charge injection) to 0.6 (pure interface-trap generation)'],
+         ['14 nm bulk FinFET 實測自我發熱：nominal &lt;3 °C、極端應力 &lt;18 °C；'+
+         '對 HC 的調變「只在 logic PFET 的高加速 DC 條件下顯著」',
+         'Measured self-heating for a 14 nm bulk FinFET: nominal &lt;3 °C, &lt;18 °C under extreme stress; '+
+         'its modulation of HC is "significant only under high-acceleration DC conditions for logic PFETs"'],
+         ['通道摻雜接近未摻雜（undoped body），所以 V<sub>t</sub> 由金屬功函數決定 → 需要近中能隙金屬','Channel doping is close to undoped (an undoped body), so V<sub>t</sub> is set by the metal work function → a near-midgap metal is required']]},
+ {id:'gaa', name:['GAA nanosheet（環繞閘極）','GAA nanosheet (gate-all-around)'], short:'GAA',
+  diel:'HfO2', metal:'TiAlC',
+  d:{L:0.015, EOT:0.8, xj:18, W:0.04, Vt0:0.28, VG:1.30, VD:1.40, Tc:25,
+     Nsub:1e15, ldd:true, Nldd:1e19, Lext:8, halo:false, Nhalo:1e17},
+  rng:{VG:[0,2],VD:[0.1,2]}, u:{VD:0.70, VG:0.70, T:105},
+  rth:25, mdef:1.1, ndef:0.20, tref:6.0,
+  worst:['純 HCD 主導區在<b>高 V<sub>DS</sub>、低 V<sub>GS</sub></b>；V<sub>GS</sub>≈V<sub>DS</sub> 附近是 HCI+BTI 混合','Pure HCD-dominated region is at <b>high V<sub>DS</sub>, low V<sub>GS</sub></b>; near V<sub>GS</sub>≈V<sub>DS</sub> it\'s a mix of HCI+BTI'],
+  dmg:['除了汲極端，<b>薄片轉角／曲率處</b>氧化層電場更高、界面態密度更高','Besides the drain end, the oxide field and interface-trap density are higher at <b>the sheet corners / curved regions</b>'],
+  mon:['ΔI<sub>dsat</sub>（需做自我發熱修正）','ΔI<sub>dsat</sub> (requires a self-heating correction)'],
+  facts:[['整體「HCD 與前一代技術相當」—— 架構本身沒有讓 HCI 爆掉','Overall, "HCD is comparable to the previous-generation technology" — the architecture itself doesn\'t blow up HCI'],
+         ['<b>自我發熱是新的主變數</b>：通道縮到 sub-10 nm 時溫升可達 100 K 以上','<b>Self-heating is the new dominant variable</b>: once the channel shrinks to sub-10 nm, the temperature rise can exceed 100 K'],
+         ['自我發熱修正對 EOL ΔI<sub>dsat</sub>% 的修正量為 <b>10%～35%</b>','The self-heating correction to EOL ΔI<sub>dsat</sub>% amounts to <b>10%–35%</b>'],
+         ['<b>修正後 VAF 與 E<sub>A</sub> 都變小</b> —— 用未修正的資料擬合會把電壓與溫度加速都高估，'+
+         '外推到使用條件會偏樂觀',
+         '<b>After correction, both VAF and E<sub>A</sub> shrink</b> — fitting to uncorrected data overstates both voltage and temperature acceleration, '+
+         'making the extrapolation to use conditions overly optimistic'],
+         ['曲率效應是幾何問題，不是電場分布問題 —— 與 FinFET 的頂角問題同源','The curvature effect is a geometric issue, not a field-distribution issue — it shares its origin with FinFET\'s top-corner problem']]},
+ {id:'ldmos', name:['Lateral DMOS（LDMOS，高壓）','Lateral DMOS (LDMOS, high voltage)'], short:'LDMOS',
+  diel:'SiO2', metal:'npoly',
+  d:{L:1.0, EOT:15, xj:400, W:100, Vt0:1.0, VG:2.0, VD:18, Tc:25,
+     Nsub:5e16, ldd:true, Nldd:2e16, Lext:200, halo:false, Nhalo:1e17},
+  rng:{VG:[0,12],VD:[0.1,60]}, u:{VD:13.5, VG:2.0, T:105},
+  rth:8, mdef:null, ndef:0.5, tref:5.5,
+  worst:['<b>非單調</b> —— 低 V<sub>G</sub> 與高 V<sub>G</sub> 都比中間差','<b>Non-monotonic</b> — both low V<sub>G</sub> and high V<sub>G</sub> are worse than the middle'],
+  dmg:['<b>三個峰</b>：汲極區、bird’s beak、通道','<b>Three peaks</b>: the drain region, the bird\'s beak, and the channel'],
+  mon:['<b>R<sub>dson</sub></b>（損傷在閘極管不到的漂移區串聯電阻上）','<b>R<sub>dson</sub></b> (the damage sits in the drift-region series resistance, beyond the gate\'s reach)'],
+  facts:[['高場區被刻意<b>移出通道、搬到漂移區</b> —— 這是 LDMOS 與邏輯元件最根本的差別','The high-field region is deliberately <b>moved out of the channel and into the drift region</b> — the most fundamental difference between LDMOS and logic devices'],
+         ['三個 N<sub>it</sub> 峰：汲極區（單／多載子機制飽和）、bird’s beak（單載子 Si–H 斷鍵）、通道（多載子）','Three N<sub>it</sub> peaks: the drain region (single/multi-carrier mechanism saturation), the bird\'s beak (single-carrier Si–H bond breaking), and the channel (multi-carrier)'],
+         ['bird’s beak 的電子溫度可達 <b>4300 K</b>','The electron temperature at the bird\'s beak can reach <b>4300 K</b>'],
+         ['損傷落在漂移區 → 主要監控參數是 <b>R<sub>dson</sub></b> 而不是 V<sub>t</sub>','The damage lands in the drift region → the primary monitor is <b>R<sub>dson</sub></b>, not V<sub>t</sub>'],
+         ['某 N-EDMOS 研究：<b>V<sub>GSmax</sub> 才是 HCD 最糟條件</b>；LOCOS-LDMOS 最安全窗口在 V<sub>GS</sub>=3 V、V<sub>DS</sub>=6.5–10 V','One N-EDMOS study: <b>V<sub>GSmax</sub> is the actual HCD worst case</b>; the safest window for LOCOS-LDMOS is V<sub>GS</sub>=3 V, V<sub>DS</sub>=6.5–10 V'],
+         ['注意設計限制 V<sub>GS</sub> ≤ V<sub>DS</sub>/2 是為了避免閘氧崩潰，那是 TDDB 限制不是 HCI 最糟點','Note that the design constraint V<sub>GS</sub> ≤ V<sub>DS</sub>/2 exists to avoid gate-oxide breakdown — that\'s a TDDB limit, not the HCI worst point'],
+         ['⚠ 本頁的 pseudo-2D 模型是<b>通道內</b>高場的模型，畫不出漂移區的三峰結構','⚠ This page\'s pseudo-2D model models the high field <b>inside the channel</b> — it cannot reproduce the drift region\'s three-peak structure']]}
+];
+
+
+/* ================= 狀態 ================= */
+const ST={sid:'planar', did:'SiON', mid:'npoly', sh:false, rth:0.3};
+const SS={n:0.55, m:2.85, mAuto:true, ratio:4, vk:5, cref:5, tref:3, sig:0.5, F:-4,
+          VDu:3.0, VGu:1.5, Tu:105, crit:0};
+const CRITS=[
+ {id:0,lab:'ΔI<sub>dlin</sub> 10%',   mon:'lin', val:10},
+ {id:1,lab:'ΔI<sub>dlin</sub> 15%',   mon:'lin', val:15},
+ {id:2,lab:'ΔI<sub>dsat</sub> 10%',   mon:'sat', val:10},
+ {id:3,lab:'ΔI<sub>dsat</sub> 15%',   mon:'sat', val:15},
+ {id:4,lab:'ΔV<sub>t</sub> 50 mV',    mon:'vt',  val:50}
+];
+const YEAR=365.25*86400;
+const D_OF=id=>DIEL.find(d=>d.id===id), M_OF=id=>METAL.find(m=>m.id===id), S_OF=id=>STRUCTS.find(s=>s.id===id);
+
+/* ================= 小工具 ================= */
+function normInv(p){
+  if(!(p>0))return -Infinity; if(p>=1)return Infinity;
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,
+           1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,
+           6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,
+           -2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const pl=0.02425; let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p<=1-pl){q=p-0.5;r=q*q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  q=Math.sqrt(-2*Math.log(1-p));
+  return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+const normCdf=z=>0.5*(1+erf(z/Math.SQRT2));
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);
+  const t=1/(1+0.3275911*x);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+  return s*y;}
+function fmtYears(s){
+  if(!isFinite(s)||s<=0)return'—';
+  const y=s/YEAR;
+  if(y>=1e5) return sci(y)+L(' 年',' yr');
+  if(y>=1) return y<100?y.toFixed(1)+L(' 年',' yr'):Math.round(y).toLocaleString('en-US')+L(' 年',' yr');
+  const d=s/86400; if(d>=1)return d.toFixed(1)+L(' 天',' d');
+  const h=s/3600; if(h>=1)return h.toFixed(1)+L(' 小時',' h');
+  return fmtEng(s,'s',1);}
+const pw10=e=>'10'+supN(e);
+function parseNum(s){const v=parseFloat(String(s).replace(/[×xX]\s*10\^?/,'e').replace(/\s/g,''));
+  return isFinite(v)?v:NaN;}
+
+/* ================= 材料效應 ================= */
+function metalPhi(mid,did){
+  const m=M_OF(mid), d=D_OF(did), hk=d.k>=8;
+  const useEwf = hk && m.ewf!=null;
+  const phi = useEwf ? m.ewf : (m.phi!=null?m.phi:(m.ewf!=null?m.ewf:SI_MID));
+  return {phi:phi,useEwf:useEwf,m:m};
+}
+function effMetal(){
+  const m=M_OF(ST.mid), d=D_OF(ST.did);
+  const hk = d.k>=8;
+  const useEwf = hk && m.ewf!=null;
+  const phi = useEwf ? m.ewf : (m.phi!=null?m.phi:(m.ewf!=null?m.ewf:SI_MID));
+  const ref=metalPhi(S_OF(ST.sid).metal, S_OF(ST.sid).diel);
+  return {phi:phi, useEwf:useEwf, m:m, d:d, ref:ref.phi, dVt:phi-ref.phi};
+}
+function mdl(ov){
+  const d=D_OF(ST.did), em=effMetal();
+  const base=Object.assign({},P,{phi_b:Math.max(d.dEc,0.05), Vt0:P.Vt0+em.dVt}, ov||{});
+  const Tamb=base.Tc; let dT=0, M=null, pw=0;
+  for(let i=0;i<4;i++){
+    M=model(Object.assign({},base,{Tc:Tamb+dT}));
+    pw=M.ID*base.VD*1000/Math.max(base.W,1e-6);
+    dT=ST.sh?ST.rth*pw:0;
+  }
+  M.dT=dT; M.pw=pw; M.Tamb=Tamb;
+  M.tphys=P.tox*(d.k/3.9); M.phiEff=em.phi; M.k=d.k;
+  return M;
+}
+/* Hu 1985：tau ∝ (W/ID)·(Isub/ID)^(−m)。回傳未校準的相對壽命 */
+function tauRel(M){
+  if(!(M.isubRatio>0)||!(M.ID>0))return Infinity;
+  return (P.W*1e-4/M.ID)*Math.pow(M.isubRatio,-SS.m);
+}
+function critEq(c){   /* 換算成等效 ΔIdlin (%) */
+  if(c.mon==='lin')return c.val;
+  if(c.mon==='sat')return c.val*SS.ratio;
+  return c.val/SS.vk;
+}
+function lifeChain(){
+  const Ms=mdl();                                   /* 應力（分頁③ 的偏壓） */
+  const Mu=mdl({VD:SS.VDu,VG:SS.VGu,Tc:SS.Tu});     /* 使用條件 */
+  const tref=Math.pow(10,SS.tref);
+  const H=tref/Math.max(tauRel(Ms),1e-300);
+  const tCref_use=H*tauRel(Mu);                     /* 使用條件下達到 Cref 的時間 */
+  const off = Mu.Vgt<0.06 || Ms.Vgt<0.06;
+  return {Ms:Ms,Mu:Mu,H:H,tref:tref,tCref:tCref_use,off:off,
+          t50:function(c){return tCref_use*Math.pow(critEq(c)/SS.cref,1/SS.n);}};
+}
+const tAtF=(t50,F)=>t50*Math.exp(SS.sig*normInv(F));
+/* 反解：要讓目前判準在目標失效率下撐滿十年，應力點的 t(cref) 必須多長 */
+function trefFor10y(){
+  const c=CRITS[SS.crit], Ft=Math.pow(10,SS.F);
+  const t50need=10*YEAR/Math.exp(SS.sig*normInv(Ft));
+  const Ms=mdl(), Mu=mdl({VD:SS.VDu,VG:SS.VGu,Tc:SS.Tu});
+  const a=tauRel(Ms), b2=tauRel(Mu);
+  if(!isFinite(a)||!isFinite(b2)||b2<=0) return NaN;
+  return t50need*a/(b2*Math.pow(critEq(c)/SS.cref,1/SS.n));
+}
+
+/* ================= 控制項 ================= */
+function sl(host,key,lab,min,max,step,logv,fmt,onchg){
+  const d=document.createElement('div'); d.className='ctrl';
+  const id='c_'+key+'_'+Math.random().toString(36).slice(2,7);
+  d.innerHTML='<label for="'+id+'">'+lab+'</label><div class="row">'+
+    '<input type="range" id="'+id+'"><span class="val"></span></div>';
+  host.appendChild(d);
+  const inp=d.querySelector('input'), out=d.querySelector('.val');
+  inp.min=logv?Math.log10(min):min; inp.max=logv?Math.log10(max):max; inp.step=step;
+  const get=()=>onchg?onchg.get():P[key];
+  const setv=v=>{ if(onchg)onchg.set(v); else P[key]=v; };
+  inp.value=logv?Math.log10(get()):get();
+  out.innerHTML=fmt(get());
+  inp.addEventListener('input',e=>{let v=parseFloat(e.target.value); if(logv)v=Math.pow(10,v);
+    setv(v); out.innerHTML=fmt(v); refresh();});
+  return {inp:inp,out:out,fmt:fmt,logv:logv,get:get};
+}
+let CTRLS=[];
+function buildCtrls(){
+  CTRLS=[];
+  const s=S_OF(ST.sid), rg=s.rng;
+  const cb=$('ctrlBias'), ce=$('ctrlEnv'), cp=$('ctrlPhi'), cu=$('ctrlUse');
+  [cb,ce,cp,cu].forEach(h=>h.innerHTML='');
+  CTRLS.push(sl(cb,'VG',L('閘極電壓 V<sub>G</sub>','Gate voltage V<sub>G</sub>'),rg.VG[0],rg.VG[1],0.01,false,v=>v.toFixed(2)+' V'));
+  CTRLS.push(sl(cb,'VD',L('汲極電壓 V<sub>D</sub>','Drain voltage V<sub>D</sub>'),rg.VD[0],rg.VD[1],0.01,false,v=>v.toFixed(2)+' V'));
+  CTRLS.push(sl(cb,'L',L('通道長度 L','Channel length L'),0.008,3,0.001,true,v=>v<0.1?(v*1000).toFixed(1)+' nm':v.toFixed(3)+' µm'));
+  CTRLS.push(sl(cb,'W',L('通道寬度 W','Channel width W'),0.02,300,0.001,true,v=>v<1?(v*1000).toFixed(0)+' nm':v.toFixed(2)+' µm'));
+  CTRLS.push(sl(cb,'Vt0',L('V<sub>t0</sub>（不含金屬與 halo 的貢獻）','V<sub>t0</sub> (excluding metal & halo contributions)'),0.05,3,0.01,false,v=>v.toFixed(2)+' V'));
+  CTRLS.push(sl(ce,'Tc',L('環境溫度 T<sub>amb</sub>','Ambient temperature T<sub>amb</sub>'),-40,200,1,false,v=>v.toFixed(0)+' °C'));
+  CTRLS.push(sl(cp,'phi_i',L('φ<sub>i</sub> 撞擊游離門檻','φ<sub>i</sub> impact-ionization threshold'),0.9,2.0,0.01,false,v=>v.toFixed(2)+' eV'));
+  CTRLS.push(sl(cp,'phi_it',L('φ<sub>it</sub> 界面態生成門檻（Si–H）','φ<sub>it</sub> interface-trap generation threshold (Si–H)'),2.5,5.0,0.01,false,v=>v.toFixed(2)+' eV'));
+  CTRLS.push(sl(cu,'',L('使用電壓 V<sub>D,use</sub>','Use voltage V<sub>D,use</sub>'),rg.VD[0],rg.VD[1],0.01,false,v=>v.toFixed(2)+' V',
+    {get:()=>SS.VDu,set:v=>{SS.VDu=v;}}));
+  CTRLS.push(sl(cu,'',L('使用閘壓 V<sub>G,use</sub>','Use gate voltage V<sub>G,use</sub>'),rg.VG[0],rg.VG[1],0.01,false,v=>v.toFixed(2)+' V',
+    {get:()=>SS.VGu,set:v=>{SS.VGu=v;}}));
+  CTRLS.push(sl(cu,'',L('使用溫度 T<sub>use</sub>','Use temperature T<sub>use</sub>'),-40,200,1,false,v=>v.toFixed(0)+' °C',
+    {get:()=>SS.Tu,set:v=>{SS.Tu=v;}}));
+}
+function syncCtrls(){CTRLS.forEach(c=>{const v=c.get();
+  c.inp.value=c.logv?Math.log10(v):v; c.out.innerHTML=c.fmt(v);});}
+
+/* ---------- 摻雜輸入 ---------- */
+const DOPK=['Nsub','Nldd','Nhalo'];
+function dopHint(v){
+  if(!(v>0))return['bad',L('請輸入正數','Enter a positive number')];
+  if(v<SI.ni)return['bad',L('低於矽的本質載子濃度 1×10¹⁰ cm⁻³ —— 物理上不成立','Below silicon\'s intrinsic carrier concentration of 1×10¹⁰ cm⁻³ — physically invalid')];
+  if(v>SI.Nat)return['bad',L('高於矽的原子密度 5×10²² cm⁻³ —— 物理上不可能','Above silicon\'s atomic density of 5×10²² cm⁻³ — physically impossible')];
+  if(v>1e21)return['warn',L('已超出常見固溶度範圍（砷約 10²¹ 量級）—— 製程上做不到','Beyond the common solid-solubility range (arsenic is around 10²¹) — not manufacturable')];
+  if(v<1e13)return['warn',L('接近本質矽，實務上不會這樣用','Close to intrinsic silicon — not used in practice')];
+  if(v>1e19)return['',L('重摻雜區（源汲極等級）','Heavily doped range (source/drain-level)')];
+  return['',L('一般範圍','Typical range')];
+}
+function bindDop(){
+  DOPK.forEach(function(k){
+    const r=$('r'+k), t=$('t'+k), h=$('h'+k);
+    function show(v){ r.value=Math.log10(v); t.value=v.toExponential(2).replace('e+','e');
+      const hh=dopHint(v); h.className='hint '+hh[0]; h.textContent=sci(v)+' cm⁻³ · '+hh[1]; }
+    r.addEventListener('input',e=>{P[k]=Math.pow(10,parseFloat(e.target.value));show(P[k]);refresh();});
+    t.addEventListener('change',e=>{const v=parseNum(e.target.value);
+      if(!(v>0)){show(P[k]);return;}
+      P[k]=Math.min(Math.max(v,1),1e24); show(P[k]); refresh();});
+    t.addEventListener('keydown',e=>{if(e.key==='Enter')t.blur();});
+    r._show=show;
+  });
+}
+const syncDop=()=>DOPK.forEach(k=>$('r'+k)._show(P[k]));
+
+/* ================= 套用結構 / 材料 ================= */
+function applyStruct(id,keepBias){
+  const s=S_OF(id); ST.sid=id; ST.did=s.diel; ST.mid=s.metal; ST.rth=s.rth;
+  Object.keys(s.d).forEach(k=>{ if(k==='EOT')P.tox=s.d.EOT; else P[k]=s.d[k]; });
+  SS.n=s.ndef; SS.mAuto=(s.mdef==null); SS.m=s.mdef!=null?s.mdef:3.7/1.3;
+  SS.VDu=s.u.VD; SS.VGu=s.u.VG; SS.Tu=s.u.T; SS.tref=s.tref;
+  $('selS').value=id; $('selD').value=ST.did; $('selM').value=ST.mid;
+  buildCtrls(); syncDop(); nits=[];
+  drawStructSchema(id);
+}
+/* ================= 結構示意圖（幾何示意，非電場模型） ================= */
+function drawStructSchema(sid){
+  const host=document.getElementById('structSchema');
+  const nameEl=document.getElementById('schemaName');
+  if(!host) return;
+  const e=css('--e'), h=css('--h'), nit=css('--nit'), ax=css('--axis'), ink=css('--ink'), ink2=css('--ink2'), sf=css('--surface'), bd=css('--border');
+  const tint=(c,pct)=>'color-mix(in srgb,'+c+' '+pct+'%,'+sf+')';
+  const T=(x,y,s,o)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(o&&o.ta||'middle')+'" font-size="'+(o&&o.fs||12)+
+    '" font-weight="'+(o&&o.fw||500)+'" fill="'+(o&&o.fill||ink2)+'">'+s+'</text>';
+  const R=(x,y,w,ht,fill,stroke,sw,rx)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+ht+'" rx="'+(rx||4)+
+    '" fill="'+fill+'" stroke="'+(stroke||bd)+'" stroke-width="'+(sw!=null?sw:1)+'"/>';
+  let svg='', label='';
+  const sub=R(20,110,600,64,sf,bd,1.3);
+
+  if(sid==='planar'||sid==='hkmg'){
+    const gateFill = sid==='hkmg' ? tint(e,22) : tint('#c9a24a',30);
+    const gateStroke = sid==='hkmg' ? e : '#c9a24a';
+    const gateLabel = sid==='hkmg' ? 'Metal gate ／ High-k' : 'Poly gate ／ SiON';
+    label = sid==='hkmg' ? L('Planar HKMG（high-k / metal gate）','Planar HKMG (high-k / metal gate)') : L('Planar bulk MOSFET（poly / SiON）','Planar bulk MOSFET (poly / SiON)');
+    svg = sub
+      + R(20,96,60,14,tint(ink2,14),bd,1)          // STI L
+      + R(560,96,60,14,tint(ink2,14),bd,1)          // STI R
+      + R(96,86,70,38,tint(h,20),h,1.4)             // n+ source
+      + R(474,86,70,38,tint(h,20),h,1.4)            // n+ drain
+      + R(166,102,308,8,tint(ink2,10),bd,0.8,2)     // gate oxide
+      + R(166,66,308,36,gateFill,gateStroke,1.6,6)  // gate stack
+      + '<line x1="166" y1="110" x2="474" y2="110" stroke="'+e+'" stroke-width="2.2" opacity="0.55"/>'
+      + T(320,58,gateLabel,{fw:700,fs:12.5,fill:gateStroke})
+      + T(131,152,'S',{fw:700,fs:12,fill:h}) + T(509,152,'D',{fw:700,fs:12,fill:h})
+      + T(320,134,L('channel（電靜學＝下方定量模型）','channel (electrostatics = the quantitative model below)'),{fs:10.5,fill:ink2})
+      + T(320,190,'Substrate / p-well',{fs:11,fill:ink2});
+  } else if(sid==='finfet'){
+    label=L('FinFET（3D 鰭式）','FinFET (3D fin-based)');
+    // fin drawn with a simple isometric offset to suggest a raised 3D body
+    const fx0=220, fx1=420, fy0=60, fy1=112, off=22;
+    const finTop = 'M'+fx0+' '+fy0+' L'+fx1+' '+fy0+' L'+(fx1+off)+' '+(fy0-off*0.5)+' L'+(fx0+off)+' '+(fy0-off*0.5)+' Z';
+    const finFront = R(fx0,fy0,fx1-fx0,fy1-fy0,tint(ink2,16),bd,1.2);
+    const finSide = 'M'+fx1+' '+fy0+' L'+(fx1+off)+' '+(fy0-off*0.5)+' L'+(fx1+off)+' '+(fy1-off*0.5)+' L'+fx1+' '+fy1+' Z';
+    svg = sub
+      + R(20,96,180,14,tint(ink2,14),bd,1) + R(440,96,180,14,tint(ink2,14),bd,1)
+      + finFront
+      + '<path d="'+finSide+'" fill="'+tint(ink2,10)+'" stroke="'+bd+'" stroke-width="1"/>'
+      + '<path d="'+finTop+'" fill="'+tint(ink2,22)+'" stroke="'+bd+'" stroke-width="1"/>'
+      // gate wraps top + two sides, drawn as translucent overlay across the middle of the fin
+      + R(270,52,80,66,tint(e,26),e,1.8,8)
+      + '<path d="M270 52 L292 30 L372 30 L350 52 Z" fill="'+tint(e,20)+'" stroke="'+e+'" stroke-width="1.4"/>'
+      + T(310,24,L('Gate 包覆頂 + 兩側','Gate wraps top + two sides'),{fw:700,fs:12,fill:e})
+      + R(100,74,120,38,tint(h,20),h,1.4) + R(fx1-20,74,120,38,tint(h,20),h,1.4)
+      + T(160,152,'S',{fw:700,fs:12,fill:h}) + T(fx1+60,152,'D',{fw:700,fs:12,fill:h})
+      + T(320,190,L('Fin 高度方向＝額外的通道寬度，不是額外的電場自由度（本模型仍平面近似）','Fin height = extra channel width, not an extra field degree of freedom (this model is still a planar approximation)'),{fs:10,fill:ink2});
+  } else if(sid==='gaa'){
+    label=L('GAA nanosheet（環繞閘極）','GAA nanosheet (gate-all-around)');
+    const cx0=200, cx1=440, ys=[70,88,106], sh=10;
+    let sheets='';
+    ys.forEach(function(y){ sheets += R(cx0,y,cx1-cx0,sh,tint(ink2,18),bd,1,3); });
+    svg = sub
+      + R(20,96,150,14,tint(ink2,14),bd,1) + R(470,96,150,14,tint(ink2,14),bd,1)
+      // outer gate envelope wrapping all sheets on 4 sides
+      + R(cx0-22,ys[0]-16,(cx1-cx0)+44,(ys[2]+sh-ys[0])+32,tint(e,16),e,1.8,14)
+      + sheets
+      + R(120,66,90,60,tint(h,20),h,1.4) + R(cx1-10,66,90,60,tint(h,20),h,1.4)
+      + T(320,42,L('Gate 環繞四面（top / bottom / left / right）','Gate wraps all four sides (top / bottom / left / right)'),{fw:700,fs:12,fill:e})
+      + T(165,150,'S',{fw:700,fs:12,fill:h}) + T(cx1+55,150,'D',{fw:700,fs:12,fill:h})
+      + T(320,190,L('nanosheet 數量與間距＝幾何參數，本模型仍以平面 pseudo-2D 近似橫向電場','Nanosheet count and spacing are geometric parameters; this model still approximates the lateral field with the planar pseudo-2D solution'),{fs:10,fill:ink2});
+  } else { // ldmos
+    label=L('Lateral DMOS（LDMOS，高壓）','Lateral DMOS (LDMOS, high voltage)');
+    svg = sub
+      + R(20,96,40,14,tint(ink2,14),bd,1)                       // small STI near source
+      + R(88,86,64,38,tint(h,20),h,1.4)                          // n+ source
+      + R(152,66,80,36,tint('#c9a24a',30),'#c9a24a',1.6,6)       // gate (short, near channel only)
+      + R(152,102,80,8,tint(ink2,10),bd,0.8,2)                   // gate oxide
+      + '<line x1="152" y1="110" x2="232" y2="110" stroke="'+e+'" stroke-width="2.2" opacity="0.6"/>'
+      + R(232,104,290,10,tint(e,14),e,1,3)                       // long N-drift region
+      + '<path d="M430 96 L500 96 L512 80 L442 80 Z" fill="'+tint(ink2,20)+'" stroke="'+bd+'" stroke-width="1"/>' // LOCOS field oxide bump
+      + R(522,86,58,38,tint(h,20),h,1.4)                         // n+ drain
+      + T(190,58,L('Gate（短，只蓋通道）','Gate (short, covers only the channel)'),{fw:700,fs:11.5,fill:'#c9a24a'})
+      + T(377,66,L('N-drift（長，RESURF）','N-drift (long, RESURF)'),{fw:700,fs:11.5,fill:e})
+      + T(476,66,'LOCOS',{fs:10.5,fill:ink2})
+      + T(120,152,'S',{fw:700,fs:12,fill:h}) + T(551,152,'D',{fw:700,fs:12,fill:h})
+      + T(320,190,L('高場區被刻意搬離通道、移進 drift 區 —— 這是 LDMOS 與邏輯元件最根本的幾何差異','The high-field region is deliberately moved out of the channel and into the drift region — the most fundamental geometric difference between LDMOS and logic devices'),{fs:10,fill:ink2});
+  }
+  host.innerHTML='<svg viewBox="0 0 640 205" role="img" aria-label="'+label+' '+L('結構示意','structure schematic')+'">'+svg+'</svg>';
+  if(nameEl) nameEl.textContent=label;
+}
+function fillSelects(){
+  $('selS').innerHTML=STRUCTS.map(s=>'<option value="'+s.id+'">'+L(s.name[0],s.name[1])+'</option>').join('');
+  $('selD').innerHTML=DIEL.map(d=>'<option value="'+d.id+'">'+L(d.name[0],d.name[1])+'　k = '+d.k+'　ΔE'+'ᶜ'+' = '+d.dEc+' eV</option>').join('');
+  $('selM').innerHTML=METAL.map(m=>{
+    const w=m.ewf!=null?('EWF '+m.ewf.toFixed(2)):(m.phi!=null?('Φ '+m.phi.toFixed(2)):'—');
+    return '<option value="'+m.id+'">'+L(m.name[0],m.name[1])+'　'+w+' eV</option>';}).join('');
+}
+
+/* ================= KPI ================= */
+function drawKPI(M,LC){
+  const c=CRITS[SS.crit], t50=LC.t50(c), tf=tAtF(t50,Math.pow(10,SS.F));
+  const ok=tf>=10*YEAR;
+  const cells=[
+    [L('峰值電場 E<sub>m</sub>','Peak field E<sub>m</sub>'),fmtEng(M.Em,'V/cm',2),'hl'],
+    [L('高場區 ΔL / L','High-field ΔL / L'),(M.dLoverL*100).toFixed(0)+' %'+(M.dLclip?' ⚠':''),M.dLclip?'hl':''],
+    ['I<sub>D</sub>',fmtEng(M.ID,'A',2),''],
+    ['I<sub>sub</sub> / I<sub>D</sub>',M.isubRatio>0?sci(M.isubRatio):'0',''],
+    ['I<sub>G</sub> / I<sub>D</sub>',M.igRatio>0?sci(M.igRatio):'0',''],
+    [L('V<sub>t</sub>（含金屬 + halo）','V<sub>t</sub> (incl. metal + halo)'),M.Vt.toFixed(3)+' V',''],
+    [L('接面溫度 T<sub>j</sub>','Junction temperature T<sub>j</sub>'),(M.Tamb+M.dT).toFixed(0)+' °C'+(M.dT>0.05?'（+'+M.dT.toFixed(1)+'）':''),M.dT>1?'hl':''],
+    ['t<sub>50</sub> @ '+c.lab,fmtYears(t50),''],
+    [L('壽命 @ ','Lifetime @ ')+(Math.pow(10,SS.F)*100).toPrecision(2)+'%',fmtYears(tf),ok?'good':'bad']
+  ];
+  $('kpi').innerHTML=cells.map(x=>'<div class="c"><div class="k">'+x[0]+'</div>'+
+    '<div class="v '+x[2]+'">'+x[1]+'</div></div>').join('');
+}
+/* ================= 能帶對齊圖 ================= */
+function drawBand(){
+  const d=D_OF(ST.did), em=effMetal();
+  const box=$('band'), W=box.clientWidth||420, H=250, M={l:64,r:14,t:26,b:26};
+  const iw=W-M.l-M.r, ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('金屬 / 介電層 / 矽的能帶對齊','Band alignment of metal / dielectric / silicon'));
+  const Emax=Math.max(9.6, d.dEc+d.Eg+0.6, em.phi+1);
+  const Y=e=>M.t+e/Emax*ih;
+  svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(0),y2:Y(0),stroke:css('--axis'),'stroke-width':1.4,'stroke-dasharray':'5 3'}));
+  svg.appendChild(txt(M.l-6,Y(0),L('真空能階','Vacuum level'),{ta:'end',db:'middle',fs:10.5}));
+  for(let e=2;e<=Math.floor(Emax);e+=2){
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(e),y2:Y(e),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-6,Y(e),'−'+e+' eV',{ta:'end',db:'middle',fs:9.5}));}
+  const w1=iw*0.24, w2=iw*0.32, w3=iw-w1-w2;
+  const x1=M.l, x2=M.l+w1, x3=M.l+w1+w2;
+  /* 金屬 */
+  svg.appendChild(el('rect',{x:x1,y:Y(em.phi),width:w1,height:Y(Emax)-Y(em.phi),
+    fill:css('--ink2'),opacity:.30}));
+  svg.appendChild(el('line',{x1:x1,x2:x2,y1:Y(em.phi),y2:Y(em.phi),stroke:css('--ink'),'stroke-width':2.4}));
+  svg.appendChild(txt(x1+2,Y(em.phi)-7,'Φ = '+em.phi.toFixed(2)+' eV',{fs:11,fw:700,fill:css('--ink')}));
+  svg.appendChild(txt(x1+w1/2,M.t-9,L(em.m.name[0],em.m.name[1])+(em.useEwf?L('（EWF）',' (EWF)'):L('（真空 Φ）',' (vacuum Φ)')),{ta:'middle',fs:10.5,fw:650,fill:css('--ink2')}));
+  /* 介電層 */
+  const dc1=d.dEc>0?SI_EC-d.dEc:SI_EC, dv1=dc1+d.Eg;
+  svg.appendChild(el('rect',{x:x2,y:Y(dc1),width:w2,height:Math.max(Y(dv1)-Y(dc1),1),
+    fill:css('--e'),opacity:.13}));
+  [[dc1,'E~c~'],[dv1,'E~v~']].forEach(function(p){
+    svg.appendChild(el('line',{x1:x2,x2:x3,y1:Y(p[0]),y2:Y(p[0]),stroke:css('--e'),'stroke-width':2.2}));});
+  svg.appendChild(txt(x2+w2/2,M.t-9,L(d.name[0],d.name[1]),{ta:'middle',fs:10.5,fw:650,fill:css('--e')}));
+  svg.appendChild(txt(x2+w2/2,(Y(dc1)+Y(dv1))/2,'E~g~ = '+d.Eg+' eV',{ta:'middle',db:'middle',fs:10.5,fill:css('--e')}));
+  /* Si */
+  svg.appendChild(el('rect',{x:x3,y:Y(SI_EC),width:w3,height:Y(SI_EV)-Y(SI_EC),fill:css('--h'),opacity:.14}));
+  [[SI_EC,'E~c~ 4.05',-5],[SI_EV,'E~v~ 5.17',13]].forEach(function(p){
+    svg.appendChild(el('line',{x1:x3,x2:x3+w3,y1:Y(p[0]),y2:Y(p[0]),stroke:css('--h'),'stroke-width':2.2}));
+    svg.appendChild(txt(x3+w3-2,Y(p[0])+p[2],p[1],{ta:'end',fs:10,fw:650,fill:css('--h')}));});
+  svg.appendChild(el('line',{x1:x3,x2:x3+w3,y1:Y(SI_MID),y2:Y(SI_MID),stroke:css('--muted'),
+    'stroke-width':1,'stroke-dasharray':'3 3'}));
+  svg.appendChild(txt(x3+3,Y(SI_MID)-4,L('中能隙 4.61','Midgap 4.61'),{fs:9.5}));
+  /* 目標 EWF 帶 */
+  const tg=(ST.sid==='finfet'||ST.sid==='gaa')?WFTGT.undoped:WFTGT.planar;
+  [[tg.n,L('n 目標','n target'),-4],[tg.p,L('p 目標','p target'),11]].forEach(function(t){
+    svg.appendChild(el('line',{x1:x1,x2:x2,y1:Y(t[0]),y2:Y(t[0]),stroke:css('--good'),
+      'stroke-width':1.2,'stroke-dasharray':'3 3'}));
+    svg.appendChild(txt(x2-2,Y(t[0])+t[2],t[1]+' '+t[0],{ta:'end',fs:9,fw:650,fill:css('--good')}));});
+  svg.appendChild(txt(x3+w3/2,M.t-9,'Si',{ta:'middle',fs:10.5,fw:650,fill:css('--h')}));
+  /* 位障箭頭 */
+  const bx=x2+w2*0.5;
+  svg.appendChild(el('line',{x1:bx,x2:bx,y1:Y(SI_EC),y2:Y(dc1),stroke:css('--crit'),'stroke-width':1.6}));
+  svg.appendChild(txt(bx+5,(Y(SI_EC)+Y(dc1))/2,'ΔE~c~ = '+d.dEc+' eV',{db:'middle',fs:10.5,fw:700,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+}
+/* ================= 圖：E(y) ================= */
+function drawE(M){
+  const box=$('cE'),W=box.clientWidth||480,H=250,Mg={l:62,r:58,t:14,b:38};
+  const iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('沿 pinch-off 區的電場與游離係數','Field and ionization coefficient along the pinch-off region'));
+  const pr=M.prof, ymax=Math.max(M.Em*1.1,1e4);
+  const xN=Math.max(M.dL,1e-9);
+  const X=y=>Mg.l+y/xN*iw, Y=e=>Mg.t+ih-e/ymax*ih;
+  const amax=Math.max.apply(null,pr.map(p=>p.al).concat([1e-9]));
+  const YA=a=>Mg.t+ih-(amax>0?a/amax:0)*ih;
+  ticks(0,ymax,5).forEach(v=>{const y=Y(v);if(y<Mg.t-1)return;
+    svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-6,y,fmtEng(v,'',1),{ta:'end',db:'middle',fs:9.5}));});
+  ticks(0,xN*1e7,5).forEach(v=>{const x=X(v*1e-7);if(x>Mg.l+iw+1)return;
+    svg.appendChild(txt(x,Mg.t+ih+14,v.toFixed(0),{ta:'middle',fs:9.5}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-4,L('距 pinch-off 起點 y（nm）','Distance from pinch-off start y (nm)'),{ta:'middle',fs:10.5}));
+  svg.appendChild(txt(13,Mg.t+ih/2,'E（V/cm）',{ta:'middle',fs:10.5,rot:-90}));
+  svg.appendChild(txt(W-11,Mg.t+ih/2,'α~i~（'+L('相對','relative')+'）',{ta:'middle',fs:10.5,rot:-90,fill:css('--h')}));
+  let d1='',d2='';
+  pr.forEach(function(p,i){d1+=(i?' L ':'M ')+X(p.y).toFixed(1)+' '+Y(p.E).toFixed(1);
+    d2+=(i?' L ':'M ')+X(p.y).toFixed(1)+' '+YA(p.al).toFixed(1);});
+  svg.appendChild(el('path',{d:d2,fill:'none',stroke:css('--h'),'stroke-width':2,opacity:.9}));
+  svg.appendChild(el('path',{d:d1,fill:'none',stroke:css('--e'),'stroke-width':2.4}));
+  svg.appendChild(txt(Mg.l+iw-4,Mg.t+12,'E~m~ = '+fmtEng(M.Em,'V/cm',2),{ta:'end',fs:11,fw:700,fill:css('--e')}));
+  svg.appendChild(txt(Mg.l+iw-4,Mg.t+27,'ΔL = '+fmtEng(M.dL*1e-2,'m',2)+'　l = '+fmtEng(M.l*1e-2,'m',2),
+    {ta:'end',fs:10.5,fill:css('--ink2')}));
+  if(M.dLclip) svg.appendChild(txt(Mg.l+iw-4,Mg.t+42,L('⚠ 高場區已涵蓋整個通道','⚠ High-field region already covers the whole channel'),
+    {ta:'end',fs:10.5,fw:650,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+  const cn=$('clipNote'); if(cn) cn.innerHTML = M.dLclip
+    ? L('<b>⚠ pseudo-2D 解出的高場區長度已經超過通道長度，圖上已截到 0.95·L。</b>'+
+      '這不是程式壞掉 —— 它正是「短通道元件整條通道都在高場裡」的意思，'+
+      '也對應 FinFET 文獻說的「缺陷注入分布在整個通道長度」，而不再只集中在汲極端。'+
+      '此時 pseudo-2D 近似已超出適用範圍，數值只能當方向參考。',
+      '<b>⚠ The pseudo-2D solution\'s high-field length already exceeds the channel length; the plot is clipped to 0.95·L.</b>'+
+      'This isn\'t a bug — it\'s exactly what "the whole channel of a short-channel device sits in the high field" means, '+
+      'matching the FinFET literature\'s "defect injection distributed across the entire channel length," no longer concentrated only at the drain.'+
+      'At this point the pseudo-2D approximation has exceeded its valid range, and the numbers are only a directional reference.')
+    : '';
+  $('lgE').innerHTML='<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('橫向電場 E(y)','lateral field E(y)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('游離係數 α~i~(y)','ionization coefficient α~i~(y)')+'</span>'.replace(/~i~/,'<sub>i</sub>');
+}
+/* ================= 圖：掃 VG ================= */
+function drawV(M){
+  const box=$('cV'),W=box.clientWidth||480,H=250,Mg={l:62,r:16,t:14,b:38};
+  const iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('固定 VD 掃 VG 的 Isub、IG 與損傷率','Isub, IG and damage rate while sweeping VG at fixed VD'));
+  const rg=S_OF(ST.sid).rng, vmax=rg.VG[1];
+  const N=90, dat=[];
+  for(let i=1;i<=N;i++){const vg=vmax*i/N; const mm=mdl({VG:vg});
+    dat.push({vg:vg,is:mm.Isub,ig:mm.IG,rt:mm.rate});}
+  const nz=a=>{const m=Math.max.apply(null,dat.map(d=>d[a]));return m>0?m:1;};
+  const mIs=nz('is'),mIg=nz('ig'),mRt=nz('rt');
+  const X=v=>Mg.l+v/vmax*iw, Y=u=>Mg.t+ih-u*ih;
+  [0,0.25,0.5,0.75,1].forEach(u=>{svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(u),y2:Y(u),
+    stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-6,Y(u),(u*100).toFixed(0)+'%',{ta:'end',db:'middle',fs:9.5}));});
+  ticks(0,vmax,5).forEach(v=>{const x=X(v);if(x>Mg.l+iw+1)return;
+    svg.appendChild(txt(x,Mg.t+ih+14,v.toFixed(1),{ta:'middle',fs:9.5}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-4,L('閘極電壓 V~G~（V）　V~D~ = ','Gate voltage V~G~ (V)　V~D~ = ')+P.VD.toFixed(2)+' V',{ta:'middle',fs:10.5}));
+  svg.appendChild(txt(13,Mg.t+ih/2,L('相對各自峰值','relative to each curve\'s own peak'),{ta:'middle',fs:10.5,rot:-90}));
+  [['is',mIs,css('--h')],['ig',mIg,css('--a')||css('--nit')],['rt',mRt,css('--e')]].forEach(function(s){
+    let d='';dat.forEach((p,i)=>{d+=(i?' L ':'M ')+X(p.vg).toFixed(1)+' '+Y(p[s[0]]/s[1]).toFixed(1);});
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:s[2],'stroke-width':s[0]==='rt'?2.6:2}));});
+  const pk=a=>dat.reduce((b,p)=>p[a]>b[a]?p:b,dat[0]).vg;
+  const pi=pk('is'), pg2=pk('ig');
+  [[pi,css('--h'),L('I~sub~ 峰','I~sub~ peak')],[pg2,css('--a')||css('--nit'),L('I~G~ 峰','I~G~ peak')]].forEach(function(p,i){
+    svg.appendChild(el('line',{x1:X(p[0]),x2:X(p[0]),y1:Mg.t,y2:Mg.t+ih,stroke:p[1],
+      'stroke-width':1,'stroke-dasharray':'4 3',opacity:.8}));
+    svg.appendChild(txt(X(p[0])+4,Mg.t+13+i*14,p[2]+' '+p[0].toFixed(2)+' V',{fs:10,fw:650,fill:p[1]}));});
+  svg.appendChild(el('line',{x1:X(P.VG),x2:X(P.VG),y1:Mg.t,y2:Mg.t+ih,stroke:css('--axis'),'stroke-width':1.4}));
+  svg.appendChild(txt(X(P.VG)+4,Mg.t+ih-6,L('目前','current'),{fs:10,fw:650}));
+  box.innerHTML='';box.appendChild(svg);
+  $('lgV').innerHTML='<span><i class="sw" style="background:'+css('--h')+'"></i>I<sub>sub</sub></span>'+
+    '<span><i class="sw" style="background:'+(css('--a')||css('--nit'))+'"></i>I<sub>G</sub></span>'+
+    '<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('界面態生成率','interface-trap generation rate')+'</span>';
+  $('vNote').innerHTML = L(
+    '此 V<sub>D</sub> 下 I<sub>sub</sub> 峰在 <b>V<sub>G</sub> = '+pi.toFixed(2)+' V</b>'+
+      '（= V<sub>D</sub>/'+(P.VD/Math.max(pi,1e-6)).toFixed(2)+'），I<sub>G</sub> 峰在 <b>'+pg2.toFixed(2)+' V</b>。'+
+      '　此結構的文獻最糟偏壓：'+L(S_OF(ST.sid).worst[0],S_OF(ST.sid).worst[1])+'。',
+    'At this V<sub>D</sub>, I<sub>sub</sub> peaks at <b>V<sub>G</sub> = '+pi.toFixed(2)+' V</b>'+
+      ' (= V<sub>D</sub>/'+(P.VD/Math.max(pi,1e-6)).toFixed(2)+'), I<sub>G</sub> peaks at <b>'+pg2.toFixed(2)+' V</b>.'+
+      '　This structure\'s literature worst-case bias: '+L(S_OF(ST.sid).worst[0],S_OF(ST.sid).worst[1])+'.'
+  );
+}
+
+/* ================= 統計圖 ================= */
+function weibFit(t50,t10){
+  const y1=Math.log(-Math.log(0.9)), y2=Math.log(-Math.log(0.5));
+  const b=(y2-y1)/(Math.log(t50)-Math.log(t10));
+  const eta=Math.exp(Math.log(t50)-y2/b);
+  return {b:b,eta:eta};
+}
+function drawDist(LC){
+  const c=CRITS[SS.crit], t50=LC.t50(c);
+  const box=$('cDist'),W=box.clientWidth||480,H=290,Mg={l:64,r:16,t:14,b:40};
+  const iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('壽命分布：對數常態與 Weibull 的外推比較','Lifetime distribution: lognormal vs. Weibull extrapolation comparison'));
+  if(!isFinite(t50)||t50<=0){box.innerHTML='';box.appendChild(svg);return;}
+  const t10=t50*Math.exp(SS.sig*normInv(0.1));
+  const wf=weibFit(t50,t10);
+  const Ft=Math.pow(10,SS.F);
+  const tl=tAtF(t50,Ft), tw=wf.eta*Math.pow(-Math.log(1-Ft),1/wf.b);
+  const zlo=normInv(1e-7), zhi=normInv(0.95);
+  const xlo=Math.log10(Math.min(tl,tw)/6), xhi=Math.log10(t50*8);
+  const X=t=>Mg.l+(Math.log10(Math.max(t,1e-30))-xlo)/(xhi-xlo)*iw;
+  const Y=z=>Mg.t+ih-(z-zlo)/(zhi-zlo)*ih;
+  [1e-6,1e-5,1e-4,1e-3,1e-2,0.1,0.5,0.9].forEach(function(F){
+    const y=Y(normInv(F)); if(y<Mg.t-1||y>Mg.t+ih+1)return;
+    svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-6,y,F<1e-3?(F*1e6)+' ppm':(F*100)+'%',{ta:'end',db:'middle',fs:9.5}));});
+  const yT=Y(normInv(Ft));
+  svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:yT,y2:yT,stroke:css('--crit'),'stroke-width':1.5,'stroke-dasharray':'5 4'}));
+  for(let e=Math.ceil(xlo);e<=Math.floor(xhi);e++){const x=Mg.l+(e-xlo)/(xhi-xlo)*iw;
+    svg.appendChild(txt(x,Mg.t+ih+14,pw10(e),{ta:'middle',fs:9.5}));}
+  const TEN=10*YEAR;
+  if(Math.log10(TEN)>xlo&&Math.log10(TEN)<xhi){
+    svg.appendChild(el('line',{x1:X(TEN),x2:X(TEN),y1:Mg.t,y2:Mg.t+ih,stroke:css('--good'),
+      'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+    svg.appendChild(txt(X(TEN)+5,Mg.t+12,L('10 年','10 yr'),{fs:10.5,fw:700,fill:css('--good')}));}
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('壽命（秒，對數）','Lifetime (s, log)'),{ta:'middle',fs:10.5}));
+  svg.appendChild(txt(13,Mg.t+ih/2,L('累積失效率','Cumulative failure rate'),{ta:'middle',fs:10.5,rot:-90}));
+  let dl='',dw='';
+  for(let i=0;i<=140;i++){
+    const z=zlo+(zhi-zlo)*i/140;
+    dl+=(i?' L ':'M ')+X(t50*Math.exp(SS.sig*z)).toFixed(1)+' '+Y(z).toFixed(1);
+    const F=normCdf(z), tW=wf.eta*Math.pow(-Math.log(1-Math.min(Math.max(F,1e-12),0.999999)),1/wf.b);
+    dw+=(i?' L ':'M ')+X(tW).toFixed(1)+' '+Y(z).toFixed(1);}
+  svg.appendChild(el('path',{d:dw,fill:'none',stroke:css('--h'),'stroke-width':2,'stroke-dasharray':'6 4'}));
+  svg.appendChild(el('path',{d:dl,fill:'none',stroke:css('--e'),'stroke-width':2.6}));
+  [[tl,css('--e')],[tw,css('--h')]].forEach(p=>svg.appendChild(
+    el('circle',{cx:X(p[0]),cy:yT,r:4.5,fill:p[1]})));
+  box.innerHTML='';box.appendChild(svg);
+  $('lgD').innerHTML='<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('對數常態（σ = ','lognormal (σ = ')+SS.sig.toFixed(2)+'）</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('Weibull（同 t<sub>50</sub>、t<sub>10</sub>，β = ','Weibull (same t<sub>50</sub>, t<sub>10</sub>, β = ')+wf.b.toFixed(2)+'）</span>'+
+    '<span style="color:var(--crit)">'+L('紅虛線 = 目標失效率','dashed red = target failure rate')+'</span>';
+  $('distNote').innerHTML = L(
+    '在 '+(Ft*1e6).toPrecision(3)+' ppm：對數常態給 <b>'+fmtYears(tl)+
+      '</b>，Weibull 給 <b>'+fmtYears(tw)+'</b> —— 相差 <b>'+(tl/tw).toFixed(1)+' 倍</b>。'+
+      '兩條線在資料涵蓋的區間（10%～50%）幾乎重疊，分歧全部發生在<b>沒有資料的外推區</b>。'+
+      'Lloyd（NASA NEPP 2018）警告過：同一組資料在相同相關係數下，兩種分布外推到 1 ppm 可以差到 130 倍。'+
+      '<b>要靠物理決定用哪一個，不是靠哪條線比較直。</b>',
+    'At '+(Ft*1e6).toPrecision(3)+' ppm: lognormal gives <b>'+fmtYears(tl)+
+      '</b>, Weibull gives <b>'+fmtYears(tw)+'</b> — a <b>'+(tl/tw).toFixed(1)+'×</b> difference.'+
+      'The two curves nearly overlap over the region the data actually covers (10%–50%); all the divergence happens in the <b>extrapolated region with no data</b>.'+
+      'Lloyd (NASA NEPP 2018) warned that the same dataset, at the same correlation coefficient, can extrapolate to 1 ppm and differ by up to 130× between the two distributions.'+
+      '<b>Which one to use has to be decided by physics, not by which line looks straighter.</b>'
+  );
+}
+/* ================= 退化曲線 ================= */
+function drawDeg(LC){
+  const box=$('cDeg'),W=box.clientWidth||480,H=280,Mg={l:58,r:16,t:14,b:40};
+  const iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('退化量對時間的雙對數圖','Degradation vs. time, log-log'));
+  const eqs=CRITS.map(critEq), cmax=Math.max.apply(null,eqs)*2.2;
+  const ylo=Math.log10(0.05), yhi=Math.log10(cmax);
+  const tEnd=Math.max(LC.t50(CRITS.reduce((a,b)=>critEq(a)>critEq(b)?a:b))*3, 10*YEAR*1.5);
+  const xlo=0, xhi=Math.log10(Math.max(tEnd,1e4));
+  const X=t=>Mg.l+(Math.log10(Math.max(t,1))-xlo)/(xhi-xlo)*iw;
+  const Y=v=>Mg.t+ih-(Math.log10(Math.max(v,1e-6))-ylo)/(yhi-ylo)*ih;
+  for(let e=Math.ceil(ylo);e<=Math.floor(yhi);e++){const y=Y(Math.pow(10,e));
+    svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-6,y,pw10(e)+'%',{ta:'end',db:'middle',fs:9.5}));}
+  for(let e=Math.ceil(xlo);e<=Math.floor(xhi);e+=2){const x=X(Math.pow(10,e));
+    svg.appendChild(txt(x,Mg.t+ih+14,pw10(e),{ta:'middle',fs:9.5}));}
+  const TEN=10*YEAR;
+  svg.appendChild(el('line',{x1:X(TEN),x2:X(TEN),y1:Mg.t,y2:Mg.t+ih,stroke:css('--good'),
+    'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+  svg.appendChild(txt(X(TEN)+5,Mg.t+12,L('10 年','10 yr'),{fs:10.5,fw:700,fill:css('--good')}));
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('應力時間（秒，對數）','Stress time (s, log)'),{ta:'middle',fs:10.5}));
+  svg.appendChild(txt(12,Mg.t+ih/2,L('等效 ΔI~dlin~（%）','Equivalent ΔI~dlin~ (%)'),{ta:'middle',fs:10.5,rot:-90}));
+  function curve(t1,col,w,dash){
+    let d='';
+    for(let i=0;i<=120;i++){const t=Math.pow(10,xlo+(xhi-xlo)*i/120);
+      const v=SS.cref*Math.pow(t/t1,SS.n); if(v<Math.pow(10,ylo)||v>cmax)continue;
+      d+=(d?' L ':'M ')+X(t).toFixed(1)+' '+Y(v).toFixed(1);}
+    if(d)svg.appendChild(el('path',{d:d,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''}));}
+  curve(LC.tref,css('--h'),1.8,'6 4');
+  curve(LC.tCref,css('--e'),2.6);
+  CRITS.forEach(function(c,i){
+    const v=critEq(c), y=Y(v), t=LC.t50(c);
+    const on=i===SS.crit;
+    svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:y,y2:y,stroke:on?css('--crit'):css('--axis'),
+      'stroke-width':on?1.6:1,'stroke-dasharray':'4 3',opacity:on?1:.55}));
+    if(on&&isFinite(t))svg.appendChild(el('circle',{cx:X(t),cy:y,r:4.5,fill:css('--crit')}));});
+  const c=CRITS[SS.crit];
+  svg.appendChild(txt(Mg.l+iw-4,Mg.t+12,c.lab.replace(/<[^>]+>/g,'')+' → '+fmtYears(LC.t50(c)),
+    {ta:'end',fs:11,fw:700,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+  $('lgG').innerHTML='<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('使用條件','use condition')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('應力條件（校準點）','stress condition (calibration point)')+'</span>'+
+    '<span style="color:var(--crit)">'+L('粗虛線 = 目前選的判準','thick dashed = currently selected criterion')+'</span>';
+}
+/* ================= 壽命 vs 1/VD ================= */
+function drawVext(LC){
+  const box=$('cVext'),W=box.clientWidth||480,H=280,Mg={l:64,r:16,t:14,b:42};
+  const iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('壽命對 1/VD 的外推圖','Lifetime vs. 1/VD extrapolation plot'));
+  const c=CRITS[SS.crit], Ft=Math.pow(10,SS.F);
+  const rg=S_OF(ST.sid).rng;
+  const vlo=Math.max(SS.VDu*0.7,rg.VD[0]), vhi=Math.max(P.VD*1.05,SS.VDu*1.05);
+  const pts=[];
+  for(let i=0;i<=44;i++){
+    const v=vlo+(vhi-vlo)*i/44;
+    const Mu=mdl({VD:v,VG:Math.min(SS.VGu*v/Math.max(SS.VDu,1e-6),rg.VG[1]),Tc:SS.Tu});
+    const t50=LC.H*tauRel(Mu)*Math.pow(critEq(c)/SS.cref,1/SS.n);
+    if(isFinite(t50)&&t50>0)pts.push({v:v,t:tAtF(t50,Ft)});}
+  if(!pts.length){box.innerHTML='';box.appendChild(svg);return;}
+  const TEN=10*YEAR;
+  const tv=pts.map(p=>p.t).concat([TEN]);
+  let ylo=Math.log10(Math.min.apply(null,tv))-0.4, yhi=Math.log10(Math.max.apply(null,tv))+0.4;
+  if(yhi-ylo<2){const cc=(ylo+yhi)/2;ylo=cc-1;yhi=cc+1;}
+  const xlo=1/vhi, xhi2=1/vlo;
+  const X=v=>Mg.l+(1/v-xlo)/(xhi2-xlo)*iw, Y=t=>Mg.t+ih-(Math.log10(Math.max(t,1e-30))-ylo)/(yhi-ylo)*ih;
+  for(let e=Math.ceil(ylo);e<=Math.floor(yhi);e++){const y=Y(Math.pow(10,e));
+    svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-6,y,pw10(e),{ta:'end',db:'middle',fs:9.5}));}
+  ticks(xlo,xhi2,5).forEach(function(u){const x=Mg.l+(u-xlo)/(xhi2-xlo)*iw;
+    if(x<Mg.l-1||x>Mg.l+iw+1||u<=0)return;
+    svg.appendChild(txt(x,Mg.t+ih+14,(1/u).toFixed(2),{ta:'middle',fs:9.5}));});
+  svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(TEN),y2:Y(TEN),stroke:css('--good'),
+    'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+  svg.appendChild(txt(Mg.l+iw-4,Y(TEN)-6,L('10 年','10 yr'),{ta:'end',fs:10.5,fw:700,fill:css('--good')}));
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-5,L('V~D,use~（V，橫軸實為 1/V~D~）','V~D,use~ (V; x-axis is actually 1/V~D~)'),{ta:'middle',fs:10.5}));
+  svg.appendChild(txt(13,Mg.t+ih/2,L('壽命（秒，對數）','Lifetime (s, log)'),{ta:'middle',fs:10.5,rot:-90}));
+  let d='';pts.forEach((p,i)=>{d+=(i?' L ':'M ')+X(p.v).toFixed(1)+' '+Y(p.t).toFixed(1);});
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--e'),'stroke-width':2.6}));
+  const cur=pts.reduce((a,p)=>Math.abs(p.v-SS.VDu)<Math.abs(a.v-SS.VDu)?p:a,pts[0]);
+  svg.appendChild(el('circle',{cx:X(cur.v),cy:Y(cur.t),r:5,fill:css('--crit')}));
+  svg.appendChild(txt(X(cur.v),Y(cur.t)-11,'V~D,use~ = '+SS.VDu.toFixed(2)+' V',
+    {ta:'middle',fs:10.5,fw:700,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+  /* 找剛好十年的 VD */
+  let vTen=null;
+  for(let i=1;i<pts.length;i++){
+    if((pts[i-1].t-TEN)*(pts[i].t-TEN)<0){
+      const a=pts[i-1],b=pts[i];
+      vTen=a.v+(b.v-a.v)*(Math.log10(TEN)-Math.log10(a.t))/(Math.log10(b.t)-Math.log10(a.t));break;}}
+  $('vextNote').innerHTML = L(
+    '這張圖就是業界最常見的 HCI 外推圖。'+
+      (vTen!=null?('在目前設定下，<b>V<sub>D</sub> = '+vTen.toFixed(3)+' V</b> 時剛好達到十年（'+
+        (Ft*1e6).toPrecision(3)+' ppm）—— 距離你設定的使用電壓 '+
+        (SS.VDu-vTen>0?('還差 '+(SS.VDu-vTen).toFixed(3)+' V'):('還有 '+(vTen-SS.VDu).toFixed(3)+' V 餘裕'))+'。')
+       :'在目前掃描範圍內沒有跨過十年線。'),
+    'This is the classic HCI extrapolation plot used across the industry.'+
+      (vTen!=null?(' With the current settings, <b>V<sub>D</sub> = '+vTen.toFixed(3)+' V</b> is exactly where ten years is reached ('+
+        (Ft*1e6).toPrecision(3)+' ppm) — '+
+        (SS.VDu-vTen>0?('still '+(SS.VDu-vTen).toFixed(3)+' V short of'):((vTen-SS.VDu).toFixed(3)+' V of margin above'))+' your set use voltage.')
+       :' No crossing of the ten-year line within the current sweep range.')
+  );
+}
+
+/* ================= 面板文字 ================= */
+function drawPanels(M,LC){
+  const s=S_OF(ST.sid), d=D_OF(ST.did), em=effMetal();
+  $('sNote').innerHTML = L(
+    '<b>此選項改變的是</b>：預設參數組、加速指數 m 與時間指數 n 的預設值、'+
+      '自我發熱熱阻，以及本頁所有「已知差異」的說明。'+
+      '<b>電靜學核心仍是平面 pseudo-2D 模型</b>，不會變成該架構的三維解。',
+    '<b>Changing this changes</b>: the default parameter set, the default acceleration exponent m and time exponent n, '+
+      'the self-heating thermal resistance, and every "known differences" note on this page. '+
+      '<b>The electrostatic core is still the planar pseudo-2D model</b> — it never becomes that architecture\'s 3D solution.'
+  );
+  $('sWorst').innerHTML=L(s.worst[0],s.worst[1]); $('sDmg').innerHTML=L(s.dmg[0],s.dmg[1]); $('sMon').innerHTML=L(s.mon[0],s.mon[1]);
+  $('sRth').innerHTML=s.rth+' K per mW/µm　<span class="note">（'+L('文獻量級校準值','calibrated to literature order-of-magnitude')+'）</span>';
+  $('sFacts').innerHTML='<b>'+L('這個架構的已知差異（查證過的重點）','This architecture\'s known differences (verified highlights)')+'</b><ul style="margin:6px 0 0;padding-left:20px;line-height:1.85">'+
+    s.facts.map(f=>'<li>'+L(f[0],f[1])+'</li>').join('')+'</ul>';
+  $('dK').innerHTML=d.k+'　<span class="note">（'+(Array.isArray(d.src)?L(d.src[0],d.src[1]):d.src)+'）</span>';
+  $('dEg').innerHTML=d.Eg+' eV';
+  $('dDec').innerHTML='<b>'+d.dEc+' eV</b>';
+  $('dTp').innerHTML='<b>'+(P.tox*d.k/3.9).toFixed(2)+' nm</b>　<span class="note">= EOT × k/3.9</span>';
+  $('dL2').innerHTML=fmtEng(M.l*1e-2,'m',2)+'　<span class="note">'+L('只看 EOT，與 k 無關','only cares about EOT, independent of k')+'</span>';
+  $('dNote').innerHTML='<b>'+L('來源與分歧：','Sourcing & discrepancies: ')+'</b>'+L(d.alt[0],d.alt[1]);
+  $('vEOT').innerHTML=P.tox.toFixed(2)+' nm';
+  const tgt=(ST.sid==='finfet'||ST.sid==='gaa')?WFTGT.undoped:WFTGT.planar;
+  const dv=em.dVt;
+  $('mNote').innerHTML = L(
+    '<b>'+em.m.name[0]+'</b>：'+em.m.note[0]+
+      '<br><br><b>本頁採用 '+em.phi.toFixed(2)+' eV</b>（'+
+      (em.useEwf?('在 '+(em.m.ewfOn?em.m.ewfOn[0]:'high-k')+' 上的實測有效功函數 EWF'):'真空功函數')+'）'+
+      (em.m.rng?('，文獻範圍 '+em.m.rng[0]+'–'+em.m.rng[1]+' eV'):'')+
+      '。相對此結構的預設金屬（'+M_OF(S_OF(ST.sid).metal).name[0]+'，'+em.ref.toFixed(2)+' eV）'+'造成 ΔV<sub>t</sub> = <b>'+(dv>=0?'+':'')+dv.toFixed(3)+' V</b>。'+
+      '<br>此結構的 nMOS 目標約 '+tgt.n+' eV、pMOS 約 '+tgt.p+' eV（離中能隙 '+tgt.sep+' eV）。'+
+      (em.useEwf?'<br><br><b>為什麼不用真空功函數？</b>因為高k 疊構上會發生費米能階釘扎 —— '+
+        '同一個 ALD Pt 在 SiO₂ 上量到 5.52 eV、在 ZrO₂ 上只有 4.76 eV，差 0.76 eV。'+
+        '真空功函數只能當排序參考，設計必須用該疊構的實測 EWF。':''),
+    '<b>'+em.m.name[1]+'</b>: '+em.m.note[1]+
+      '<br><br><b>This page uses '+em.phi.toFixed(2)+' eV</b> ('+
+      (em.useEwf?('the measured effective work function EWF on '+(em.m.ewfOn?em.m.ewfOn[1]:'high-k')):'the vacuum work function')+')'+
+      (em.m.rng?(', literature range '+em.m.rng[0]+'–'+em.m.rng[1]+' eV'):'')+
+      '. Relative to this structure\'s default metal ('+M_OF(S_OF(ST.sid).metal).name[1]+', '+em.ref.toFixed(2)+' eV), this gives ΔV<sub>t</sub> = <b>'+(dv>=0?'+':'')+dv.toFixed(3)+' V</b>.'+
+      '<br>This structure\'s nMOS target is about '+tgt.n+' eV, pMOS about '+tgt.p+' eV ('+tgt.sep+' eV off midgap).'+
+      (em.useEwf?'<br><br><b>Why not use the vacuum work function?</b> Because Fermi-level pinning occurs at high-k stacks — '+
+        'the very same ALD Pt measures 5.52 eV on SiO₂ but only 4.76 eV on ZrO₂, a 0.76 eV difference. '+
+        'The vacuum work function is only a rough ranking reference; a design must use the measured EWF for its actual stack.':'')
+  );
+  $('eqDop').innerHTML = L(
+    'l₀ = √(3·EOT·x<sub>j</sub>) = <span class="num">'+fmtEng(M.l0*1e-2,'m',2)+'</span><br>'+
+      'LDD 空乏延伸 W<sub>LDD</sub> = <span class="num">'+fmtEng(M.Wldd*1e-2,'m',2)+'</span>'+
+      '　halo 縮短量 = <span class="num">'+fmtEng(M.dHalo*1e-2,'m',2)+'</span><br>'+
+      '<b>有效特徵長度 l = <span class="num">'+fmtEng(M.l*1e-2,'m',2)+'</span>'+
+      '　→　E<sub>m</sub> = <span class="num">'+fmtEng(M.Em,'V/cm',2)+'</span></b><br>'+
+      'LDD 的代價：串聯電阻 2R<sub>ext</sub> = <span class="num">'+fmtEng(M.Rtot,'Ω',2)+
+      '</span>，I<sub>D</sub> 由 '+fmtEng(M.ID0,'A',2)+' 降到 '+fmtEng(M.ID,'A',2)+
+      '（−'+((1-M.ID/Math.max(M.ID0,1e-30))*100).toFixed(1)+'%）',
+    'l₀ = √(3·EOT·x<sub>j</sub>) = <span class="num">'+fmtEng(M.l0*1e-2,'m',2)+'</span><br>'+
+      'LDD depletion extension W<sub>LDD</sub> = <span class="num">'+fmtEng(M.Wldd*1e-2,'m',2)+'</span>'+
+      '　halo shortening = <span class="num">'+fmtEng(M.dHalo*1e-2,'m',2)+'</span><br>'+
+      '<b>Effective characteristic length l = <span class="num">'+fmtEng(M.l*1e-2,'m',2)+'</span>'+
+      '　→　E<sub>m</sub> = <span class="num">'+fmtEng(M.Em,'V/cm',2)+'</span></b><br>'+
+      'LDD\'s cost: series resistance 2R<sub>ext</sub> = <span class="num">'+fmtEng(M.Rtot,'Ω',2)+
+      '</span>, I<sub>D</sub> drops from '+fmtEng(M.ID0,'A',2)+' to '+fmtEng(M.ID,'A',2)+
+      ' (−'+((1-M.ID/Math.max(M.ID0,1e-30))*100).toFixed(1)+'%)'
+  );
+  $('vLext').innerHTML=P.Lext.toFixed(0)+' nm';
+  $('vxj').innerHTML=P.xj.toFixed(0)+' nm';
+  $('vRth').innerHTML=ST.rth.toFixed(1);
+  $('bSH').setAttribute('aria-pressed',String(ST.sh));
+  $('bLDD').setAttribute('aria-pressed',String(P.ldd));
+  $('bHALO').setAttribute('aria-pressed',String(P.halo));
+  $('eqSH').innerHTML = L(
+    '功率密度 = I<sub>D</sub>·V<sub>D</sub>/W = <span class="num">'+M.pw.toPrecision(3)+
+      '</span> mW/µm<br>ΔT = R<sub>th</sub>·功率密度 = <span class="num">'+M.dT.toFixed(1)+
+      '</span> K　→　T<sub>j</sub> = <span class="num">'+(M.Tamb+M.dT).toFixed(1)+'</span> °C<br>'+
+      (ST.sh? ('<b>相對關掉自我發熱，界面態生成率變成 '+
+        (M.rate/Math.max(mdl({Tc:M.Tamb}).rate,1e-300)).toPrecision(3)+' 倍</b>'
+        +(M.dT>0.5?'（負活化能 → 變熱反而變慢）':''))
+        : '<b>目前未計入自我發熱。</b>按上面的按鈕看它怎麼影響損傷率。'),
+    'Power density = I<sub>D</sub>·V<sub>D</sub>/W = <span class="num">'+M.pw.toPrecision(3)+
+      '</span> mW/µm<br>ΔT = R<sub>th</sub>·power density = <span class="num">'+M.dT.toFixed(1)+
+      '</span> K　→　T<sub>j</sub> = <span class="num">'+(M.Tamb+M.dT).toFixed(1)+'</span> °C<br>'+
+      (ST.sh? ('<b>Relative to self-heating turned off, the interface-trap generation rate becomes '+
+        (M.rate/Math.max(mdl({Tc:M.Tamb}).rate,1e-300)).toPrecision(3)+'×</b>'
+        +(M.dT>0.5?' (negative activation energy → getting hotter actually slows it down)':''))
+        : '<b>Self-heating is not currently included.</b> Use the button above to see how it affects the damage rate.')
+  );
+  /* 統計面板 */
+  $('vN').innerHTML=SS.n.toFixed(2);
+  $('vM').innerHTML=SS.m.toFixed(2)+'　<span class="note">（'+L('模型推導','model-derived')+' '+(P.phi_it/P.phi_i).toFixed(2)+'）</span>';
+  $('vR').innerHTML=SS.ratio.toFixed(1)+' ×';
+  $('vVK').innerHTML=SS.vk.toFixed(1)+' mV / 1%';
+  $('vCref').innerHTML=SS.cref.toFixed(1)+' %';
+  $('vTref').innerHTML=fmtYears(Math.pow(10,SS.tref))+'（'+fmtEng(Math.pow(10,SS.tref),'s',2)+'）';
+  $('vSig').innerHTML=SS.sig.toFixed(2);
+  $('vF').innerHTML=(Math.pow(10,SS.F)*1e6).toPrecision(3)+' ppm　('+(Math.pow(10,SS.F)*100).toPrecision(2)+'%)';
+  $('nHint').innerHTML = L(
+    '文獻：純電荷注入 n ≈ 0.1，純界面態生成 n ≈ 0.6；'+
+      '室溫平面元件實測常在 0.55–0.78，短通道 FinFET 只有 0.19–0.20，低溫（4.2 K）約 0.30。'+
+      '<b>n 越小代表主宰的是既有缺陷的電荷捕捉，不是新界面態生成。</b>',
+    'Literature: n ≈ 0.1 for pure charge injection, n ≈ 0.6 for pure interface-trap generation; '+
+      'room-temperature planar devices are commonly measured at 0.55–0.78, short-channel FinFETs only 0.19–0.20, and low temperature (4.2 K) about 0.30. '+
+      '<b>A smaller n means the dominant process is charge trapping at pre-existing defects, not new interface-trap generation.</b>'
+  );
+  $('eqCal').innerHTML = L(
+    '在分頁 ③ 的應力偏壓（V<sub>D</sub> = '+P.VD.toFixed(2)+' V、V<sub>G</sub> = '+
+      P.VG.toFixed(2)+' V、T = '+P.Tc.toFixed(0)+' °C）下：<br>'+
+      'ΔI<sub>dlin</sub> 達到 <span class="num">'+SS.cref.toFixed(1)+'%</span> 需要 <span class="num">'+
+      fmtEng(LC.tref,'s',2)+'</span><br>→ 校準常數 H = <span class="num">'+sci(LC.H)+'</span>'+
+      '<br>使用條件下達到同樣 '+SS.cref.toFixed(1)+'% 需要 <b><span class="num">'+fmtYears(LC.tCref)+'</span></b>'+
+      '<br><br><b>反過來問：要在使用條件撐到十年，應力下最快只能退化到多慢？</b><br>'+
+      '答案：t('+SS.cref.toFixed(1)+'%) @ 應力 ≥ <b><span class="num">'+fmtEng(trefFor10y(),'s',2)+
+      '</span></b>（= '+fmtYears(trefFor10y())+'）'+
+      '　<button id="bSolve" style="padding:3px 10px;font-size:14px">↦ 把校準點設到這裡</button>',
+    'Under the Tab ③ stress bias (V<sub>D</sub> = '+P.VD.toFixed(2)+' V, V<sub>G</sub> = '+
+      P.VG.toFixed(2)+' V, T = '+P.Tc.toFixed(0)+' °C):<br>'+
+      'ΔI<sub>dlin</sub> reaching <span class="num">'+SS.cref.toFixed(1)+'%</span> takes <span class="num">'+
+      fmtEng(LC.tref,'s',2)+'</span><br>→ calibration constant H = <span class="num">'+sci(LC.H)+'</span>'+
+      '<br>Reaching the same '+SS.cref.toFixed(1)+'% under the use condition takes <b><span class="num">'+fmtYears(LC.tCref)+'</span></b>'+
+      '<br><br><b>Working backward: to survive ten years under the use condition, how slowly must it degrade under stress at most?</b><br>'+
+      'Answer: t('+SS.cref.toFixed(1)+'%) @ stress ≥ <b><span class="num">'+fmtEng(trefFor10y(),'s',2)+
+      '</span></b> (= '+fmtYears(trefFor10y())+')'+
+      '　<button id="bSolve" style="padding:3px 10px;font-size:14px">↦ Set the calibration point here</button>'
+  );
+  const Ft=Math.pow(10,SS.F);
+  $('eqStat').innerHTML = L(
+    't(F) = t<sub>50</sub> · exp( σ · z(F) )　　z 是標準常態分位數<br>'+
+      'z('+(Ft*1e6).toPrecision(3)+' ppm) = <span class="num">'+normInv(Ft).toFixed(3)+
+      '</span>　→　乘上 <span class="num">'+Math.exp(SS.sig*normInv(Ft)).toPrecision(3)+'</span><br>'+
+      '<span class="note">此式由 NIST/SEMATECH 的對數常態 CDF F(t)=Φ((ln t − ln T₅₀)/σ) 代數反推，非原文照引。</span>',
+    't(F) = t<sub>50</sub> · exp( σ · z(F) )　　z is the standard-normal quantile<br>'+
+      'z('+(Ft*1e6).toPrecision(3)+' ppm) = <span class="num">'+normInv(Ft).toFixed(3)+
+      '</span>　→　multiply by <span class="num">'+Math.exp(SS.sig*normInv(Ft)).toPrecision(3)+'</span><br>'+
+      '<span class="note">This form is algebraically derived from NIST/SEMATECH\'s lognormal CDF F(t)=Φ((ln t − ln T₅₀)/σ), not quoted verbatim from a source.</span>'
+  );
+  const bs=$('bSolve'); if(bs) bs.addEventListener('click',function(){
+    SS.tref=Math.max(0,Math.min(9,Math.log10(trefFor10y()))); syncStats(); refresh();});
+  /* 判準表 */
+  const rows=CRITS.map(function(c,i){
+    const t50=LC.t50(c), tf=tAtF(t50,Ft), ok=tf>=10*YEAR;
+    return '<tr class="'+(i===SS.crit?'on':'')+'" data-c="'+i+'" style="cursor:pointer">'+
+      '<td class="nw"><b>'+c.lab+'</b></td><td class="nw">'+critEq(c).toFixed(1)+' %</td>'+
+      '<td class="nw">'+fmtYears(t50)+'</td><td class="nw">'+fmtYears(tf)+'</td>'+
+      '<td class="nw"><span class="badge '+(ok?'ok">✓ '+L('通過','pass'):'bad">✗ '+L('不過','fail'))+'</span></td></tr>';}).join('');
+  $('critTb').innerHTML=rows;
+  Array.prototype.forEach.call($('critTb').querySelectorAll('tr'),function(tr){
+    tr.addEventListener('click',function(){SS.crit=+tr.dataset.c;refresh();});});
+  const tLin=LC.t50(CRITS[0]), tSat=LC.t50(CRITS[2]);
+  $('critKey').innerHTML = L(
+    (LC.off?
+      '<b style="color:var(--crit)">⚠ 應力或使用偏壓下 V<sub>G</sub> 已低於 V<sub>t</sub>，元件是關的。</b>'+
+      '此時的損傷走的是 off-state / GIDL 機制，本模型（通道熱載子）<b>不適用</b>，'+
+      '下表數字沒有意義 —— 請把 V<sub>G</sub> 拉到 V<sub>t</sub> 以上。<br><br>':'')+'<b>看第一列與第三列的差距。</b>同一顆元件、同樣的損傷，'+
+      'I<sub>dlin</sub> 10% 的壽命是 <b>'+fmtYears(tLin)+'</b>，I<sub>dsat</sub> 10% 卻是 <b>'+fmtYears(tSat)+
+      '</b> —— 差 <b>'+(tSat/Math.max(tLin,1e-30)).toPrecision(3)+' 倍</b>，'+
+      '完全由「敏感度比 '+SS.ratio.toFixed(1)+'×」與「時間指數 n = '+SS.n.toFixed(2)+'」決定（差距 = 比值<sup>1/n</sup>）。'+
+      '<br><b>所以「卡哪一個參數」本身就是一個工程決定，不是物理事實。</b>'+
+      '判準應該回到元件在電路裡實際工作在哪一區：飽和區用 I<sub>dsat</sub> / g<sub>m</sub>，線性區（開關、傳輸閘）才用 I<sub>dlin</sub>。',
+    (LC.off?
+      '<b style="color:var(--crit)">⚠ Under the stress or use bias, V<sub>G</sub> is already below V<sub>t</sub> — the device is off.</b>'+
+      'Damage in this regime goes through off-state / GIDL mechanisms, which this model (channel hot carriers) <b>does not apply to</b>; '+
+      'the numbers below are meaningless — pull V<sub>G</sub> above V<sub>t</sub>.<br><br>':'')+'<b>Look at the gap between the first and third rows.</b> Same device, same damage:'+
+      ' the lifetime at I<sub>dlin</sub> 10% is <b>'+fmtYears(tLin)+'</b>, while at I<sub>dsat</sub> 10% it\'s <b>'+fmtYears(tSat)+
+      '</b> — a <b>'+(tSat/Math.max(tLin,1e-30)).toPrecision(3)+'×</b> difference, '+
+      'set entirely by the "sensitivity ratio '+SS.ratio.toFixed(1)+'×" and the "time exponent n = '+SS.n.toFixed(2)+'" (the gap = ratio<sup>1/n</sup>).'+
+      '<br><b>So "which parameter to gate on" is itself an engineering decision, not a physical fact.</b>'+
+      'The criterion should come back to which region the device actually operates in: saturation-region → I<sub>dsat</sub> / g<sub>m</sub>; linear-region (switches, transmission gates) → I<sub>dlin</sub>.'
+  );
+}
+/* ================= 主更新 ================= */
+let BUSY=false;
+function refresh(){
+  if(BUSY)return; BUSY=true;
+  try{
+    const M=mdl(); MM=M;
+    const LC=lifeChain();
+    drawKPI(M,LC);
+    drawBand(); drawPanels(M,LC);
+    VZ=drawViz(M);
+    drawE(M); drawV(M);
+    drawDist(LC); drawDeg(LC); drawVext(LC);
+  }finally{BUSY=false;}
+}
+window.__rebuild=function(){ fillSelects(); $('selS').value=ST.sid; $('selD').value=ST.did; $('selM').value=ST.mid; buildCtrls(); syncCtrls(); syncDop(); drawStructSchema(ST.sid); relabelPlay7(); refresh(); };
+
+/* ================= 初始化 ================= */
+fillSelects();
+$('selS').addEventListener('change',e=>{applyStruct(e.target.value);refresh();});
+$('selD').addEventListener('change',e=>{ST.did=e.target.value;refresh();});
+$('selM').addEventListener('change',e=>{ST.mid=e.target.value;refresh();});
+bindDop();
+applyStruct('planar');
+
+/* 分頁 */
+const tabs=Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+tabs.forEach(function(b){b.addEventListener('click',function(){
+  tabs.forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  [0,1,2,3].forEach(i=>{$('p'+i).hidden=(String(i)!==b.dataset.tab);});
+  refresh();});});
+
+/* 分頁 2 的按鈕與滑桿 */
+function tog(id,get,set){const b=$(id);b.addEventListener('click',function(){
+  set(!get()); b.setAttribute('aria-pressed',String(get())); nits=[]; refresh();});}
+tog('bLDD',()=>P.ldd,v=>P.ldd=v);
+tog('bHALO',()=>P.halo,v=>P.halo=v);
+$('bLBL').addEventListener('click',function(){SHOWLBL=!SHOWLBL;
+  this.setAttribute('aria-pressed',String(SHOWLBL));refresh();});
+$('rEOT').addEventListener('input',e=>{P.tox=parseFloat(e.target.value);refresh();});
+$('rLext').addEventListener('input',e=>{P.Lext=parseFloat(e.target.value);refresh();});
+$('rxj').addEventListener('input',e=>{P.xj=parseFloat(e.target.value);refresh();});
+$('bSH').addEventListener('click',function(){ST.sh=!ST.sh;refresh();});
+$('rRth').addEventListener('input',e=>{ST.rth=parseFloat(e.target.value);refresh();});
+
+/* 分頁 4 */
+function sset(id,key,post){$(id).addEventListener('input',function(e){
+  SS[key]=parseFloat(e.target.value); if(post)post(); refresh();});}
+sset('rN','n'); sset('rM','m',()=>{SS.mAuto=false;});
+sset('rR','ratio'); sset('rVK','vk'); sset('rCref','cref'); sset('rTref','tref');
+sset('rSig','sig'); sset('rF','F');
+$('bMauto').addEventListener('click',function(){SS.m=P.phi_it/P.phi_i;SS.mAuto=true;syncStats();refresh();});
+function syncStats(){
+  $('rN').value=SS.n; $('rM').value=SS.m; $('rR').value=SS.ratio; $('rVK').value=SS.vk;
+  $('rCref').value=SS.cref; $('rTref').value=SS.tref; $('rSig').value=SS.sig; $('rF').value=SS.F;
+  $('rEOT').value=P.tox; $('rLext').value=P.Lext; $('rxj').value=P.xj; $('rRth').value=ST.rth;}
+const _as=applyStruct;
+applyStruct=function(id){_as(id);syncStats();};
+
+/* 動畫控制 */
+function relabelPlay7(){
+  $('bPlay').innerHTML=playing?('▮▮ '+L('暫停動畫','Pause animation')):('▶ '+L('繼續動畫','Resume animation'));
+}
+$('bPlay').addEventListener('click',function(){playing=!playing;
+  this.setAttribute('aria-pressed',String(playing));
+  relabelPlay7();});
+$('bClr').addEventListener('click',function(){nits=[];parts=[];});
+
+syncStats(); refresh(); requestAnimationFrame(loop);
+let _rt=null;
+window.addEventListener('resize',function(){clearTimeout(_rt);_rt=setTimeout(refresh,160);});
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

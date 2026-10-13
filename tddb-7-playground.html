@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 7：可調模型 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 7：可調模型 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+
+button[aria-pressed=true]{border-color:var(--e);border-width:1.5px;color:var(--e);
+  background:color-mix(in srgb,var(--e) 9%,var(--surface))}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html" aria-current="page"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:100%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 7 / 7</p>
+<h1>可調模型：壽命外推放手玩</h1>
+<p class="lede">把階段 4 的三道外推串成一條完整的鏈。左邊是你在實驗室量到的東西，
+右邊是你要交給客戶的保證。中間每一格都看得到自己乘了多少。</p>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 7 / 7</p>
+<h1>Tunable model: go play with lifetime extrapolation</h1>
+<p class="lede">This strings Stage 4's three extrapolations into one complete chain. The left side is what you measured in the lab;
+the right side is the guarantee you have to hand to the customer. Every step in between shows exactly what it multiplied by.</p>
+</div>
+
+<div class="card">
+<div class="tools">
+  <button class="ps" data-p="0"><span lang="zh-Hant">預設：先進節點邏輯 core</span><span lang="en">Preset: advanced-node logic core</span></button>
+  <button class="ps" data-p="1"><span lang="zh-Hant">預設：車規 MCU 厚氧 I/O</span><span lang="en">Preset: automotive MCU thick-oxide I/O</span></button>
+  <button class="ps" data-p="2"><span lang="zh-Hant">預設：類比高壓（激進設計）</span><span lang="en">Preset: analog high-voltage (aggressive design)</span></button>
+  <button class="ps" data-p="3"><span lang="zh-Hant">預設：教科書基準</span><span lang="en">Preset: textbook baseline</span></button>
+</div>
+
+<h3 style="margin:6px 0 8px;font-size:16px;color:var(--ink2)"><span lang="zh-Hant">① 你量到的（實驗室）</span><span lang="en">① What you measured (lab)</span></h3>
+<div class="ctrls">
+<div class="ctrl"><label><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub>（EOT）</span><span lang="en">Oxide thickness t<sub>ox</sub> (EOT)</span></label>
+  <div class="row"><input type="range" id="q1" min="1.2" max="10" step="0.1"><span class="val" id="v1"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">應力電壓 V<sub>stress</sub></span><span lang="en">Stress voltage V<sub>stress</sub></span></label>
+  <div class="row"><input type="range" id="q2" min="1" max="16" step="0.1"><span class="val" id="v2"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">應力溫度</span><span lang="en">Stress temperature</span></label>
+  <div class="row"><input type="range" id="q3" min="25" max="200" step="5"><span class="val" id="v3"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">量到的 t<sub>63</sub></span><span lang="en">Measured t<sub>63</sub></span></label>
+  <div class="row"><input type="range" id="q4" min="-1" max="3" step="0.05"><span class="val" id="v4"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">測試電容面積</span><span lang="en">Test capacitor area</span></label>
+  <div class="row"><input type="range" id="q5" min="-6" max="-2" step="0.1"><span class="val" id="v5"></span></div></div>
+<div class="ctrl"><label>Weibull β</label>
+  <div class="row"><input type="range" id="q6" min="0.8" max="10" step="0.1"><span class="val" id="v6"></span></div></div>
+</div>
+<p class="note" style="margin:8px 0 0"><span lang="zh-Hant">β 的預設值跟著 t<sub>ox</sub>/a₀ 走（階段 2 的結果），但你可以手動覆蓋成實測值 ——
+<b>實測 β 明顯偏低可能是外質失效，也可能只是陷阱生成冪次 m 小於 1</b>（見<a href="tddb-3-trapsize.html">階段 3</a>：完整關係式是 β = m·t<sub>ox</sub>/a₀，本頁的自動值取 m = 1、a₀ = 1 nm）。</span><span lang="en">β defaults to tracking t<sub>ox</sub>/a₀ (Stage 2's result), but you can manually override it with a measured value —
+<b>a measured β noticeably lower than that may be extrinsic failure, or simply a trap-generation exponent m below 1</b> (see <a href="tddb-3-trapsize.html">Stage 3</a>: the full relation is β = m·t<sub>ox</sub>/a₀, and this page's auto value takes m = 1, a₀ = 1 nm).</span> <button id="qAuto" style="padding:3px 10px;font-size:14px"><span lang="zh-Hant">↺ 回到 t<sub>ox</sub>/a₀</span><span lang="en">↺ Reset to t<sub>ox</sub>/a₀</span></button></p>
+
+<h3 style="margin:18px 0 8px;font-size:16px;color:var(--ink2)"><span lang="zh-Hant">② 客戶的使用條件</span><span lang="en">② The customer's use condition</span></h3>
+<div class="ctrls">
+<div class="ctrl"><label><span lang="zh-Hant">使用電壓 V<sub>use</sub></span><span lang="en">Use voltage V<sub>use</sub></span></label>
+  <div class="row"><input type="range" id="q7" min="0.5" max="8" step="0.05"><span class="val" id="v7"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">使用溫度</span><span lang="en">Use temperature</span></label>
+  <div class="row"><input type="range" id="q8" min="-40" max="175" step="5"><span class="val" id="v8"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">產品閘極總面積</span><span lang="en">Product total gate area</span></label>
+  <div class="row"><input type="range" id="q9" min="-4" max="0.5" step="0.05"><span class="val" id="v9"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">目標累積失效率</span><span lang="en">Target cumulative failure rate</span></label>
+  <div class="row"><input type="range" id="q10" min="-7" max="-2" step="0.1"><span class="val" id="v10"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">目標壽命</span><span lang="en">Target lifetime</span></label>
+  <div class="row"><input type="range" id="q11" min="1" max="25" step="1"><span class="val" id="v11"></span></div></div>
+</div>
+
+<h3 style="margin:18px 0 8px;font-size:16px;color:var(--ink2)"><span lang="zh-Hant">③ 加速模型（外推的最大不確定來源）</span><span lang="en">③ Acceleration model (the biggest source of extrapolation uncertainty)</span></h3>
+<div class="tools">
+  <button class="md" data-m="E" aria-pressed="true">E-model</button>
+  <button class="md" data-m="power" aria-pressed="false"><span lang="zh-Hant">冪次律 V<sup>−n</sup></span><span lang="en">Power law V<sup>−n</sup></span></button>
+  <button class="md" data-m="invE" aria-pressed="false">1/E model</button>
+</div>
+<div class="ctrls">
+<div class="ctrl" id="cGam"><label>γ（cm/MV）</label>
+  <div class="row"><input type="range" id="q12" min="0.5" max="6" step="0.1"><span class="val" id="v12"></span></div></div>
+<div class="ctrl" id="cN"><label><span lang="zh-Hant">n（冪次）</span><span lang="en">n (power exponent)</span></label>
+  <div class="row"><input type="range" id="q13" min="10" max="50" step="1"><span class="val" id="v13"></span></div></div>
+<div class="ctrl" id="cG"><label>G（MV/cm）</label>
+  <div class="row"><input type="range" id="q14" min="100" max="600" step="10"><span class="val" id="v14"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">活化能 E<sub>a</sub></span><span lang="en">Activation energy E<sub>a</sub></span></label>
+  <div class="row"><input type="range" id="q15" min="0.2" max="1.4" step="0.01"><span class="val" id="v15"></span></div></div>
+</div>
+</div>
+
+<div lang="zh-Hant"><h2>外推鏈：每一格乘了多少</h2></div>
+<div lang="en"><h2>The extrapolation chain: what each step multiplies by</h2></div>
+<div class="card">
+<div id="wf"></div>
+<div class="tiles" style="margin-top:14px">
+  <div class="tile"><div class="k"><span lang="zh-Hant">應力點量到的 t<sub>63</sub></span><span lang="en">t<sub>63</sub> measured at the stress point</span></div><div class="v" id="o1">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">使用條件下的 t<sub>63</sub>（測試電容）</span><span lang="en">t<sub>63</sub> at use condition (test capacitor)</span></div><div class="v" id="o2">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">使用條件下的 t<sub>63</sub>（整顆晶片）</span><span lang="en">t<sub>63</sub> at use condition (whole chip)</span></div><div class="v" id="o3">—</div></div>
+  <div class="tile hl"><div class="k"><span lang="zh-Hant">最終：目標失效率下的壽命</span><span lang="en">Final: lifetime at target failure rate</span></div><div class="v" id="o4">—</div></div>
+  <div class="tile" id="tv"><div class="k"><span lang="zh-Hant">判定</span><span lang="en">Verdict</span></div><div class="v" id="o5">—</div></div>
+</div>
+<p class="note" id="onote" style="margin-top:10px"></p>
+</div>
+
+<div lang="zh-Hant"><h2>還差多少？三條路各要走多遠</h2></div>
+<div lang="en"><h2>How far off? Three paths, and how far each has to go</h2></div>
+<div class="card">
+<p class="note" lang="zh-Hant" style="margin:0 0 10px">如果沒過，下面算出三條路各自需要的幅度；如果過了，顯示的是還剩多少餘裕。</p>
+<p class="note" lang="en" style="margin:0 0 10px">If it fails, the numbers below show how far each of three paths would need to move; if it passes, they show how much margin remains.</p>
+<div class="rungs" id="marg"></div>
+</div>
+
+<div lang="zh-Hant"><h2>模型分歧：同一組資料，三個答案</h2></div>
+<div lang="en"><h2>Model divergence: the same data, three answers</h2></div>
+<div class="card">
+<div class="cap"><span lang="zh-Hant">三個模型都通過你設定的校正點，橫軸掃使用電壓</span><span lang="en">All three models pass through your calibration point; the x-axis sweeps use voltage</span></div>
+<div id="cmp6"></div>
+<div class="legend" id="lg6"></div>
+<p class="note" id="dnote" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant"><h2>使用條件下的 Weibull 圖</h2></div>
+<div lang="en"><h2>The Weibull plot at use condition</h2></div>
+<div class="card">
+<div class="cap"><span lang="zh-Hant">整顆晶片面積下的累積失效率 —— 這張圖才是客戶真正要看的</span><span lang="en">Cumulative failure rate across the whole chip's area — this is the plot the customer actually cares about</span></div>
+<div id="wbf"></div>
+<p class="note" id="wnote" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>把應力電壓從 4 V 降到 3 V 重做實驗，測試時間變成 100 倍。值得嗎？</summary><div class="a">幾乎總是值得。外推距離縮短一半，模型分歧（見上面的比較圖）通常會從幾個數量級收斂到幾倍。<b>一個外推距離短的粗略量測，比一個外推距離長的精密量測可信得多</b> —— 因為誤差來源不是量測精度，是模型形式。</div></details><details><summary>客戶把目標失效率從 100 ppm 收緊到 1 ppm，你的壽命掉多少？</summary><div class="a">掉 (10<sup>−6</sup>/10<sup>−4</sup>)<sup>1/β</sup> = 100<sup>−1/β</sup> 倍。β = 5 時是 0.40 倍（還好），β = 2 時是 0.10 倍（掉一個數量級），β = 1.2 時是 0.02 倍。<b>β 越小，ppm 要求越致命</b>。所以薄氧製程進車規的難點不在平均壽命，在 β。</div></details><details><summary>上面的「還差多少」面板中，為什麼「加厚氧化層」算出來的需求偏高？</summary><div class="a">因為那個計算刻意<b>固定了 β</b>，只讓厚度影響電場。真實情況下加厚會同時拉大 β（階段 2：β ≈ t<sub>ox</sub>/a₀），而 β 變大會同時減輕面積與失效率兩道外推的罰款 —— <b>三重好處</b>。所以真實需要的厚度比面板顯示的少。這也提醒一件事：<b>可靠度的參數彼此耦合，單獨掃一個變數會系統性地誤導。</b></div></details><details><summary>這個工具算出來的數字可以直接放進報告嗎？</summary><div class="a">不行，而且這正是重點。本工具的 t₀、γ、n、G、E<sub>a</sub> 都是<b>文獻量級的示意值</b>，不是你的製程實測值；滲流模型也是簡化的立方格點。它能給你的是<b>因果方向與量級感</b>：哪個旋鈕最有力、哪一道外推最痛、模型分歧有多大。真正的數字必須來自你自己的定電壓 TDDB 資料與 TCAD。</div></details></div>
+<div class="pager"><a class="prev" href="tddb-6-fix.html"><div class="d">← 上一課 · 階段 6</div><div class="t">如何防治</div></a><a class="next" href="index.html"><div class="d">回到 →</div><div class="t">所有可靠度機制</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="quiz"><h3>Check your understanding</h3><details><summary>You drop the stress voltage from 4 V to 3 V and re-run the experiment; test time becomes 100× longer. Worth it?</summary><div class="a">Almost always. Halving the extrapolation distance usually collapses the model divergence (see the comparison plot above) from orders of magnitude down to a few multiples. <b>A rough measurement with a short extrapolation distance is far more trustworthy than a precise measurement with a long one</b> — because the source of error isn't measurement precision, it's the choice of model.</div></details><details><summary>The customer tightens the target failure rate from 100 ppm to 1 ppm. How much does your lifetime drop?</summary><div class="a">By a factor of (10<sup>−6</sup>/10<sup>−4</sup>)<sup>1/β</sup> = 100<sup>−1/β</sup>. At β = 5 that's 0.40× (not bad), at β = 2 it's 0.10× (a full order of magnitude), at β = 1.2 it's 0.02×. <b>The smaller β is, the more lethal a ppm requirement becomes</b>. That's why the hard part of reaching automotive grade for a thin-oxide process isn't the average lifetime — it's β.</div></details><details><summary>In the "how far off" panel above, why does "thicken the oxide" come out needing more thickness than seems right?</summary><div class="a">Because that calculation deliberately <b>holds β fixed</b> and only lets thickness affect the field. In reality, thickening also raises β (Stage 2: β ≈ t<sub>ox</sub>/a₀), and a larger β lightens both the area and failure-rate extrapolation penalties at the same time — <b>a triple benefit</b>. So the thickness actually needed is less than the panel shows. This is a reminder that <b>reliability parameters are coupled to each other — sweeping one variable in isolation is systematically misleading</b>.</div></details><details><summary>Can the numbers this tool computes go straight into a report?</summary><div class="a">No — and that's exactly the point. This tool's t₀, γ, n, G, and E<sub>a</sub> are all <b>illustrative, literature-scale values</b>, not measurements from your own process; the percolation model is also a simplified cubic lattice. What it can give you is <b>a sense of direction and magnitude</b>: which knob has the most leverage, which extrapolation hurts the most, how big the model divergence is. The real numbers have to come from your own constant-voltage TDDB data and TCAD.</div></details></div>
+<div class="pager"><a class="prev" href="tddb-6-fix.html"><div class="d">← Previous · Stage 6</div><div class="t">Mitigation</div></a><a class="next" href="index.html"><div class="d">Back to →</div><div class="t">All reliability mechanisms</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+const PRE=[
+ {tox:1.8,Vs:1.6,Ts:125,t63:2,At:-4,beta:1.8,Vu:0.9,Tu:105,Ac:-0.52,F:-4,Y:10,model:'power',gam:2.0,n:42,G:300,Ea:0.75},
+ {tox:5.0,Vs:7.0,Ts:150,t63:0.7,At:-4,beta:5.0,Vu:3.3,Tu:150,Ac:-1.3,F:-6,Y:15,model:'E',gam:2.0,n:30,G:300,Ea:0.75},
+ {tox:7.0,Vs:12.0,Ts:125,t63:0,At:-4,beta:7.0,Vu:6.5,Tu:150,Ac:-1.5,F:-6,Y:15,model:'E',gam:2.0,n:26,G:300,Ea:0.75},
+ {tox:3.0,Vs:3.6,Ts:125,t63:1,At:-4,beta:3.0,Vu:1.8,Tu:105,Ac:-1.0,F:-6,Y:10,model:'E',gam:2.0,n:30,G:300,Ea:0.75}];
+let Q=Object.assign({},PRE[3]);
+const IDS=[['q1','tox'],['q2','Vs'],['q3','Ts'],['q4','t63'],['q5','At'],['q6','beta'],
+           ['q7','Vu'],['q8','Tu'],['q9','Ac'],['q10','F'],['q11','Y'],
+           ['q12','gam'],['q13','n'],['q14','G'],['q15','Ea']];
+const LOGV=['t63','At','Ac','F'];
+function fmod(V,tox,m){
+  const E=Eox(V,tox);
+  if(m==='E')    return Math.exp(-Q.gam*E);
+  if(m==='invE') return Math.exp(Q.G/Math.max(E,0.05));
+  return Math.pow(Math.max(V,0.05),-Q.n);
+}
+function chain(m,Vu,Tu){
+  m=m||Q.model; Vu=(Vu===undefined)?Q.Vu:Vu; Tu=(Tu===undefined)?Q.Tu:Tu;
+  const t0=Math.pow(10,Q.t63)*3600;
+  const fV=fmod(Vu,Q.tox,m)/fmod(Q.Vs,Q.tox,m);
+  const fT=Math.exp(Q.Ea/KB*(1/(Tu+273.15)-1/(Q.Ts+273.15)));
+  const fA=Math.pow(Math.pow(10,Q.At)/Math.pow(10,Q.Ac),1/Q.beta);
+  const fF=Math.pow(-Math.log(1-Math.pow(10,Q.F)),1/Q.beta);
+  const s=[t0,t0*fV,t0*fV*fT,t0*fV*fT*fA,t0*fV*fT*fA*fF];
+  return {t0:t0,fV:fV,fT:fT,fA:fA,fF:fF,s:s,t:s[4]};
+}
+/* ---------- 瀑布圖 ---------- */
+function drawWF(){
+  const c=chain(), box=$('wf'), Wpx=box.clientWidth||860;
+  const rows=[[L('① 實驗室量到的 t~63~','① t~63~ measured in the lab'),'',c.s[0]],
+              [L('② 降到使用電壓','② Drop to use voltage'),'×'+fmtMul(c.fV),c.s[1]],
+              [L('③ 降到使用溫度','③ Drop to use temperature'),'×'+fmtMul(c.fT),c.s[2]],
+              [L('④ 放大到晶片面積','④ Scale up to chip area'),'×'+fmtMul(c.fA),c.s[3]],
+              [L('⑤ 收到目標失效率','⑤ Tighten to target failure rate'),'×'+fmtMul(c.fF),c.s[4]]];
+  const M={l:168,r:118,t:26,b:32}, rh=42, H=M.t+rows.length*rh+M.b;
+  const iw=Wpx-M.l-M.r;
+  const target=Q.Y*365.25*86400;
+  const all=rows.map(r=>r[2]).concat([target]);
+  let lo=Math.log10(Math.max(Math.min.apply(null,all),1e-6))-0.6,
+      hi=Math.log10(Math.max.apply(null,all))+0.6;
+  if(hi-lo<3){const cc=(hi+lo)/2;lo=cc-1.5;hi=cc+1.5;}
+  const X=t=>M.l+(Math.log10(Math.max(t,1e-30))-lo)/(hi-lo)*iw;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('壽命外推鏈的瀑布圖','Waterfall chart of the lifetime extrapolation chain'));
+  for(let e=Math.ceil(lo);e<=Math.floor(hi);e++){
+    const x=M.l+(e-lo)/(hi-lo)*iw;
+    svg.appendChild(el('line',{x1:x,x2:x,y1:M.t-8,y2:M.t+rows.length*rh-8,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(x,M.t+rows.length*rh+8,pw10(e),{ta:'middle',fs:9.5}));}
+  svg.appendChild(txt(M.l+iw/2,H-4,L('時間（秒，對數）','Time (s, log)'),{ta:'middle',fs:10.5}));
+  svg.appendChild(el('line',{x1:X(target),x2:X(target),y1:M.t-16,y2:M.t+rows.length*rh-6,
+    stroke:css('--good'),'stroke-width':2,'stroke-dasharray':'6 4'}));
+  svg.appendChild(txt(X(target),M.t-20,L('目標 ','Target ')+Q.Y+' '+L('年','yr'),{ta:'middle',fs:11,fw:700,fill:css('--good')}));
+  rows.forEach(function(r,i){
+    const y=M.t+i*rh, x0=M.l, x1=X(r[2]);
+    const prev=i===0?null:X(rows[i-1][2]);
+    const up=i===0?true:r[2]>=rows[i-1][2];
+    svg.appendChild(txt(M.l-12,y+2,r[0],{ta:'end',db:'middle',fs:12,fill:css('--ink2'),fw:600}));
+    svg.appendChild(el('rect',{x:x0,y:y-9,width:Math.max(x1-x0,1),height:18,rx:3,
+      fill:css('--e'),opacity:i===4?.85:.28}));
+    if(prev!==null){
+      const a=Math.min(prev,x1), w=Math.abs(x1-prev);
+      svg.appendChild(el('rect',{x:a,y:y-9,width:Math.max(w,1),height:18,rx:2,
+        fill:up?css('--good'):css('--crit'),opacity:.65}));}
+    const lx=(prev===null?x1:Math.max(x1,prev))+7;
+    svg.appendChild(txt(lx,y+2,fmtYears(r[2]),{db:'middle',fs:11.5,fw:650,fill:css('--ink')}));
+    if(r[1])svg.appendChild(txt(M.l-12,y+16,r[1],{ta:'end',db:'middle',fs:10.5,
+      fill:up?css('--gtext'):css('--crit')}));});
+  box.innerHTML='';box.appendChild(svg);
+}
+function fmtMul(v){
+  if(!isFinite(v))return'—';
+  if(v>=1e4||v<1e-3) return expU(v);
+  if(v>=1) return v>=100?Math.round(v).toLocaleString('en-US'):v.toPrecision(3);
+  return v.toPrecision(3);
+}
+/* ---------- 模型分歧圖 ---------- */
+function drawCmp(){
+  const box=$('cmp6'),Wpx=box.clientWidth||860,H=300,M={l:70,r:18,t:14,b:42};
+  const iw=Wpx-M.l-M.r,ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('三種加速模型的最終壽命比較','Final-lifetime comparison across three acceleration models'));
+  const vlo=Math.min(Q.Vu,Q.Vs)*0.85, vhi=Q.Vs*1.05;
+  const MS=['E','power','invE'], CL=[css('--e'),css('--h'),css('--a')||css('--nit')];
+  const vals=MS.map(m=>chain(m).t).filter(v=>isFinite(v)&&v>0);
+  const target=Q.Y*365.25*86400;
+  let lo=Math.log10(Math.min.apply(null,vals.concat([target,chain(Q.model,Q.Vs,Q.Ts).t])))-0.5;
+  let hi=Math.log10(Math.max.apply(null,vals.concat([target])))+0.5;
+  if(hi-lo<3){const cc=(hi+lo)/2;lo=cc-1.5;hi=cc+1.5;}
+  const X=v=>M.l+(v-vlo)/(vhi-vlo)*iw, Y=t=>M.t+ih-(Math.log10(Math.max(t,1e-30))-lo)/(hi-lo)*ih;
+  for(let e=Math.ceil(lo);e<=Math.floor(hi);e++){const y=Y(Math.pow(10,e));
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-7,y,pw10(e),{ta:'end',db:'middle',fs:10}));}
+  ticks(vlo,vhi,6).forEach(function(v){const x=X(v);if(x<M.l-1||x>M.l+iw+1)return;
+    svg.appendChild(txt(x,M.t+ih+15,v.toFixed(1),{ta:'middle',fs:10}));});
+  svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(target),y2:Y(target),
+    stroke:css('--good'),'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+  svg.appendChild(txt(M.l+iw-4,Y(target)-6,L('目標 ','Target ')+Q.Y+' '+L('年','yr'),{ta:'end',fs:11,fw:700,fill:css('--good')}));
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('使用電壓 V~use~（V）','Use voltage V~use~ (V)'),{ta:'middle',fs:11}));
+  svg.appendChild(txt(15,M.t+ih/2,L('最終壽命（秒，對數）','Final lifetime (s, log)'),{ta:'middle',fs:11,rot:-90}));
+  const cid='clp6',defs=el('defs',{}),cp=el('clipPath',{id:cid});
+  cp.appendChild(el('rect',{x:M.l,y:M.t,width:iw,height:ih}));defs.appendChild(cp);svg.appendChild(defs);
+  const g=el('g',{'clip-path':'url(#'+cid+')'});
+  MS.forEach(function(m,i){let d='';
+    for(let k=0;k<=100;k++){const v=vlo+(vhi-vlo)*k/100;const t=chain(m,v).t;
+      if(!isFinite(t)||t<=0)continue;
+      d+=(d?' L ':'M ')+X(v).toFixed(1)+' '+Y(t).toFixed(1);}
+    g.appendChild(el('path',{d:d,fill:'none',stroke:CL[i],'stroke-width':m===Q.model?3:1.8,
+      opacity:m===Q.model?1:.6,'stroke-linejoin':'round'}));});
+  svg.appendChild(g);
+  svg.appendChild(el('line',{x1:X(Q.Vu),x2:X(Q.Vu),y1:M.t,y2:M.t+ih,
+    stroke:css('--axis'),'stroke-width':1.2,'stroke-dasharray':'4 3'}));
+  svg.appendChild(txt(X(Q.Vu)+4,M.t+11,'V~use~ = '+Q.Vu.toFixed(2)+' V',{fs:10.5,fw:650}));
+  box.innerHTML='';box.appendChild(svg);
+  const ts=MS.map(m=>chain(m).t);
+  const mx=Math.max.apply(null,ts),mn=Math.min.apply(null,ts);
+  const namesZh=['E-model','冪次律','1/E'], namesEn=['E-model','power law','1/E'];
+  const partsZh = ts.map((t,i)=>namesZh[i]+' = <b>'+fmtYears(t)+'</b>').join('、');
+  const partsEn = ts.map((t,i)=>namesEn[i]+' = <b>'+fmtYears(t)+'</b>').join(', ');
+  $('dnote').innerHTML=L(
+    '在你設定的使用電壓下，三個模型給出 '+partsZh+'。最樂觀 ÷ 最保守 = <b>'+fmtMul(mx/mn)+'</b> 倍。'+
+    (mx/mn>100?'　<b style="color:var(--crit)">分歧超過兩個數量級 —— 這份外推不能只報一個數字，'+
+      '必須說明模型，並考慮把應力電壓往下拉、拉長測試時間來縮短外推距離。</b>':
+      '　<b style="color:var(--gtext)">分歧不大，代表外推距離夠短，結論相對穩固。</b>'),
+    'At your chosen use voltage, the three models give '+partsEn+'. Most optimistic ÷ most conservative = <b>'+fmtMul(mx/mn)+'</b>×.'+
+    (mx/mn>100?' <b style="color:var(--crit)">The divergence exceeds two orders of magnitude — this extrapolation cannot be reported as a single number; '+
+      'the model must be stated, and lowering the stress voltage or lengthening the test to shorten the extrapolation distance should be considered.</b>':
+      ' <b style="color:var(--gtext)">The divergence is small, meaning the extrapolation distance is short enough that the conclusion is relatively solid.</b>')
+  );
+}
+/* ---------- 使用條件 Weibull ---------- */
+function drawWbF(){
+  const c=chain(), box=$('wbf'),Wpx=box.clientWidth||860,H=290,M={l:64,r:18,t:14,b:42};
+  const iw=Wpx-M.l-M.r,ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('使用條件下整顆晶片的 Weibull 圖','Weibull plot for the whole chip at use condition'));
+  const eta=c.s[3], b=Q.beta;
+  const ylo=Math.log(-Math.log(1-1e-8)), yhi=Math.log(-Math.log(1-0.9));
+  const xlo=Math.log10(eta)+ylo/b/Math.LN10-0.4, xhi=Math.log10(eta)+yhi/b/Math.LN10+0.4;
+  const X=t=>M.l+(Math.log10(Math.max(t,1e-30))-xlo)/(xhi-xlo)*iw;
+  const Y=v=>M.t+ih-(v-ylo)/(yhi-ylo)*ih;
+  const Ft=Math.pow(10,Q.F);
+  [1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,0.1,0.632].forEach(function(F){
+    const y=Y(Math.log(-Math.log(1-F)));if(y<M.t-1||y>M.t+ih+1)return;
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-7,y,F<1e-3?(F*1e6<1?(F*1e9)+' ppb':(F*1e6)+' ppm'):(F*100).toFixed(F<0.01?1:0)+'%',
+      {ta:'end',db:'middle',fs:10}));});
+  const yT=Y(Math.log(-Math.log(1-Ft)));
+  svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:yT,y2:yT,stroke:css('--crit'),'stroke-width':1.5,'stroke-dasharray':'5 4'}));
+  for(let e=Math.ceil(xlo);e<=Math.floor(xhi);e++){const x=M.l+(e-xlo)/(xhi-xlo)*iw;
+    svg.appendChild(txt(x,M.t+ih+15,pw10(e),{ta:'middle',fs:10}));}
+  const target=Q.Y*365.25*86400;
+  if(Math.log10(target)>xlo&&Math.log10(target)<xhi){
+    svg.appendChild(el('line',{x1:X(target),x2:X(target),y1:M.t,y2:M.t+ih,
+      stroke:css('--good'),'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+    svg.appendChild(txt(X(target)+5,M.t+12,L('目標 ','Target ')+Q.Y+' '+L('年','yr'),{fs:11,fw:700,fill:css('--good')}));}
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('時間（秒，對數）','Time (s, log)'),{ta:'middle',fs:11}));
+  let d='';
+  for(let i=0;i<=120;i++){const yv=ylo+(yhi-ylo)*i/120, t=eta*Math.exp(yv/b);
+    d+=(d?' L ':'M ')+X(t).toFixed(1)+' '+Y(yv).toFixed(1);}
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--e'),'stroke-width':2.6}));
+  svg.appendChild(el('circle',{cx:X(c.t),cy:yT,r:5,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+  $('wnote').innerHTML=L(
+    '斜率 β = <b>'+b.toFixed(2)+'</b>，晶片面積下的 t<sub>63</sub> = <b>'+fmtYears(eta)+
+    '</b>。紅點就是你的判定點：'+expU(Ft)+'（= '+(Ft*1e6).toPrecision(3)+' ppm）對應 <b>'+fmtYears(c.t)+'</b>。'+
+    '　把 β 拉大看看這條線怎麼變陡 —— <b>陡的線代表 t<sub>63</sub> 與 ppm 壽命的差距小</b>。',
+    'Slope β = <b>'+b.toFixed(2)+'</b>, t<sub>63</sub> across the chip area = <b>'+fmtYears(eta)+
+    '</b>. The red dot is your verdict point: '+expU(Ft)+' (= '+(Ft*1e6).toPrecision(3)+' ppm) corresponds to <b>'+fmtYears(c.t)+'</b>.'+
+    '　Try raising β and watch this line steepen — <b>a steeper line means a smaller gap between t<sub>63</sub> and the ppm-level lifetime</b>.'
+  );
+}
+/* ---------- 餘裕 ---------- */
+function margins(){
+  const c=chain(), target=Q.Y*365.25*86400, need=target/c.t;
+  const rows=[];
+  const ok=need<=1;
+  /* 需要的電壓變化 */
+  let vNeed=null;
+  {let lo=0.2,hi=Q.Vs;
+   for(let i=0;i<80;i++){const m=(lo+hi)/2; if(chain(Q.model,m).t<target)hi=m;else lo=m;}
+   vNeed=lo;}
+  const dV=Q.Vu-vNeed;
+  rows.push([L('降電壓','Lower voltage'),
+    L(dV>0? '要再降 '+dV.toFixed(3)+' V':'還可以升 '+(-dV).toFixed(3)+' V',
+      dV>0? 'need to drop '+dV.toFixed(3)+' V more':'can still raise '+(-dV).toFixed(3)+' V'),
+    L('V<sub>use</sub> 到 '+vNeed.toFixed(2)+' V 時剛好達標。指數槓桿，通常是最短的一條路。',
+      'Hitting V<sub>use</sub> = '+vNeed.toFixed(2)+' V exactly meets the target. An exponential lever — usually the shortest path.')]);
+  /* 需要的 beta */
+  let bNeed=null;
+  {const sv=Q.beta; let lo=Q.beta,hi=60,found=false;
+   for(let i=0;i<90;i++){const m=(lo+hi)/2;Q.beta=m;
+     if(chain().t<target)lo=m;else{hi=m;found=true;}}
+   Q.beta=sv; bNeed=found?hi:null;}
+  rows.push([L('拉大 Weibull β','Raise Weibull β'),
+    ok?L('目前 β = '+Q.beta.toFixed(1)+'，已足夠','Current β = '+Q.beta.toFixed(1)+', already sufficient')
+      :(bNeed?L('β 要到 '+bNeed.toFixed(1)+'（約 '+bNeed.toFixed(1)+' nm 物理厚度）','β needs to reach '+bNeed.toFixed(1)+' (about '+bNeed.toFixed(1)+' nm physical thickness)')
+             :L('β 要超過 60，這條路走不通','β would need to exceed 60 — this path is not viable')),
+    L('β 大會同時減輕面積與失效率兩道外推的罰款。加厚物理膜（厚氧、氮化）是達成它的方法，'+
+      '但注意：這裡只算 β 的效果，加厚同時降低的電場是額外的好處。',
+      'A larger β lightens both the area and failure-rate extrapolation penalties at once. Thickening the physical film (thicker oxide, nitridation) is how you get there — '+
+      'but note this only accounts for the β effect; the field reduction that comes along with a thicker film is an extra bonus.')]);
+  /* 需要的面積 */
+  const aNeed=Math.pow(10,Q.Ac)*Math.pow(need,-Q.beta);
+  rows.push([L('縮小閘極面積','Shrink gate area'),
+    need>1?L('要縮到 '+aNeed.toPrecision(3)+' cm²（'+fmtMul(Math.pow(10,Q.Ac)/aNeed)+' 倍）',
+             'needs to shrink to '+aNeed.toPrecision(3)+' cm² ('+fmtMul(Math.pow(10,Q.Ac)/aNeed)+'×)')
+         :L('有餘裕','has margin'),
+    L('面積是 1/β 次方，β 大的時候這條路很貴。','Area scales as the 1/β power — when β is large, this path gets expensive.')]);
+  /* 需要的失效率放寬 */
+  const fNeed=1-Math.exp(-Math.pow(target/c.s[3],Q.beta));
+  rows.push([L('放寬目標失效率','Relax the target failure rate'), (fNeed*1e6).toPrecision(3)+' ppm',
+    L('在目前條件下，'+Q.Y+' 年對應的實際失效率就是這個數。'+
+      (fNeed>Math.pow(10,Q.F)?'比你的目標寬 —— 這條路要客戶點頭。':'比你的目標還嚴 —— 已經有餘裕。'),
+      'Under current conditions, this is the actual failure rate that corresponds to '+Q.Y+' years.'+
+      (fNeed>Math.pow(10,Q.F)?' Looser than your target — this path needs customer sign-off.':' Tighter than your target — you already have margin.'))]);
+  $('marg').innerHTML=rows.map(r=>
+    '<div class="rung"><div class="n" style="color:'+(ok?'var(--gtext)':'var(--crit)')+'">'+r[0]+'</div>'+
+    '<div class="t">'+r[1]+'</div><div class="d">'+r[2]+'</div></div>').join('');
+}
+/* ---------- 更新 ---------- */
+function lab6(){
+  $('v1').textContent=Q.tox.toFixed(1)+' nm';
+  $('v2').textContent=Q.Vs.toFixed(1)+' V ('+Eox(Q.Vs,Q.tox).toFixed(1)+' MV/cm)';
+  $('v3').textContent=Q.Ts+' °C';
+  $('v4').textContent=Math.pow(10,Q.t63).toPrecision(3)+' '+L('小時','hr');
+  $('v5').textContent=expU(Math.pow(10,Q.At))+' cm²';
+  $('v6').textContent=Q.beta.toFixed(1);
+  $('v7').textContent=Q.Vu.toFixed(2)+' V ('+Eox(Q.Vu,Q.tox).toFixed(1)+' MV/cm)';
+  $('v8').textContent=Q.Tu+' °C';
+  $('v9').textContent=Math.pow(10,Q.Ac).toPrecision(3)+' cm²';
+  $('v10').textContent=(Math.pow(10,Q.F)*1e6).toPrecision(3)+' ppm';
+  $('v11').textContent=Q.Y+' '+L('年','yr');
+  $('v12').textContent=Q.gam.toFixed(1);
+  $('v13').textContent=Q.n;
+  $('v14').textContent=Q.G;
+  $('v15').textContent=Q.Ea.toFixed(2)+' eV';
+  $('cGam').style.display=Q.model==='E'?'':'none';
+  $('cN').style.display=Q.model==='power'?'':'none';
+  $('cG').style.display=Q.model==='invE'?'':'none';
+}
+function upd6(){
+  lab6();
+  const c=chain(), target=Q.Y*365.25*86400, ok=c.t>=target;
+  $('o1').textContent=fmtYears(c.s[0]);
+  $('o2').textContent=fmtYears(c.s[2]);
+  $('o3').textContent=fmtYears(c.s[3]);
+  $('o4').textContent=fmtYears(c.t);
+  $('o5').innerHTML='<span class="badge '+(ok?'ok">✓ '+L('通過','pass'):'bad">✗ '+L('不過','fail'))+'</span>';
+  $('tv').className='tile'+(ok?'':' hl');
+  $('onote').innerHTML=L(
+    '四道乘數：電壓 <b>'+fmtMul(c.fV)+'</b>　×　溫度 <b>'+fmtMul(c.fT)+
+    '</b>　×　面積 <b>'+fmtMul(c.fA)+'</b>　×　失效率 <b>'+fmtMul(c.fF)+'</b>　'+
+    '＝ 總共 <b>'+fmtMul(c.fV*c.fT*c.fA*c.fF)+'</b> 倍。'+
+    (ok?'　餘裕 <b style="color:var(--gtext)">'+fmtMul(c.t/target)+' 倍</b>。'
+       :'　還差 <b style="color:var(--crit)">'+fmtMul(target/c.t)+' 倍</b>。'),
+    'Four multipliers: voltage <b>'+fmtMul(c.fV)+'</b>　×　temperature <b>'+fmtMul(c.fT)+
+    '</b>　×　area <b>'+fmtMul(c.fA)+'</b>　×　failure rate <b>'+fmtMul(c.fF)+'</b>　'+
+    '＝ <b>'+fmtMul(c.fV*c.fT*c.fA*c.fF)+'×</b> total.'+
+    (ok?'　Margin: <b style="color:var(--gtext)">'+fmtMul(c.t/target)+'×</b>.'
+       :'　Short by: <b style="color:var(--crit)">'+fmtMul(target/c.t)+'×</b>.')
+  );
+  drawWF();drawCmp();drawWbF();margins();
+}
+IDS.forEach(function(p){
+  const e=$(p[0]);
+  e.addEventListener('input',function(ev){Q[p[1]]=parseFloat(ev.target.value);
+    if(p[1]==='tox'&&!Q.manualBeta){Q.beta=beta_of(Q.tox);$('q6').value=Q.beta;}
+    if(p[1]==='beta')Q.manualBeta=true;
+    upd6();});});
+function syncUI(){IDS.forEach(p=>$(p[0]).value=Q[p[1]]);
+  document.querySelectorAll('.md').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===Q.model?'true':'false'));}
+document.querySelectorAll('.md').forEach(function(b){
+  b.addEventListener('click',function(){Q.model=b.dataset.m;syncUI();upd6();});});
+document.querySelectorAll('.ps').forEach(function(b){
+  b.addEventListener('click',function(){Q=Object.assign({},PRE[+b.dataset.p]);Q.manualBeta=false;syncUI();upd6();});});
+$('qAuto').addEventListener('click',function(){Q.manualBeta=false;Q.beta=beta_of(Q.tox);$('q6').value=Q.beta;upd6();});
+function refreshLegend6(){
+  $('lg6').innerHTML='<span><i class="sw" style="background:'+css('--e')+'"></i>E-model</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('冪次律','power law')+'</span>'+
+    '<span><i class="sw" style="background:'+(css('--a')||css('--nit'))+'"></i>1/E model</span>'+
+    '<span><i class="sw" style="background:'+css('--good')+'"></i>'+L('目標壽命','target lifetime')+'</span>'+
+    '<span style="color:var(--ink)">'+L('粗線 = 你目前選的模型','thick line = the model you have selected')+'</span>';
+}
+refreshLegend6();
+window.__rebuild=function(){refreshLegend6();upd6();};
+syncUI();upd6();
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

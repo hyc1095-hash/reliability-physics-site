@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="電遷移的對數常態統計外推邏輯，以及製程／版圖／電路三層防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 4 · 統計與防治">
+<meta property="og:description" content="EM 統計外推與 wide-narrow rule、redundant via 等防治對策。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 4 · 統計與防治 · 電遷移</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">EM · 電遷移</span><div class="steps"><a href="em.html"><span class="n">0</span>課程地圖</a><a href="em-1-intuition.html"><span class="n">1</span>直覺</a><a href="em-2-model.html"><span class="n">2</span>Black 方程式與材料</a><a href="em-3-blech.html"><span class="n">3</span>Blech 長度</a><a href="em-4-spec.html" aria-current="page"><span class="n">4</span>統計與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:80%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 4 / 4 · 統計外推與防治</p>
+<h1>統計沿用同一套邏輯，防治分三層</h1>
+
+<h2>統計外推：對數常態，理由跟 NBTI 一樣</h2>
+<p>EM 失效時間分布同樣採用對數常態，不是 Weibull —— 理由跟本站 TDDB 章節區分兩種分布時用的
+「乘性退化 vs 極值分布」是同一把尺：單一導線的空洞成長是連續的物理過程，不是大量獨立區塊取最小值的滲流行為。</p>
+<div class="eq"><span class="lbl">外推式</span>
+t(F) = t50 · exp( σ · z(F) )
+<span class="say">z(F)：標準常態分布的反函數（quantile）。σ：典型落在 0.3–0.6 之間，
+製程穩定度與晶粒結構均勻度是主要影響因子（呼應階段 2 材料表裡「晶粒結構決定 E<sub>a</sub>」的結論 ——
+晶粒結構不均勻，σ 也會跟著變大）。</span></div>
+
+<h2>防治：製程 / 版圖 / 材料三層</h2>
+<div class="fixcard proc"><div class="lv">製程層</div><h4>材料升級（見階段 2 表格）</h4>
+<p>Al → Al-Cu → Cu，介電質 cap → 金屬 cap（CoWP／CoSnP）。每一步都是把當時 E<sub>a</sub> 最低的擴散路徑升級。</p>
+<div class="tradeoff"><b>代價</b>：金屬 cap 製程複雜度與成本增加，且會小幅提高線的 RC（電阻電容乘積）。</div></div>
+
+<div class="fixcard dev"><div class="lv">版圖層</div><h4>Wide-narrow rule 與 redundant via</h4>
+<p>關鍵訊號線避免從寬線直接收窄到窄線（收窄處局部電流密度突增，且晶粒結構在收窄處容易變成純多晶，
+活化能最差）；重要 via 用多個並聯 via 分攤電流，任一個 via 局部失效不會立即斷路。</p>
+<div class="tradeoff"><b>代價</b>：面積開銷，redundant via 在高密度先進節點不一定有空間放。</div></div>
+
+<div class="fixcard ckt"><div class="lv">電路層</div><h4>電流密度設計規則 + 動態電流分散</h4>
+<p>EDA 工具依 Black 方程式與製程 PDK 提供的 J<sub>max</sub>（依 E<sub>a</sub>、n、目標壽命反推）做規則檢查；
+時脈樹、電源網路等高電流密度線段優先分散到多層金屬、多條並聯路徑。</p>
+<div class="tradeoff"><b>代價</b>：更嚴格的 J<sub>max</sub> 規則會限制線寬縮減的空間，跟先進節點的密度目標互相拉扯。</div></div>
+
+<h2>與其他機制的關係</h2>
+<p>EM 是後段（BEOL）機制，HCI／TDDB／NBTI 是前段（電晶體本身）機制 —— 兩邊在物理位置上是分開的，
+但共用同一個溫度軸：自我發熱造成的局部 ΔT 會同時加速前段的 NBTI／TDDB 與後段的 EM
+（見下一個模組「自我發熱耦合」）。</p>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼 EM 的統計外推邏輯可以直接沿用 TDDB 章節區分 Weibull 的判斷標準？</summary>
+<div class="a">因為那把尺本身是通用的物理判斷，不是 TDDB 專屬的：問「這個失效機制是連續退化到某個門檻（乘性退化）
+還是等一個隨機事件發生（極值 / 滲流）」，答案決定該用對數常態還是 Weibull。EM 的空洞成長、NBTI 的界面態累積
+都是前者；TDDB 的介電層貫穿路徑是後者。同一把尺套三次，答案不一樣是因為機制本質不同，不是這把尺失靈。</div></details>
+<details><summary>Wide-narrow rule 為什麼特別提到「收窄處容易變成純多晶」？</summary>
+<div class="a">線寬變窄到跟晶粒尺寸接近或更小時，橫截面上能塞進去的完整晶粒變少，
+結構會從多晶偏向竹狀（bamboo，晶粒橫跨整個線寬）。奇怪的是竹狀結構通常對 EM<b>更有利</b>
+（晶界擴散路徑變少），但收窄處往往是製程應力集中、電流密度局部升高的地方，
+兩個效應誰主導要看實際製程，不能只靠「竹狀結構比較好」一概而論。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-3-blech.html"><div class="d">← 上一課 · 階段 3</div><div class="t">Blech 長度</div></a><a class="next" href="index.html"><div class="d">回到 →</div><div class="t">所有可靠度機制</div></a></div>
+<div class="foot"><b>模型範圍</b>：本模組的 Black 方程式與 Blech length 計算採文獻常見量級的代表值，<b>不是任何製程的實測資料</b>；材料活化能表已逐項附來源，分歧處兩個都列。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。電流擁擠（current crowding）、應力誘發空洞化（SIV）、先進封裝层級 EM（RDL／凸塊）未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Stage 4 / 4 · Statistical Extrapolation & Mitigation</p>
+<h1>Statistics reuses the same logic; mitigation splits into three layers</h1>
+
+<h2>Statistical extrapolation: lognormal, for the same reason as NBTI</h2>
+<p>EM failure-time distributions likewise use lognormal, not Weibull — for the same reason as the "multiplicative degradation vs. extreme-value distribution" ruler
+this site's TDDB chapter uses to tell the two apart: void growth in a single wire is a continuous physical process, not percolation-style behavior where the minimum is taken over a large number of independent blocks.</p>
+<div class="eq"><span class="lbl">Extrapolation formula</span>
+t(F) = t50 · exp( σ · z(F) )
+<span class="say">z(F): the inverse (quantile function) of the standard normal distribution. σ: typically 0.3–0.6,
+with process stability and grain-structure uniformity as the main drivers (echoing Stage 2's material-table conclusion that "grain structure determines E<sub>a</sub>" —
+a less uniform grain structure also pushes σ higher).</span></div>
+
+<h2>Mitigation: three layers — process, layout, material</h2>
+<div class="fixcard proc"><div class="lv">Process layer</div><h4>Material upgrades (see the Stage 2 table)</h4>
+<p>Al → Al-Cu → Cu, dielectric cap → metal cap (CoWP / CoSnP). Every step upgrades whichever diffusion path currently has the lowest E<sub>a</sub>.</p>
+<div class="tradeoff"><b>Cost</b>: a metal cap adds process complexity and cost, and slightly raises the wire's RC (resistance-capacitance product).</div></div>
+
+<div class="fixcard dev"><div class="lv">Layout layer</div><h4>The wide-narrow rule and redundant vias</h4>
+<p>Avoid transitioning critical signal lines directly from a wide to a narrow width (the narrowing spot sees a local current-density spike, and grain structure there tends to turn pure polycrystalline,
+which is worst for activation energy); use multiple parallel vias for important connections so a single via's local failure doesn't immediately open the circuit.</p>
+<div class="tradeoff"><b>Cost</b>: area overhead — redundant vias don't always have room in a high-density advanced node.</div></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit layer</div><h4>Current-density design rules + dynamic current spreading</h4>
+<p>EDA tools run rule checks against a J<sub>max</sub> derived from the Black equation and the process PDK (back-calculated from E<sub>a</sub>, n, and the target lifetime);
+high-current-density segments like clock trees and power grids are preferentially spread across multiple metal layers and multiple parallel paths.</p>
+<div class="tradeoff"><b>Cost</b>: a stricter J<sub>max</sub> rule constrains how much line width can shrink, pulling against advanced-node density targets.</div></div>
+
+<h2>Relationship to the other mechanisms</h2>
+<p>EM is a back-end-of-line (BEOL) mechanism; HCI/TDDB/NBTI are front-end mechanisms (in the transistor itself) — the two are physically separate,
+but share the same temperature axis: local ΔT from self-heating accelerates both the front-end NBTI/TDDB and the back-end EM at once
+(see the next module, "self-heating coupling").</p>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why can EM's statistical-extrapolation logic directly reuse the TDDB chapter's criterion for choosing Weibull?</summary>
+<div class="a">Because that ruler itself is a general physical judgment, not specific to TDDB: ask "does this failure mechanism degrade continuously toward some threshold (multiplicative degradation),
+or does it wait for a single random event (extreme value / percolation)?" — the answer decides whether to use lognormal or Weibull. EM's void growth and NBTI's interface-trap accumulation
+are both the former; TDDB's dielectric percolation path is the latter. The same ruler applied three times gives different answers because the mechanisms differ in nature, not because the ruler fails.</div></details>
+<details><summary>Why does the wide-narrow rule specifically mention that "a narrowing spot tends to turn pure polycrystalline"?</summary>
+<div class="a">When line width narrows to near or below the grain size, fewer complete grains fit across the cross-section,
+and the structure shifts from polycrystalline toward bamboo (where a single grain spans the full line width). Oddly, bamboo structure is usually <b>better</b> for EM
+(fewer grain-boundary paths), but a narrowing spot is often also where process stress concentrates and current density spikes locally —
+which effect dominates depends on the actual process, and can't be settled just by saying "bamboo structure is better."</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-3-blech.html"><div class="d">← Previous · Stage 3</div><div class="t">Blech Length</div></a><a class="next" href="index.html"><div class="d">Back to →</div><div class="t">All reliability mechanisms</div></a></div>
+<div class="foot"><b>Model scope</b>: this module's Black-equation and Blech-length calculations use representative literature-scale values — <b>not measured data from any specific process</b>; the material activation-energy table cites sources item by item, and lists both values where the literature disagrees. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules. Current crowding, stress-induced voiding (SIV), and advanced-packaging-level EM (RDL / bumps) are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

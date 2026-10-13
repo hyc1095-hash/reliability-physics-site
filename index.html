@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="半導體可靠度物理互動教材：熱載子注入（HCI）與介電層時效崩潰（TDDB）的循序課程，含可調物理模型、JEDEC 與車規規格、以及防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從直覺到規格，把可靠度物理一個機制一個機制講清楚。所有圖表即時計算。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+/* ---------- 多機制對照表：首欄固定 + 橫向捲動 ---------- */
+.cmpwrap{position:relative;margin:16px 0}
+.cmpscroll{overflow-x:auto;border:1px solid var(--border);border-radius:12px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.cmptable{border-collapse:separate;border-spacing:0;width:auto;min-width:100%;
+  background:var(--surface);border:none;border-radius:0;margin:0}
+.cmptable th,.cmptable td{padding:13px 18px;font-size:15.5px;white-space:normal;
+  min-width:230px;vertical-align:top;border-bottom:1px solid var(--grid);border-right:1px solid var(--grid)}
+.cmptable thead th{background:var(--plane);font-weight:700;font-size:16px;color:var(--ink);
+  position:sticky;top:0;z-index:2;border-bottom:2px solid var(--border)}
+.cmptable th.aspect,.cmptable td.aspect{position:sticky;left:0;z-index:3;min-width:150px;max-width:150px;
+  background:color-mix(in srgb,var(--e) 10%,var(--surface));color:var(--e);font-weight:700;
+  border-right:2px solid var(--e);white-space:normal}
+.cmptable thead th.aspect{background:color-mix(in srgb,var(--e) 22%,var(--plane));z-index:4}
+.cmptable tbody tr:last-child td{border-bottom:none}
+.cmptable tbody tr:hover td:not(.aspect){background:color-mix(in srgb,var(--ink) 3%,transparent)}
+.cmpwrap .hint{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:14.5px;color:var(--muted)}
+.cmpwrap .hintbtn{background:var(--surface);border:1px solid var(--border);color:var(--ink2);
+  border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1;
+  display:inline-flex;align-items:center;justify-content:center;flex:none}
+.cmpwrap .hintbtn:hover{border-color:var(--e);color:var(--e)}
+
+
+.hero{padding:14px 0 6px}
+.hero h1{font-size:clamp(30px,5.2vw,46px);letter-spacing:-.035em;margin:2px 0 10px}
+.hero .lede{max-width:70ch}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><div class="steps"><a href="hci.html"><span class="n">HCI</span>熱載子注入</a><a href="tddb.html"><span class="n">TDDB</span>介電層崩潰</a><a href="nbti.html"><span class="n">NBTI</span>偏壓不穩定</a><a href="em.html"><span class="n">EM</span>電遷移</a><a href="coupling.html"><span class="n">耦合</span>自我發熱</a><span class="sep"></span><a href="materials.html">材料表</a><a href="tools.html">工具</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button><button class="tg" id="tourBtn" title="新手導覽 · Guided tour">導覽 ▸</button></div><div class="prog" style="opacity:0"><i style="width:0%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<div class="hero" data-tour="hero">
+<p class="eyebrow">互動教材 · 全部運算在你的瀏覽器裡</p>
+<h1>半導體可靠度物理</h1>
+<p class="lede">每一個機制都從<b>不用公式的直覺</b>開始，走到<b>物理模型</b>、<b>可以動手推的公式</b>、
+<b>業界真正在用的規格</b>，最後是<b>怎麼防治</b>與一個放手玩的可調模型。<br>
+所有圖表都是即時計算的 —— 經典結論（V<sub>G</sub> ≈ V<sub>D</sub>/2 的 I<sub>sub</sub> 峰值、
+HCI 的負活化能、Weibull 的 β ≈ t<sub>ox</sub>/a₀）是從模型<b>長出來</b>的，不是寫死的數字。</p>
+</div>
+
+<h2>選一個機制開始</h2>
+<div class="hub" data-tour="hub-mech">
+
+<a class="hubcard" href="hci.html">
+<div class="ab">通道 · 熱載子效應</div>
+<h3>熱載子注入</h3>
+<div class="en">Hot Carrier Injection（HCI）</div>
+<div class="d">高電場把載子加速成「熱」載子，撞出電子－電洞對，
+再注入閘極氧化層留下界面態。元件參數<b>連續漂移</b>：V<sub>t</sub> 偏移、I<sub>d</sub> 掉、g<sub>m</sub> 掉。</div>
+<div class="facts"><span><b>7</b> 個階段</span><span>失效型態：<b>連續漂移</b></span><span>E<sub>a</sub>：<b>負的</b></span>
+<span>最糟溫度：<b>低溫</b></span></div>
+<div class="go">開始 →</div></a>
+
+<a class="hubcard" href="tddb.html">
+<div class="ab">閘極介電層 · 隨機崩潰</div>
+<h3>介電層時效崩潰</h3>
+<div class="en">Time-Dependent Dielectric Breakdown（TDDB）</div>
+<div class="d">缺陷在氧化層裡隨機累積，直到剛好連成一條貫穿路徑 —— 然後<b>突然短路</b>。
+沒有徵兆、只有機率。整套處理方式（Weibull、面積縮放、ppm）都跟 HCI 不一樣。</div>
+<div class="facts"><span><b>7</b> 個階段</span><span>失效型態：<b>一次性崩潰</b></span><span>E<sub>a</sub>：<b>正的</b></span>
+<span>最糟溫度：<b>高溫</b></span></div>
+<div class="go">開始 →</div></a>
+
+<a class="hubcard" href="nbti.html">
+<div class="ab">通道 · 偏壓溫度漂移</div>
+<h3>偏壓溫度不穩定性</h3>
+<div class="en">NBTI / PBTI</div>
+<div class="d">PMOS 在負閘壓與高溫下 V<sub>t</sub> 持續漂移，移除偏壓後又部分回復 ——
+「量測時它已經在復原」是這個機制最麻煩的地方。與 TDDB 的氮化對策直接衝突。</div>
+<div class="facts"><span><b>4</b> 個階段</span><span>失效型態：<b>連續漂移 + 回復</b></span><span>E<sub>a</sub>：<b>正的</b></span>
+<span>與 HCI、TDDB 都有耦合</span></div>
+<div class="go">開始 →</div></a>
+
+<a class="hubcard" href="em.html">
+<div class="ab">金屬導線 · 質量傳輸</div>
+<h3>電遷移</h3>
+<div class="en">Electromigration（EM）</div>
+<div class="d">電子動量把金屬原子推著跑，久了在陰極端形成空洞、陽極端擠出小丘。
+Black 方程式、材料活化能對照表、Blech length、統計是對數常態而不是 Weibull。</div>
+<div class="facts"><span><b>4</b> 個階段</span><span>失效型態：<b>開路 / 短路</b></span><span>E<sub>a</sub>：<b>正的</b></span>
+<span>後段製程，不在閘極</span></div>
+<div class="go">開始 →</div></a>
+
+<a class="hubcard" href="coupling.html">
+<div class="ab">熱交互作用 · 機制耦合</div>
+<h3>自我發熱與熱載子的交互作用</h3>
+<div class="en">Self-Heating &amp; Coupled Mechanisms</div>
+<div class="d">FinFET 與 GAA 的散熱路徑變差，通道溫度遠高於封裝溫度。
+這件事同時改變 HCI（變好）、TDDB／NBTI／EM（變壞）—— 可靠度必須聯合最佳化。</div>
+<div class="facts"><span>綜合分析</span><span>把前面所有機制串起來</span><span>溫度方向互相打架</span></div>
+<div class="go">開始 →</div></a>
+
+</div>
+
+<h2>參考資料與工具</h2>
+<p class="note" style="margin-bottom:16px">不是課程，是查數字、算東西用的。</p>
+<div class="hub" data-tour="hub-ref" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+
+<a class="hubcard" href="materials.html">
+<div class="ab">參考資料 · 全站唯一出處</div>
+<h3>材料與結構參考表</h3>
+<div class="en">Verified Materials &amp; Device Data</div>
+<div class="d">閘極介電層的 k / E<sub>g</sub> / 能帶偏移、閘極電極的真空功函數與高k 有效功函數、
+金屬導線材料活化能、五種元件結構的 HCI 差異。<b>照抄來源，不平均、不調和</b>；
+文獻分歧兩個都列，查不到就寫「未查證」。</div>
+<div class="facts"><span>Robertson · Wilk · Bersch</span><span>SEMATECH · NASA/JPL · JEDEC</span></div>
+<div class="go">打開參考表 →</div></a>
+
+<a class="hubcard" href="tools.html">
+<div class="ab">工具 · 非教材</div>
+<h3>HCI 負載電阻計算</h3>
+<div class="en">Load-Line &amp; AC Duty Tools</div>
+<div class="d">給實際要架 HCI 應力量測的人：從 V<sub>DD</sub>、V<sub>D</sub> 與元件輸出電流反推該掛多少負載電阻，
+在 I<sub>D</sub>–V<sub>D</sub> 上看負載線落點，以及 AC 操作下交叉點的軌跡。</div>
+<div class="facts"><span>R<sub>L</sub> = (V<sub>DD</sub> − V<sub>D</sub>) / I<sub>D</sub></span>
+<span>AC duty ratio</span></div>
+<div class="go">打開工具 →</div></a>
+
+</div>
+
+<h2>四個機制的對照 —— 這就是為什麼要分開學</h2>
+<p>很多混亂來自把不同機制的直覺互相套用。下表把 HCI、TDDB、NBTI、EM 放在同一組面向上比較，
+每一列都在課程裡有對應的頁面。<b>最左欄（面向）在橫向捲動時固定不動</b>，滑鼠滾輪／觸控板／拖曳都可以左右看。</p>
+
+<div class="cmpwrap">
+<div class="hint" data-tour="cmp-hint"><button class="hintbtn" id="cmpLeft" aria-label="往左捲動" type="button">‹</button>
+<span>左右滑動或用滾輪比較 HCI／TDDB／NBTI／EM</span>
+<button class="hintbtn" id="cmpRight" aria-label="往右捲動" type="button">›</button></div>
+<div class="cmpscroll" id="cmpScroll">
+<table class="cmptable">
+<thead><tr><th class="aspect">面向</th><th>HCI</th><th>TDDB</th><th>NBTI</th><th>EM</th></tr></thead>
+<tbody>
+<tr><td class="aspect">物理圖像</td>
+  <td>汲極端高電場 → 載子加速 → 撞擊游離 → 注入氧化層產生界面態</td>
+  <td>穿隧電流打斷 Si–O 鍵 → 缺陷隨機累積 → 連成貫穿路徑</td>
+  <td>負閘壓、無汲極電流 → 界面電洞累積（p<sub>inv</sub>）→ Si–H 鍵斷裂 → 界面態生成</td>
+  <td>高電流密度 → 電子風力（動量傳遞）→ 原子沿電流方向淨位移</td></tr>
+<tr><td class="aspect">失效型態</td>
+  <td>連續漂移，可以看著它慢慢變差</td>
+  <td>一次性崩潰，前一刻還好好的</td>
+  <td>連續漂移，但移除應力後會<b>部分自發回復</b></td>
+  <td>陰極端<b>開路</b>為主，陽極端可能<b>短路</b></td></tr>
+<tr><td class="aspect">統計的角色</td>
+  <td>次要 —— 每顆元件的退化曲線幾乎重疊</td>
+  <td><b>全部</b> —— 分布散布好幾個數量級</td>
+  <td>次要 —— 跟 HCI 一樣是乘性退化</td>
+  <td><b>重要</b> —— 分布散布，但物理原因是乘性退化，不是極值分布</td></tr>
+<tr><td class="aspect">規格語言</td>
+  <td>參數門檻：「10 年後 ΔI<sub>dsat</sub> ≤ 10%」</td>
+  <td>機率：「10 年後累積失效率 ≤ 1 ppm」</td>
+  <td>參數門檻，但須用應力中（OTF）量測值，不能用移除應力後的殘餘值</td>
+  <td>Black 方程式壽命門檻 + 電流密度設計規則 J<sub>max</sub></td></tr>
+<tr><td class="aspect">活化能</td>
+  <td><b>負的</b>（低溫更嚴重，聲子散射少）</td>
+  <td><b>正的</b>（高溫更嚴重，鍵斷裂需要越過能障）</td>
+  <td><b>正的</b>（高溫更嚴重，與 HCI 方向相反）</td>
+  <td><b>正的</b>（材料相依，0.4–2.2 eV，見材料活化能表）</td></tr>
+<tr><td class="aspect">HTOL 抓得到嗎</td>
+  <td><b>抓不到</b> —— 125 °C 是 HCI 最溫和的條件之一</td>
+  <td><b>抓得到</b> —— 高溫高壓是有效加速</td>
+  <td>抓得到，但要小心<b>量測陷阱</b> —— 傳統量測法系統性低估劣化</td>
+  <td><b>抓得到</b> —— 高溫高電流是標準加速條件</td></tr>
+<tr><td class="aspect">Burn-in 有用嗎</td>
+  <td>沒什麼用</td>
+  <td>對<b>外質</b>失效很有用，對本質沒用</td>
+  <td>有限 —— 部分回復效應會讓篩選出的劣化量被低估</td>
+  <td>有限 —— EM 是磨耗機制，對本質失效效果不大</td></tr>
+<tr><td class="aspect">尺寸縮小的影響</td>
+  <td>通道變短 → 電場升高 → 變嚴重（LDD 是主要對策）</td>
+  <td>氧化層變薄 → β 變小 → 分布變散 → ppm 保證變難</td>
+  <td>high-k/metal gate 疊層 → 界面缺陷密度上升 → 時間指數 n 偏離理論值</td>
+  <td>線寬變窄 → 局部電流密度上升、晶粒結構偏多晶 → 活化能可能變差</td></tr>
+<tr><td class="aspect">壽命分布</td>
+  <td><b>對數常態</b> —— 單顆元件的連續乘性退化。SEMATECH／NASA-JPL 都以此為 HCI 慣例</td>
+  <td><b>Weibull</b> —— 大量獨立區塊取最小值的極值分布，滲流模擬會直接長出它</td>
+  <td><b>對數常態</b> —— 沿用 HCI 同一套物理理由（乘性退化）</td>
+  <td><b>對數常態</b> —— 乘性退化（空洞連續成長），理由跟 NBTI 同一套邏輯</td></tr>
+<tr><td class="aspect">加速指數</td>
+  <td>m = φ<sub>it</sub>/φ<sub>i</sub> ≈ 2.85（SiO₂ 實測 2.9–3.3）；<b>28 nm high-k 只剩約 1.1</b></td>
+  <td>E-model γ、1/E model G、或冪次律 n —— <b>三者外推可差 10⁵ 倍</b></td>
+  <td>R-D 模型 n ≈ 1/6（理論）vs <b>實測 0.15–0.25</b></td>
+  <td>n = 1（空洞成核）～2（空洞成長，保守設計常取 2）</td></tr>
+<tr><td class="aspect">主要對策</td>
+  <td>LDD / 降低汲極端峰值電場 / 降 V<sub>D</sub></td>
+  <td>降 E<sub>ox</sub> / 加厚物理膜 / 消除外質缺陷</td>
+  <td>降界面態密度／氘退火，<b>與 TDDB 氮化對策直接衝突</b></td>
+  <td>材料升級（Al→Cu→金屬 cap）／wide-narrow rule／redundant via</td></tr>
+<tr><td class="aspect">現行 JEDEC 文件</td>
+  <td>JESD28、JESD28-1（另見 JEP122H、JESD91）</td>
+  <td><b>JESD263</b>（2024/03，已取代 JESD35A、JESD35-1、JESD35-2、JESD92）</td>
+  <td><span class="badge warn">未查證</span> 未查到 JEDEC 明訂對數常態慣例的專屬文件</td>
+  <td><span class="badge warn">未查證</span> 本站未逐項查證 EM 專屬 JEDEC 文件編號</td></tr>
+</tbody></table>
+</div>
+</div>
+<p class="note">最後一列值得單獨記一下：TDDB 的 JEDEC 標準在 2024 年整個重組了，
+舊的四份文件在 2024 年 6 月同時被廢止。細節與逐字出處在 TDDB 模組的<a href="tddb-5-spec.html">階段 4</a>。</p>
+
+<h2>怎麼用這個網站</h2>
+<div class="rungs" data-tour="rungs">
+<div class="rung"><div class="n" style="color:var(--e)">初學者</div><div class="t">照順序走</div>
+  <div class="d">每個機制的階段 1 到 7（EM／NBTI 是 4）是設計成循序的。階段 1、2 完全不用公式。
+  用鍵盤左右鍵可以直接翻頁。</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">已經懂物理</div><div class="t">直接跳規格與防治</div>
+  <div class="d">HCI 的階段 5、6，TDDB 的階段 5、6。
+  這兩段標了每一項的來源與查證狀態，可以當查核表用。</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">要做實驗</div><div class="t">先玩可調模型</div>
+  <div class="d">兩個模組的最後一頁都是完整的可調模型。
+  在設計實驗條件之前，先在上面掃一遍，會知道哪個旋鈕真的有力。</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">要說服別人</div><div class="t">用對照表</div>
+  <div class="d">上面那張 HCI vs TDDB 對照表，加上各模組的「三層分工」表格，
+  是跟設計端、品保端對齊認知時最好用的兩張圖。</div></div>
+</div>
+
+<div class="key" style="margin-top:26px"><b>這份教材能給你什麼、不能給你什麼。</b>
+它能給你<b>因果方向、量級感、以及各個參數怎麼互相牽動</b>；
+每一個互動模型都是真的在算，不是動畫。
+它<b>不能</b>給你可以直接寫進報告的數字 ——
+模型參數是文獻量級的示意值，不是任何一家製程的實測值。
+凡是引用外部標準與文件的地方，都附上了連結與逐字核對狀態；
+凡是模型輸出的地方，都標了「模型輸出」。<b>兩者請不要混用。</b></div>
+
+<div class="foot"><b>教育用途</b>：本站所有互動模型皆為簡化的教學模型，參數取文獻常見量級，<b>不是任何製程的實測資料，不可作為設計或驗收依據</b>。引用外部標準之處均附連結與查證狀態。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤、無外部資源請求。使用者自負驗證責任。</div>
+</div>
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<div class="hero" data-tour="hero">
+<p class="eyebrow">Interactive coursework · everything computed live in your browser</p>
+<h1>Semiconductor Reliability Physics</h1>
+<p class="lede">Every mechanism starts from an <b>intuition that needs no formula</b>, moves to a <b>physical model</b>,
+a <b>formula you can derive by hand</b>, the <b>specs the industry actually uses</b>, and ends with
+<b>how to mitigate it</b> plus a tunable model you can play with.<br>
+Every chart on this site is computed live — the classic results
+(the I<sub>sub</sub> peak at V<sub>G</sub> ≈ V<sub>D</sub>/2, HCI's negative activation energy,
+Weibull's β ≈ t<sub>ox</sub>/a₀) <b>emerge from the model</b>; they aren't hard-coded numbers.</p>
+</div>
+
+<h2>Pick a mechanism to start</h2>
+<div class="hub" data-tour="hub-mech">
+
+<a class="hubcard" href="hci.html">
+<div class="ab">Channel · hot-carrier effect</div>
+<h3>Hot Carrier Injection</h3>
+<div class="en">Hot Carrier Injection（HCI）</div>
+<div class="d">A high field accelerates carriers into "hot" carriers, knocks loose electron-hole pairs,
+and injects some of them into the gate oxide, leaving interface traps. Device parameters
+<b>drift continuously</b>: V<sub>t</sub> shifts, I<sub>d</sub> drops, g<sub>m</sub> drops.</div>
+<div class="facts"><span><b>7</b> stages</span><span>Failure mode: <b>continuous drift</b></span><span>E<sub>a</sub>: <b>negative</b></span>
+<span>Worst at: <b>low temperature</b></span></div>
+<div class="go">Start →</div></a>
+
+<a class="hubcard" href="tddb.html">
+<div class="ab">Gate dielectric · random breakdown</div>
+<h3>Time-Dependent Dielectric Breakdown</h3>
+<div class="en">Time-Dependent Dielectric Breakdown（TDDB）</div>
+<div class="d">Defects accumulate randomly inside the oxide until they happen to link into one
+percolating path — then it <b>shorts out, suddenly</b>. No warning, only probability. The entire toolkit
+(Weibull, area scaling, ppm) is unlike HCI.</div>
+<div class="facts"><span><b>7</b> stages</span><span>Failure mode: <b>one-shot breakdown</b></span><span>E<sub>a</sub>: <b>positive</b></span>
+<span>Worst at: <b>high temperature</b></span></div>
+<div class="go">Start →</div></a>
+
+<a class="hubcard" href="nbti.html">
+<div class="ab">Channel · bias-temperature drift</div>
+<h3>Bias Temperature Instability</h3>
+<div class="en">NBTI / PBTI</div>
+<div class="d">Under negative gate bias and high temperature, a pMOS's V<sub>t</sub> keeps drifting —
+and partially recovers once the stress is removed. "It's already recovering while you measure it" is
+what makes this mechanism so tricky. Directly at odds with TDDB's nitridation countermeasure.</div>
+<div class="facts"><span><b>4</b> stages</span><span>Failure mode: <b>continuous drift + recovery</b></span><span>E<sub>a</sub>: <b>positive</b></span>
+<span>Coupled with both HCI and TDDB</span></div>
+<div class="go">Start →</div></a>
+
+<a class="hubcard" href="em.html">
+<div class="ab">Metal interconnect · mass transport</div>
+<h3>Electromigration</h3>
+<div class="en">Electromigration（EM）</div>
+<div class="d">Electron momentum pushes metal atoms along, eventually opening a void at the cathode end
+and squeezing out a hillock at the anode end. Black's equation, a material activation-energy table,
+Blech length, and statistics that are lognormal rather than Weibull.</div>
+<div class="facts"><span><b>4</b> stages</span><span>Failure mode: <b>open / short</b></span><span>E<sub>a</sub>: <b>positive</b></span>
+<span>Back-end process, not the gate</span></div>
+<div class="go">Start →</div></a>
+
+<a class="hubcard" href="coupling.html">
+<div class="ab">Thermal interaction · mechanism coupling</div>
+<h3>Self-Heating &amp; Hot-Carrier Interaction</h3>
+<div class="en">Self-Heating &amp; Coupled Mechanisms</div>
+<div class="d">FinFETs and GAA devices have worse heat dissipation paths, so channel temperature runs well
+above package temperature. That single fact changes HCI (for the better), TDDB／NBTI／EM (for the worse) —
+reliability has to be jointly optimized.</div>
+<div class="facts"><span>Cross-mechanism synthesis</span><span>Ties every earlier mechanism together</span><span>Temperature directions fight each other</span></div>
+<div class="go">Start →</div></a>
+
+</div>
+
+<h2>Reference &amp; tools</h2>
+<p class="note" style="margin-bottom:16px">Not a course — this is for looking up numbers and running calculations.</p>
+<div class="hub" data-tour="hub-ref" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+
+<a class="hubcard" href="materials.html">
+<div class="ab">Reference · single source of truth site-wide</div>
+<h3>Materials &amp; Structure Reference</h3>
+<div class="en">Verified Materials &amp; Device Data</div>
+<div class="d">Gate dielectric k / E<sub>g</sub> / band offsets, gate electrode vacuum work functions and
+effective work functions on high-k, metal-interconnect activation energies, HCI differences across five
+device structures. <b>Copied verbatim from sources — never averaged or reconciled</b>; when sources
+disagree, both are listed; when nothing was found, it says "unverified."</div>
+<div class="facts"><span>Robertson · Wilk · Bersch</span><span>SEMATECH · NASA/JPL · JEDEC</span></div>
+<div class="go">Open reference →</div></a>
+
+<a class="hubcard" href="tools.html">
+<div class="ab">Tool · not coursework</div>
+<h3>HCI Load-Resistor Calculator</h3>
+<div class="en">Load-Line &amp; AC Duty Tools</div>
+<div class="d">For anyone setting up an actual HCI stress measurement: back out the load resistor from
+V<sub>DD</sub>, V<sub>D</sub>, and the device's output current, see where the load line lands on
+I<sub>D</sub>–V<sub>D</sub>, and trace the crossing-point trajectory under AC operation.</div>
+<div class="facts"><span>R<sub>L</sub> = (V<sub>DD</sub> − V<sub>D</sub>) / I<sub>D</sub></span>
+<span>AC duty ratio</span></div>
+<div class="go">Open tool →</div></a>
+
+</div>
+
+<h2>Four mechanisms, side by side — why they're taught separately</h2>
+<p>Most confusion comes from applying one mechanism's intuition to another. The table below lines up
+HCI, TDDB, NBTI, and EM on the same set of aspects; every row has a matching page in the course.
+<b>The left-hand "aspect" column stays put while you scroll sideways</b> — mouse wheel, trackpad, or drag all work.</p>
+
+<div class="cmpwrap">
+<div class="hint" data-tour="cmp-hint"><button class="hintbtn" id="cmpLeftEn" aria-label="Scroll left" type="button">‹</button>
+<span>Scroll or drag sideways to compare HCI／TDDB／NBTI／EM</span>
+<button class="hintbtn" id="cmpRightEn" aria-label="Scroll right" type="button">›</button></div>
+<div class="cmpscroll" id="cmpScrollEn">
+<table class="cmptable">
+<thead><tr><th class="aspect">Aspect</th><th>HCI</th><th>TDDB</th><th>NBTI</th><th>EM</th></tr></thead>
+<tbody>
+<tr><td class="aspect">Physical picture</td>
+  <td>High field at drain → carrier acceleration → impact ionization → injection into oxide generates interface traps</td>
+  <td>Tunneling current breaks Si–O bonds → defects accumulate randomly → they link into a percolating path</td>
+  <td>Negative gate bias, no drain current → interface hole accumulation (p<sub>inv</sub>) → Si–H bond breaking → interface-trap generation</td>
+  <td>High current density → electron wind force (momentum transfer) → net atomic drift along the current direction</td></tr>
+<tr><td class="aspect">Failure mode</td>
+  <td>Continuous drift — you can watch it slowly get worse</td>
+  <td>One-shot collapse — fine one moment, gone the next</td>
+  <td>Continuous drift, but <b>partially self-recovers</b> once stress is removed</td>
+  <td>Mostly an <b>open circuit</b> at the cathode; the anode end can <b>short</b></td></tr>
+<tr><td class="aspect">Role of statistics</td>
+  <td>Minor — degradation curves from unit to unit nearly overlap</td>
+  <td><b>Everything</b> — the distribution spans several orders of magnitude</td>
+  <td>Minor — multiplicative degradation just like HCI</td>
+  <td><b>Significant</b> — the distribution spreads out, but the physical reason is multiplicative degradation, not extreme-value statistics</td></tr>
+<tr><td class="aspect">How the spec is written</td>
+  <td>A parametric threshold: "ΔI<sub>dsat</sub> ≤ 10% after 10 years"</td>
+  <td>A probability: "cumulative failure rate ≤ 1 ppm after 10 years"</td>
+  <td>A parametric threshold, but must use in-stress (on-the-fly) readings, never the residual value after stress is removed</td>
+  <td>Black's-equation lifetime threshold + a current-density design rule J<sub>max</sub></td></tr>
+<tr><td class="aspect">Activation energy</td>
+  <td><b>Negative</b> (worse at low temperature — less phonon scattering)</td>
+  <td><b>Positive</b> (worse at high temperature — bond breaking needs to clear an energy barrier)</td>
+  <td><b>Positive</b> (worse at high temperature — opposite direction from HCI)</td>
+  <td><b>Positive</b> (material-dependent, 0.4–2.2 eV — see the activation-energy table)</td></tr>
+<tr><td class="aspect">Does HTOL catch it?</td>
+  <td><b>No</b> — 125 °C is one of the mildest conditions HCI ever sees</td>
+  <td><b>Yes</b> — high temperature and high voltage are an effective accelerant</td>
+  <td>Yes, but watch out for the <b>measurement trap</b> — conventional measurement methods systematically under-report the degradation</td>
+  <td><b>Yes</b> — high temperature and high current are the standard accelerating conditions</td></tr>
+<tr><td class="aspect">Is burn-in useful?</td>
+  <td>Not really</td>
+  <td>Very useful for <b>extrinsic</b> failures; useless for intrinsic ones</td>
+  <td>Limited — the recovery effect means the screened-out degradation gets under-counted</td>
+  <td>Limited — EM is a wear-out mechanism, so burn-in does little for the intrinsic failure population</td></tr>
+<tr><td class="aspect">Effect of scaling down</td>
+  <td>Shorter channel → higher field → worse (LDD is the primary countermeasure)</td>
+  <td>Thinner oxide → smaller β → wider distribution → harder to guarantee a ppm-level spec</td>
+  <td>High-k/metal-gate stacks → higher interface-trap density → the time exponent n drifts from its theoretical value</td>
+  <td>Narrower lines → higher local current density, grain structure trends polycrystalline → activation energy can get worse</td></tr>
+<tr><td class="aspect">Lifetime distribution</td>
+  <td><b>Lognormal</b> — continuous multiplicative degradation within a single device. SEMATECH／NASA-JPL both treat this as the HCI convention</td>
+  <td><b>Weibull</b> — an extreme-value distribution from taking the minimum over many independent regions; a percolation simulation grows it naturally</td>
+  <td><b>Lognormal</b> — follows the same physical reasoning as HCI (multiplicative degradation)</td>
+  <td><b>Lognormal</b> — multiplicative degradation (continuous void growth), the same logic as NBTI</td></tr>
+<tr><td class="aspect">Acceleration exponent</td>
+  <td>m = φ<sub>it</sub>/φ<sub>i</sub> ≈ 2.85 (SiO₂ measured 2.9–3.3); <b>only about 1.1 in 28 nm high-k</b></td>
+  <td>E-model γ, 1/E model G, or a power law n — <b>extrapolating with the three can differ by 10⁵×</b></td>
+  <td>R-D model gives n ≈ 1/6 in theory vs. <b>0.15–0.25 measured</b></td>
+  <td>n = 1 (void nucleation) to 2 (void growth; conservative designs usually assume 2)</td></tr>
+<tr><td class="aspect">Primary countermeasures</td>
+  <td>LDD / lowering the peak field at the drain / lowering V<sub>D</sub></td>
+  <td>Lowering E<sub>ox</sub> / thicker physical film / eliminating extrinsic defects</td>
+  <td>Lower interface-trap density / deuterium annealing — <b>directly conflicts with TDDB's nitridation countermeasure</b></td>
+  <td>Material upgrades (Al→Cu→metal cap) / the wide-narrow rule / redundant vias</td></tr>
+<tr><td class="aspect">Current JEDEC document</td>
+  <td>JESD28, JESD28-1 (also see JEP122H, JESD91)</td>
+  <td><b>JESD263</b> (March 2024, superseded JESD35A, JESD35-1, JESD35-2, JESD92)</td>
+  <td><span class="badge warn">Unverified</span> No JEDEC document was found that formally specifies the lognormal convention</td>
+  <td><span class="badge warn">Unverified</span> This site has not individually verified an EM-specific JEDEC document number</td></tr>
+</tbody></table>
+</div>
+</div>
+<p class="note">The last row deserves its own note: TDDB's JEDEC standard was completely reorganized in 2024 —
+the four old documents were all rescinded in June 2024. Details and verbatim sourcing are in
+<a href="tddb-5-spec.html">TDDB stage 4</a>.</p>
+
+<h2>How to use this site</h2>
+<div class="rungs" data-tour="rungs">
+<div class="rung"><div class="n" style="color:var(--e)">New to this</div><div class="t">Go in order</div>
+  <div class="d">Each mechanism's stages are designed to be sequential (7 for HCI and TDDB, 4 for NBTI and EM). Stages 1 and 2 use
+  no formulas at all. The left/right arrow keys page through directly.</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">Already know the physics</div><div class="t">Jump straight to specs &amp; mitigation</div>
+  <div class="d">HCI's stages 5 and 6, TDDB's stages 5 and 6. Both sections label the source and verification
+  status of every item, so they double as a checklist.</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">Planning an experiment</div><div class="t">Play with the tunable model first</div>
+  <div class="d">The last page of both modules is a full tunable model. Sweep through it before you design
+  test conditions — you'll learn which knob actually matters.</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">Need to convince someone</div><div class="t">Use the comparison table</div>
+  <div class="d">The HCI-vs-TDDB comparison above, plus each module's "three-layer division of labor" table,
+  are the two best exhibits for aligning design and quality teams.</div></div>
+</div>
+
+<div class="key" style="margin-top:26px"><b>What this coursework can and can't give you.</b>
+It can give you <b>the direction of cause and effect, a sense of scale, and how the parameters pull on each other</b>;
+every interactive model is actually computing something, not playing back an animation.
+It <b>cannot</b> give you numbers you can put straight into a report —
+model parameters are representative literature-level values, not measured data from any specific process.
+Anywhere an external standard or document is cited, a link and its verification status are attached;
+anywhere a number comes from the model, it's labeled "model output." <b>Please don't mix the two up.</b></div>
+
+<div class="foot"><b>Educational use</b>: every interactive model on this site is a simplified teaching model with
+parameters drawn from common literature-level values — <b>not measured data from any process, and not a basis
+for design or qualification decisions</b>. Anywhere an external standard is cited, a link and its verification
+status are attached.<br><b>Privacy</b>: this is a purely static site; every computation runs locally in your
+browser — no back end, no cookies, no tracking, no external requests. Educational use only; verify independently.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+  <script>
+[['cmpScroll','cmpLeft','cmpRight'], ['cmpScrollEn','cmpLeftEn','cmpRightEn']].forEach(function(ids){
+  var sc=document.getElementById(ids[0]);
+  var lb=document.getElementById(ids[1]), rb=document.getElementById(ids[2]);
+  if(!sc) return;
+  var step=260;
+  if(lb) lb.addEventListener('click',function(){sc.scrollBy({left:-step,behavior:'smooth'});});
+  if(rb) rb.addEventListener('click',function(){sc.scrollBy({left:step,behavior:'smooth'});});
+  sc.addEventListener('wheel',function(e){
+    if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+      sc.scrollLeft+=e.deltaY;
+      e.preventDefault();
+    }
+  },{passive:false});
+});
+</script>
+<script src="numin_core.js"></script>
+<script src="onboarding_tour.js"></script>
+</body>
+</html>

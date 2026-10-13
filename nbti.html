@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="偏壓溫度不穩定性（NBTI/PBTI）可靠度物理循序教學：靜態偏壓直覺、Si-H斷裂與R-D模型、恢復動力學與量測陷阱、判準與防治。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="課程地圖 · NBTI/PBTI · 半導體可靠度物理">
+<meta property="og:description" content="從靜態偏壓直覺到 R-D 模型、恢復動力學，四個階段學完 NBTI。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>課程地圖 · NBTI/PBTI · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html" aria-current="page"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-spec.html"><span class="n">4</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:0%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">互動教材 · 不需要先修過半導體元件物理</p>
+<h1>偏壓溫度不穩定性（NBTI/PBTI）<br>可靠度物理，從零開始</h1>
+<p class="lede">NBTI 發生在 pMOS 通道反轉、閘極負偏壓、<b>沒有汲極電流</b>的靜態應力下 ——
+應力參數跟 HCI 完全不同：不用開關、不用電流，一顆待機中的電晶體也在慢慢老化。
+更麻煩的是移除應力後訊號會自發<b>部分回復</b>，這件事直接影響你怎麼量測它。
+這份教材分四個階段：直覺、Si-H 斷裂與 R-D 模型、恢復動力學與量測陷阱、以及判準與防治。
+<b>每一頁都短，一次只講一件事，卡住了隨時可以往回翻。</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">一句話版本</h3>
+<p style="margin-bottom:0">負偏壓下電洞在 Si/介電層界面累積，界面處鈍化用的 Si–H 鍵被電場與電洞共同打斷，
+留下的懸鍵變成界面態，直接推動 |V<sub>t</sub>| 上升。停止應力後，一部分界面態會自發鈍化回復 ——
+<b>量測本身的延遲就足以低估真實劣化量</b>。</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 190" role="img" aria-label="NBTI 因果鏈：靜態負閘壓、界面電洞累積、Si-H 鍵斷裂、V_t 上升與部分回復">
+<defs><marker id="ar3-zh" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="81.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">負閘壓、靜態</text><text x="81.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">V_D=V_S=0</text><circle cx="23" cy="68" r="11" fill="var(--muted)"/><text x="23" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="160" y1="98" x2="194" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-zh)"/>
+<rect x="200" y="68" width="150" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="275.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">界面電洞累積</text><text x="275.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--h)">p_inv 主導</text><circle cx="217" cy="68" r="11" fill="var(--h)"/><text x="217" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="354" y1="98" x2="388" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-zh)"/>
+<rect x="394" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="469.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Si–H 鍵斷裂</text><text x="469.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">R-D 反應-擴散</text><circle cx="411" cy="68" r="11" fill="var(--muted)"/><text x="411" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="548" y1="98" x2="582" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-zh)"/>
+<rect x="588" y="34" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="672.0" y="63.0" text-anchor="middle" font-weight="600" font-size="13" fill="var(--ink)">|V_t| 上升</text><circle cx="605" cy="34" r="11" fill="var(--nit)"/><text x="605" y="38" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="588" y="104" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--e) 13%,var(--surface))" stroke="var(--e)" stroke-width="1.6"/><text x="672.0" y="133.0" text-anchor="middle" font-weight="600" font-size="12" fill="var(--ink)">移除應力 → 部分回復</text>
+</g>
+</svg>
+</div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="nbti-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">直覺：靜態偏壓，不是電流</div>
+  <div class="d">跟 HCI 的應力參數對比：p<sub>inv</sub> 是垂直場相關的靜態量，不是電流密度。</div>
+  <div class="g">學完你會知道：<b>為什麼同一顆 pMOS 待機時也在慢慢劣化</b></div>
+  <div class="meta">約 5 分鐘</div></div>
+</a>
+<a class="mapcard" href="nbti-2-mechanism.html">
+  <div class="no">2</div>
+  <div><div class="t">物理機制與 R-D 模型</div>
+  <div class="d">Si-H 鍵斷裂、反應-擴散耦合、時間指數 n 的理論值與實測落差。</div>
+  <div class="g">學完你會知道：<b>n=1/6 這個理論值為什麼不能直接拿來外推先進節點</b></div>
+  <div class="meta">約 10 分鐘 · 互動小工具</div></div>
+</a>
+<a class="mapcard" href="nbti-3-recovery.html">
+  <div class="no">3</div>
+  <div><div class="t">恢復動力學與量測陷阱</div>
+  <div class="d">為什麼傳統「先移除應力再量測」的作法會系統性低估劣化，on-the-fly／ultra-fast I-V 怎麼解決。</div>
+  <div class="g">學完你會知道：<b>量測方法本身可能比模型參數更影響你量到的數字</b></div>
+  <div class="meta">約 8 分鐘</div></div>
+</a>
+<a class="mapcard" href="nbti-4-spec.html">
+  <div class="no">4</div>
+  <div><div class="t">判準、外推與防治</div>
+  <div class="d">對數常態外推、跟 TDDB 氮化對策的直接衝突、製程與電路層防治對策。</div>
+  <div class="g">學完你會知道：<b>NBTI 對策為什麼常常跟 TDDB 對策互相打架</b></div>
+  <div class="meta">約 8 分鐘</div></div>
+</a>
+</div>
+
+<h2>先備知識</h2>
+<table>
+<thead><tr><th class="nw">需要知道</th><th>大概到什麼程度</th></tr></thead>
+<tbody>
+<tr><td class="nw">pMOS 的反轉層</td><td>閘極負偏壓超過 |V<sub>t</sub>| 時，通道表面形成電洞反轉層</td></tr>
+<tr><td class="nw">界面態 N<sub>it</sub></td><td>Si/介電層界面上的懸鍵缺陷，跟 HCI 章節階段 2 是同一個物理量</td></tr>
+</tbody></table>
+<p class="note">建議先看過 HCI 課程地圖階段 2（物理機制）再來看這裡，兩者會直接對照。</p>
+
+<div class="pager"><a class="next" href="nbti-1-intuition.html"><div class="d">下一課 · 階段 1 →</div><div class="t">直覺</div></a></div>
+<div class="foot"><b>模型範圍</b>：R-D 時間律採擴散限制段的冪次律外觀，未實作完整反應-擴散耦合微分方程；恢復動力學僅作文字說明，無可調曲線工具；PBTI（nMOS 電子穿隧機制）未展開，僅並列標題。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Interactive coursework · no prior semiconductor device physics required</p>
+<h1>Negative-Bias Temperature Instability (NBTI/PBTI)<br>reliability physics, from zero</h1>
+<p class="lede">NBTI happens under static stress: a pMOS channel inverted, a negative gate bias, and <b>zero drain current</b> —
+its stress parameters are completely different from HCI's: no switching, no current, and a transistor sitting idle is still slowly aging.
+Making things trickier, the signal spontaneously <b>partially recovers</b> once stress is removed, which directly shapes how you have to measure it.
+This course breaks it into four stages: intuition, Si-H bond breaking and the R-D model, recovery dynamics and measurement traps, and finally criteria with mitigation.
+<b>Every page is short and covers exactly one idea — you can always flip back.</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">The 30-second version</h3>
+<p style="margin-bottom:0">Under negative bias, holes accumulate at the Si/dielectric interface, and the Si–H bonds used to passivate that interface get broken by the combined action of the field and the holes.
+The dangling bonds left behind become interface traps, directly driving |V<sub>t</sub>| up. Once stress stops, a fraction of those interface traps spontaneously re-passivate and recover —
+<b>the delay in measurement itself is enough to underestimate the true degradation</b>.</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 190" role="img" aria-label="NBTI causal chain: static negative gate bias, interfacial hole accumulation, Si-H bond breaking, V_t rise and partial recovery">
+<defs><marker id="ar3-en" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="81.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Negative gate bias, static</text><text x="81.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">V_D=V_S=0</text><circle cx="23" cy="68" r="11" fill="var(--muted)"/><text x="23" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="160" y1="98" x2="194" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-en)"/>
+<rect x="200" y="68" width="150" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="275.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Interfacial hole buildup</text><text x="275.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--h)">p_inv dominates</text><circle cx="217" cy="68" r="11" fill="var(--h)"/><text x="217" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="354" y1="98" x2="388" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-en)"/>
+<rect x="394" y="68" width="150" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="469.0" y="96.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Si–H bond breaking</text><text x="469.0" y="115.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">R-D reaction-diffusion</text><circle cx="411" cy="68" r="11" fill="var(--muted)"/><text x="411" y="72" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="548" y1="98" x2="582" y2="98" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar3-en)"/>
+<rect x="588" y="34" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="672.0" y="63.0" text-anchor="middle" font-weight="600" font-size="13" fill="var(--ink)">|V_t| rises</text><circle cx="605" cy="34" r="11" fill="var(--nit)"/><text x="605" y="38" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="588" y="104" width="168" height="48" rx="12" fill="color-mix(in srgb,var(--e) 13%,var(--surface))" stroke="var(--e)" stroke-width="1.6"/><text x="672.0" y="133.0" text-anchor="middle" font-weight="600" font-size="12" fill="var(--ink)">Stress removed → partial recovery</text>
+</g>
+</svg>
+</div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="nbti-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">Intuition: static bias, not current</div>
+  <div class="d">Contrasted with HCI's stress parameters: p<sub>inv</sub> is a static quantity tied to the vertical field, not current density.</div>
+  <div class="g">You'll walk away knowing: <b>why the same idle pMOS is slowly degrading anyway</b></div>
+  <div class="meta">~5 min</div></div>
+</a>
+<a class="mapcard" href="nbti-2-mechanism.html">
+  <div class="no">2</div>
+  <div><div class="t">Physical mechanism & the R-D model</div>
+  <div class="d">Si-H bond breaking, reaction-diffusion coupling, and the gap between the theoretical time exponent n and what's actually measured.</div>
+  <div class="g">You'll walk away knowing: <b>why the theoretical n=1/6 can't be used directly to extrapolate advanced nodes</b></div>
+  <div class="meta">~10 min · interactive tool</div></div>
+</a>
+<a class="mapcard" href="nbti-3-recovery.html">
+  <div class="no">3</div>
+  <div><div class="t">Recovery dynamics & measurement traps</div>
+  <div class="d">Why the conventional "remove stress, then measure" approach systematically underestimates degradation, and how on-the-fly / ultra-fast I-V measurement fixes it.</div>
+  <div class="g">You'll walk away knowing: <b>the measurement method itself can affect the number you get more than the model parameters do</b></div>
+  <div class="meta">~8 min</div></div>
+</a>
+<a class="mapcard" href="nbti-4-spec.html">
+  <div class="no">4</div>
+  <div><div class="t">Criteria, extrapolation & mitigation</div>
+  <div class="d">Lognormal extrapolation, its direct conflict with TDDB's nitridation countermeasure, and mitigation at the process and circuit levels.</div>
+  <div class="g">You'll walk away knowing: <b>why NBTI countermeasures so often fight TDDB countermeasures</b></div>
+  <div class="meta">~8 min</div></div>
+</a>
+</div>
+
+<h2>What you need going in</h2>
+<table>
+<thead><tr><th class="nw">What to know</th><th>How well</th></tr></thead>
+<tbody>
+<tr><td class="nw">A pMOS's inversion layer</td><td>Once the gate bias exceeds |V<sub>t</sub>| in the negative direction, a hole inversion layer forms at the channel surface</td></tr>
+<tr><td class="nw">Interface traps N<sub>it</sub></td><td>Dangling-bond defects at the Si/dielectric interface — the same physical quantity as in the HCI chapter's Stage 2</td></tr>
+</tbody></table>
+<p class="note">It's worth reading Stage 2 (Mechanism) of the HCI course map first — the two are directly compared here.</p>
+
+<div class="pager"><a class="next" href="nbti-1-intuition.html"><div class="d">Next · Stage 1 →</div><div class="t">Intuition</div></a></div>
+<div class="foot"><b>Model scope</b>: the R-D time law uses the power-law appearance of the diffusion-limited regime, without implementing the full reaction-diffusion coupled differential equations; recovery dynamics are described in text only, with no tunable curve tool; PBTI (the nMOS electron-tunneling mechanism) is not expanded — only its heading is listed alongside NBTI's. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

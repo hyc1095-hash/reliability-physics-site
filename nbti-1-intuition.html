@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NBTI 的靜態偏壓直覺，與 HCI 應力參數的系統性對照。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 1 · 直覺 · NBTI/PBTI">
+<meta property="og:description" content="為什麼 NBTI 不需要電流、跟 HCI 的驅動參數完全不同。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 1 · 直覺 · NBTI/PBTI · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html" aria-current="page"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-spec.html"><span class="n">4</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:20%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 1 / 4 · 直覺</p>
+<h1>靜態偏壓，不是電流</h1>
+<p class="lede">NBTI 最容易搞混的地方，是拿 HCI 的直覺去套：以為要有電流流動才會有可靠度問題。
+NBTI 完全相反 —— 它只需要一個負閘壓把通道「反轉住」，不需要任何汲極電流。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>pMOS 閘極加負偏壓、源汲極都接地（V<sub>D</sub>=V<sub>S</sub>=0）就能產生 NBTI 應力。
+真正驅動劣化的參數是通道表面的電洞反轉層濃度 <b>p<sub>inv</sub></b>，一個純粹垂直方向的靜態量，
+跟橫向電場、電流密度完全無關。</p></div>
+
+<h2>跟 HCI 對照，一次看懂差異</h2>
+<table>
+<thead><tr><th class="nw">面向</th><th>HCI</th><th>NBTI</th></tr></thead>
+<tbody>
+<tr><td class="nw">需要電流嗎</td><td>需要，通道電流是撞擊游離的前提</td><td><b>不需要</b>，V<sub>D</sub>=V<sub>S</sub>=0 也會發生</td></tr>
+<tr><td class="nw">驅動參數</td><td>橫向電場 E<sub>m</sub>、電流密度</td><td>垂直電場、p<sub>inv</sub>（電洞反轉層濃度）</td></tr>
+<tr><td class="nw">損傷位置</td><td>侷限在汲極端一小塊</td><td>整條通道均勻</td></tr>
+<tr><td class="nw">溫度活化能方向</td><td>負（低溫更嚴重）</td><td>正（高溫更嚴重）</td></tr>
+<tr><td class="nw">停止應力後</td><td>損傷不回復</td><td><b>部分自發回復</b></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0">HCI 是「跑得快才會受傷」的機制；NBTI 是「站著不動也會受傷」的機制。
+一顆待機中的 pMOS（閘極維持負偏壓、沒有任何開關動作）在 HCI 角度看是完全安全的，
+在 NBTI 角度看卻正在慢慢劣化。</p></div>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼 nMOS 也會有類似現象（PBTI），但機制不完全一樣？</summary>
+<div class="a">PBTI 發生在 nMOS 正閘壓、電子反轉層累積時。但 PBTI 的主要機制較常被歸因於<b>電子穿隧進閘極介電層裡的既有陷阱</b>
+（trap-up），跟 NBTI 的 Si-H 鍵斷裂生成<b>新</b>界面態不完全一樣。這也是為什麼本教材先把 pMOS 的 NBTI 講完整，
+PBTI 留待日後獨立展開，而不是硬把兩者當同一個機制處理。</div></details>
+<details><summary>一顆電路裡，哪些電晶體最容易受 NBTI 影響？</summary>
+<div class="a">閘極長時間維持在固定負偏壓的 pMOS 最危險 —— 例如靜態邏輯閘裡長時間輸出低電位、
+輸入端固定不切換的 pMOS，或類比電路裡偏壓固定的電流鏡 pMOS。反而是頻繁開關的 pMOS
+（每次切換都有機會落在恢復窗口），淨劣化量可能比想像中小 —— 這跟階段 3 要談的恢復動力學直接相關。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti.html"><div class="d">← 回課程地圖</div><div class="t">NBTI/PBTI</div></a><a class="next" href="nbti-2-mechanism.html"><div class="d">下一課 · 階段 2 →</div><div class="t">機制與 R-D 模型</div></a></div>
+<div class="foot"><b>模型範圍</b>：R-D 時間律採擴散限制段的冪次律外觀，未實作完整反應-擴散耦合微分方程；恢復動力學僅作文字說明，無可調曲線工具；PBTI（nMOS 電子穿隧機制）未展開，僅並列標題。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Stage 1 / 4 · Intuition</p>
+<h1>Static bias, not current</h1>
+<p class="lede">The easiest mistake with NBTI is applying HCI intuition to it: assuming current has to be flowing for there to be a reliability problem.
+NBTI is the exact opposite — all it needs is a negative gate bias to "invert" the channel; no drain current is required at all.</p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<p>Applying a negative bias to a pMOS gate with source and drain both grounded (V<sub>D</sub>=V<sub>S</sub>=0) is already enough to produce NBTI stress.
+The parameter that actually drives the degradation is the hole-inversion-layer concentration at the channel surface, <b>p<sub>inv</sub></b> — a purely vertical, static quantity,
+completely unrelated to lateral field or current density.</p></div>
+
+<h2>Side by side with HCI: see the differences at once</h2>
+<table>
+<thead><tr><th class="nw">Aspect</th><th>HCI</th><th>NBTI</th></tr></thead>
+<tbody>
+<tr><td class="nw">Needs current?</td><td>Yes — channel current is a prerequisite for impact ionization</td><td><b>No</b> — happens even at V<sub>D</sub>=V<sub>S</sub>=0</td></tr>
+<tr><td class="nw">Driving parameter</td><td>Lateral field E<sub>m</sub>, current density</td><td>Vertical field, p<sub>inv</sub> (hole-inversion-layer concentration)</td></tr>
+<tr><td class="nw">Damage location</td><td>Confined to a small region at the drain</td><td>Uniform across the whole channel</td></tr>
+<tr><td class="nw">Direction of temperature activation</td><td>Negative (worse at low temperature)</td><td>Positive (worse at high temperature)</td></tr>
+<tr><td class="nw">After stress is removed</td><td>Damage doesn't recover</td><td><b>Partially recovers spontaneously</b></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">The key intuition</div>
+<p style="margin:0">HCI is a mechanism where "running fast is what hurts you"; NBTI is a mechanism where "just standing still hurts you too."
+An idle pMOS (gate held at a fixed negative bias, no switching activity at all) is perfectly safe from HCI's point of view,
+but from NBTI's point of view, it's slowly degrading the whole time.</p></div>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why does nMOS show a similar phenomenon (PBTI), but with a mechanism that isn't quite the same?</summary>
+<div class="a">PBTI happens on nMOS under positive gate bias, as an electron inversion layer accumulates. But PBTI's dominant mechanism is more often attributed to <b>electrons tunneling into pre-existing traps</b> in the gate dielectric
+(trap-up), which isn't quite the same as NBTI's Si-H bond breaking that generates <b>new</b> interface traps. That's also why this course covers pMOS NBTI fully first,
+leaving PBTI for a separate future treatment, rather than forcing the two into the same mechanism.</div></details>
+<details><summary>In a circuit, which transistors are most vulnerable to NBTI?</summary>
+<div class="a">A pMOS whose gate sits at a fixed negative bias for long stretches is the most at risk — for example, a pMOS in a static logic gate that outputs low for long periods with its input never switching,
+or a current-mirror pMOS in an analog circuit held at a fixed bias. Ironically, a pMOS that switches frequently
+(each switch is a chance to land in the recovery window) may end up with less net degradation than you'd expect — which connects directly to the recovery dynamics covered in Stage 3.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti.html"><div class="d">← Back to course map</div><div class="t">NBTI/PBTI</div></a><a class="next" href="nbti-2-mechanism.html"><div class="d">Next · Stage 2 →</div><div class="t">Mechanism & the R-D Model</div></a></div>
+<div class="foot"><b>Model scope</b>: the R-D time law uses the power-law appearance of the diffusion-limited regime, without implementing the full reaction-diffusion coupled differential equations; recovery dynamics are described in text only, with no tunable curve tool; PBTI (the nMOS electron-tunneling mechanism) is not expanded — only its heading is listed alongside NBTI's. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

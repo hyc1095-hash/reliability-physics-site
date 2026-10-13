@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 6：如何防治 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 6：如何防治 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+
+button[aria-pressed=true]{border-color:var(--e);border-width:1.5px;color:var(--e);
+  background:color-mix(in srgb,var(--e) 9%,var(--surface))}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html" aria-current="page"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:86%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 6 / 7</p>
+<h1>如何防治 TDDB</h1>
+<p class="lede">把使用端 1 ppm 的壽命公式攤開來，你能動的手只有幾隻。
+先看清楚哪幾隻，再談製程、元件、電路各能出多少力。</p>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 6 / 7</p>
+<h1>How to mitigate TDDB</h1>
+<p class="lede">Unfold the lifetime formula for the 1-ppm use-end target and there are only a handful of knobs you can actually turn.
+See which ones they are first, then look at how much leverage process, device, and circuit design each have.</p>
+</div>
+
+<div class="fx">
+<div lang="zh-Hant">
+<div class="lvl l2">全部的槓桿都在這一行裡</div>
+<div class="big">t<sub>1ppm</sub> <span class="op">=</span> t₀ <span class="op">·</span>
+exp(−γ·<b style="color:var(--crit)">E<sub>ox</sub></b>) <span class="op">·</span>
+exp(E<sub>a</sub>/k<sub>B</sub><b style="color:var(--crit)">T</b>) <span class="op">·</span>
+( A<sub>test</sub>/<b style="color:var(--crit)">A</b> )<sup>1/<b style="color:var(--e)">β</b></sup> <span class="op">·</span>
+( 10<sup>−6</sup> )<sup>1/<b style="color:var(--e)">β</b></sup></div>
+<p class="why">紅色是<b>要壓小</b>的，藍色是<b>要拉大</b>的。整份對策清單就是這四項的展開：</p>
+<table class="symtab">
+<tr><td>① 降 E<sub>ox</sub></td><td>= V / t<sub>ox</sub></td>
+  <td>降電壓，或在同樣的 EOT 下把<b>物理厚度</b>做厚（氮化、high-k）。指數項，槓桿最大。</td></tr>
+<tr><td>② 拉大 β</td><td>= t<sub>ox</sub>/a₀</td>
+  <td>物理厚度變厚，分布收窄，兩道外推的罰款同時變輕。跟 ① 是同一個動作的副產品。</td></tr>
+<tr><td>③ 縮小 A</td><td>閘極總面積</td>
+  <td>設計端的事。大面積 MOS decap 常常是整顆晶片 TDDB 的主要貢獻者。</td></tr>
+<tr><td>④ 降 T</td><td>使用溫度</td>
+  <td>E<sub>a</sub> ≈ 0.75 eV，降 20 °C 大約只有 2 倍。<b>槓桿最小，但常常免費。</b></td></tr>
+<tr><td>⑤ 殺外質</td><td>不在式子裡</td>
+  <td>上面整條式子講的是<b>本質</b>壽命。外質失效（針孔、微粒、電漿損傷）另有一條分布，
+  而且它會<b>完全支配</b> ppm 級的判定。這一項是 foundry 的主戰場。</td></tr>
+</table>
+</div>
+<div lang="en">
+<div class="lvl l2">Every lever is in this one line</div>
+<div class="big">t<sub>1ppm</sub> <span class="op">=</span> t₀ <span class="op">·</span>
+exp(−γ·<b style="color:var(--crit)">E<sub>ox</sub></b>) <span class="op">·</span>
+exp(E<sub>a</sub>/k<sub>B</sub><b style="color:var(--crit)">T</b>) <span class="op">·</span>
+( A<sub>test</sub>/<b style="color:var(--crit)">A</b> )<sup>1/<b style="color:var(--e)">β</b></sup> <span class="op">·</span>
+( 10<sup>−6</sup> )<sup>1/<b style="color:var(--e)">β</b></sup></div>
+<p class="why">Red is what you <b>want to shrink</b>; blue is what you <b>want to grow</b>. The entire mitigation list is just these four terms spelled out:</p>
+<table class="symtab">
+<tr><td>① Lower E<sub>ox</sub></td><td>= V / t<sub>ox</sub></td>
+  <td>Lower the voltage, or make the <b>physical thickness</b> thicker at the same EOT (nitridation, high-k). It's in the exponent, so this has the biggest leverage.</td></tr>
+<tr><td>② Raise β</td><td>= t<sub>ox</sub>/a₀</td>
+  <td>A thicker physical layer narrows the distribution, lightening both extrapolation penalties at once. A free side effect of ①.</td></tr>
+<tr><td>③ Shrink A</td><td>Total gate area</td>
+  <td>A design-side lever. A large-area MOS decap is often the single biggest contributor to a whole chip's TDDB.</td></tr>
+<tr><td>④ Lower T</td><td>Use temperature</td>
+  <td>E<sub>a</sub> ≈ 0.75 eV, so dropping 20 °C only buys about 2×. <b>Smallest leverage, but often free.</b></td></tr>
+<tr><td>⑤ Kill extrinsics</td><td>Not in the formula</td>
+  <td>The whole formula above describes the <b>intrinsic</b> lifetime. Extrinsic failures (pinholes, particles, plasma damage) follow a separate distribution
+  that can <b>completely dominate</b> the ppm-level verdict. This is the foundry's main battleground.</td></tr>
+</table>
+</div>
+</div>
+
+<div lang="zh-Hant">
+<h2>先看第 ⑤ 項：為什麼外質缺陷會讓前面四項全部白做</h2>
+<p>假設你的本質壽命非常漂亮，但每一萬顆裡有 2 顆的閘極氧化層有個薄點。
+那 1 ppm 的判定會落在哪一條分布上？</p>
+</div>
+<div lang="en">
+<h2>Look at item ⑤ first: why extrinsic defects can waste all the effort in the other four</h2>
+<p>Suppose your intrinsic lifetime looks beautiful, but 2 out of every 10,000 devices has a thin spot in the gate oxide.
+Which distribution does the 1-ppm verdict actually land on?</p>
+</div>
+
+<div class="card">
+<div class="ctrls" style="margin-bottom:12px">
+<div class="ctrl"><label><span lang="zh-Hant">等效氧化層厚度 EOT（電路要求，先當固定）</span><span lang="en">Equivalent oxide thickness EOT (fixed by circuit requirements for now)</span></label>
+  <div class="row"><input type="range" id="fEOT" min="1.2" max="8" step="0.1" value="2.5"><span class="val" id="fvEOT"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">使用電壓 V<sub>use</sub></span><span lang="en">Use voltage V<sub>use</sub></span></label>
+  <div class="row"><input type="range" id="fV" min="0.6" max="4" step="0.05" value="1.8"><span class="val" id="fvV"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">使用溫度</span><span lang="en">Use temperature</span></label>
+  <div class="row"><input type="range" id="fT" min="25" max="150" step="5" value="125"><span class="val" id="fvT"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">外質不良比例</span><span lang="en">Extrinsic defect fraction</span></label>
+  <div class="row"><input type="range" id="fX" min="-7" max="-2.5" step="0.1" value="-3.7"><span class="val" id="fvX"></span></div></div>
+</div>
+<div class="tools">
+  <button id="bNIT" aria-pressed="false"><span lang="zh-Hant">氮化（SiON，k 3.9 → 4.5）</span><span lang="en">Nitridation (SiON, k 3.9 → 4.5)</span></button>
+  <button id="bBI" aria-pressed="false"><span lang="zh-Hant">加上 burn-in 篩選</span><span lang="en">Add burn-in screening</span></button>
+</div>
+<div class="cap"><span lang="zh-Hant">使用條件下的 Weibull 圖：本質分布 vs 含外質的實際分布</span><span lang="en">Weibull plot at use condition: intrinsic distribution vs. the actual distribution including extrinsics</span></div>
+<div id="wb5"></div>
+<div class="legend" id="lg5"></div>
+<div class="tiles" style="margin-top:12px">
+  <div class="tile"><div class="k"><span lang="zh-Hant">物理厚度 t<sub>phys</sub></span><span lang="en">Physical thickness t<sub>phys</sub></span></div><div class="v" id="f1">—</div><div class="u">nm</div></div>
+  <div class="tile"><div class="k">Weibull β</div><div class="v" id="f2">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">本質 1 ppm 壽命</span><span lang="en">Intrinsic 1-ppm lifetime</span></div><div class="v" id="f3">—</div></div>
+  <div class="tile hl"><div class="k"><span lang="zh-Hant">實際（含外質）1 ppm 壽命</span><span lang="en">Actual (with extrinsics) 1-ppm lifetime</span></div><div class="v" id="f4">—</div></div>
+</div>
+<p class="note" id="f5" style="margin-top:10px"></p>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>看清楚這件事：只要外質不良比例高於你的目標失效率，那條線就完全由外質決定。</b>
+此時再怎麼改善本質壽命（加厚、降壓）都不會讓判定變好 ——
+你要做的是<b>把外質模式消掉</b>（製程潔淨度、antenna 規則）或<b>篩掉它</b>（burn-in）。
+反過來說，外質已經降到目標失效率以下之後，本質壽命才重新變成瓶頸。
+<b>搞錯自己在哪一個區間，是 TDDB 改善計畫最常見的浪費。</b></div>
+
+<h2>對策一：製程</h2>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>① 缺陷密度控制 —— 潔淨度、微粒、金屬污染</h4>
+<p>閘極氧化層的外質崩潰，絕大多數來自成長前的表面狀態：微粒、有機殘留、金屬離子（Fe、Cu、Ni）。
+<b>這是 foundry 唯一能真正把外質模式壓到 ppm 以下的手段</b>，也是最不性感但最有效的一項。</p>
+<p class="note"><b>怎麼知道有沒有效：</b>V-Ramp / J-Ramp 的 wafer map。
+外質失效會顯示為邊緣或特定區塊的低 V<sub>BD</sub> 群聚；本質失效則是全片均勻。</p></div>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>② 氮化（SiON）—— 在同樣 EOT 下把物理厚度做厚</h4>
+<p>氮進入氧化層把介電常數從 3.9 拉到 4.2～4.8，於是<b>同樣的 EOT 對應更厚的物理膜</b>，
+電場下降、β 上升，TDDB 兩頭受惠。順帶擋住 PMOS 閘極的硼穿透。</p>
+<p class="note"><b>代價：</b>界面附近的氮會明顯<b>惡化 NBTI</b>。
+所以現代製程用的是<b>電漿氮化 + 後退火（DPN + PNA）</b>，把氮的分布往上表面推、遠離 Si/SiO₂ 界面。
+「氮往哪裡放」是 TDDB 與 NBTI 之間的直接取捨。</p></div>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>③ High-k / metal gate —— 但它<u>不會自動</u>改善 TDDB</h4>
+<p>這是最常被誤解的一項。高介電常數讓你在同樣 EOT 下把物理膜做得很厚，漏電大幅下降 ——
+<b>但界面層（IL）那層 SiO₂ 感受到的電場，仍然是 V / EOT</b>。
+因為串聯電容的位移場連續，E<sub>IL</sub> / E<sub>hk</sub> = k<sub>hk</sub> / k<sub>IL</sub>，
+<b>薄的低 k 界面層反而承受最高的電場</b>。而 TDDB 的貫穿路徑通常就是先在 IL 形成。</p>
+<p class="note"><b>所以：</b>high-k 的 TDDB 好處來自「可以用更厚的 IL 而不犧牲驅動力」與「總路徑更長」，
+不是來自降電場。而 HfO₂ 本身有大量氧空缺陷（V<sub>O</sub>），
+其缺陷生成率與 SiO₂ 完全不同，β 與加速參數必須重新量，不能沿用 SiO₂ 的。</p></div>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>④ 氧化製程本身：ISSG / RTO vs 爐管</h4>
+<p>快速熱氧化與 in-situ steam generation 給出較低的界面態密度與較好的厚度均勻性。
+厚度均勻性直接影響 β 的量測 —— <b>厚度分布會被誤讀成分布變散</b>。</p></div>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>⑤ 退火與鈍化（forming gas / 氘）</h4>
+<p>H₂ 或 D₂ 退火鈍化 Si/SiO₂ 界面的懸鍵，降低初始缺陷密度。
+氘的優勢在於較重、較難被熱載子解離（對 HCI 效果顯著）；對 TDDB 主要是降低初始缺陷。</p></div>
+
+<div class="fixcard proc"><div class="lv">製程</div>
+<h4>⑥ 電漿充電損傷與 antenna 規則</h4>
+<p>金屬蝕刻與電漿製程期間，大面積金屬會收集電荷並全部灌進與它相連的閘極 ——
+在<b>還沒出廠前</b>就先注入了一堆缺陷。這是外質失效的重要來源。</p>
+<p class="note"><b>對策：</b>設計規則裡的 antenna ratio 限制（金屬面積 / 閘極面積上限）、
+加保護二極體、把長金屬用 via 跳到上層再接回。<b>這條規則是 foundry 開給設計端的，違反了 foundry 也救不了。</b></p></div>
+
+<h2>對策二：元件設計</h2>
+
+<div class="fixcard dev"><div class="lv">元件</div>
+<h4>⑦ 雙閘氧（dual gate oxide）</h4>
+<p>核心邏輯用薄氧追效能，I/O 與高壓節點用厚氧扛電壓。
+這是最直接也最普遍的作法 —— 因為 t<sub>ox</sub> 同時改善 E<sub>ox</sub> 與 β 兩項。</p>
+<p class="note"><b>代價：</b>多一道光罩與氧化步驟；厚氧元件的驅動力與面積都變差。</p></div>
+
+<div class="fixcard dev"><div class="lv">元件</div>
+<h4>⑧ 閘極總面積管理 —— 別忘了 decap</h4>
+<p>TDDB 的失效率跟面積直接相關。一顆晶片上<b>面積最大的閘極通常不是邏輯閘，是 MOS decap</b>，
+而且它 24 小時全時間承受完整的 V<sub>DD</sub>。
+很多「莫名其妙的 TDDB 失效」追到最後都是 decap。</p>
+<p class="note"><b>對策：</b>改用 MOM / MIM 電容，或用厚氧元件做 decap，或串接兩顆分壓。</p></div>
+
+<div class="fixcard dev"><div class="lv">元件</div>
+<h4>⑨ 疊接分壓（stacked / cascode devices）</h4>
+<p>兩顆元件串聯，每顆只承受一半的電壓。因為壽命對電場是<b>指數</b>相依，
+電壓減半換到的壽命增益遠遠超過面積加倍的損失。</p>
+<p class="note"><b>代價：</b>面積、速度、以及中間節點的偏壓需要額外電路維持。</p></div>
+
+<div class="fixcard dev"><div class="lv">元件</div>
+<h4>⑩ 圖形與邊角效應</h4>
+<p>STI 邊角、閘極端點、以及任何曲率大的地方，氧化層會變薄且電場集中。
+在版圖上這些是「局部的薄氧化層」，會在 Weibull 圖上表現為早夭。</p>
+<p class="note"><b>對策：</b>圓角化的 STI 頂角製程、避免在有源區邊界擺最小尺寸閘極、
+DRC 加上閘極端點延伸（gate extension）規則。</p></div>
+
+<h2>對策三：電路與使用條件</h2>
+
+<div class="fixcard ckt"><div class="lv">電路</div>
+<h4>⑪ 降低工作電壓 —— 永遠是第一對策</h4>
+<p>壽命對電場是指數相依。以 γ = 2 cm/MV、t<sub>ox</sub> = 3 nm 計，
+<b>降 0.3 V 就換到約 7 倍壽命</b>；相較之下降 20 °C 只有約 2 倍。
+DVFS（動態電壓頻率調節）除了省電，也是在省 TDDB 壽命。</p></div>
+
+<div class="fixcard ckt"><div class="lv">電路</div>
+<h4>⑫ 上電時序與突波 —— 瞬間比穩態更傷</h4>
+<p>因為指數相依，一個 10% 的過壓突波所造成的損傷，遠大於它佔的時間比例。
+上電順序錯了造成閘極先於基板到位、ESD 事件、感性負載的反衝，都是 TDDB 的實際殺手。</p>
+<p class="note"><b>對策：</b>power sequencing、soft-start、箝位二極體、
+以及在可靠度模擬時<b>沿真實波形積分</b>而不是只看直流工作點 ——
+跟 HCI 的 Age function 完全同一個道理。</p></div>
+
+<div class="fixcard ckt"><div class="lv">電路</div>
+<h4>⑬ Charge pump 與高壓節點</h4>
+<p>非揮發記憶體的寫入電壓、LDO 的 pass device、level shifter 的跨域節點，
+這些地方的閘極電壓經常超過標準 V<sub>DD</sub>。這些節點必須單獨列出來做 TDDB 預算。</p></div>
+
+<div class="fixcard ckt"><div class="lv">電路</div>
+<h4>⑭ Burn-in：只篩外質，不改本質</h4>
+<p>高溫高壓短時間，把外質早夭品燒出來。<b>對本質 TDDB 完全沒有幫助</b> ——
+本質壽命還有幾十年，burn-in 只消耗掉可忽略的一小段。</p>
+<p class="note"><b>代價：</b>成本、以及 burn-in 本身也在傷好品。
+條件必須用同一套加速模型算過，確保「燒掉外質」遠快於「傷到本質」。</p></div>
+
+<div class="fixcard ckt"><div class="lv">電路</div>
+<h4>⑮ 溫度管理</h4>
+<p>E<sub>a</sub> ≈ 0.75 eV，槓桿小（降 20 °C ≈ 2 倍），但通常是散熱設計的免費附贈。
+值得注意的是它跟 HCI 方向相反 —— <b>把晶片弄冷會改善 TDDB 但惡化 HCI</b>。</p></div>
+
+<h2>對策速查表</h2>
+<table>
+<thead><tr><th class="nw">對策</th><th class="nw">主要作用在</th><th class="nw">槓桿</th><th class="nw">代價</th><th class="nw">誰負責</th></tr></thead>
+<tbody>
+<tr><td class="nw">降低工作電壓</td><td class="nw">E<sub>ox</sub>（指數）</td><td class="nw"><b>極大</b></td><td class="nw">效能</td><td class="nw">系統 / 電路</td></tr>
+<tr><td class="nw">加厚氧化層 / 雙閘氧</td><td class="nw">E<sub>ox</sub> + β</td><td class="nw"><b>極大</b></td><td class="nw">驅動力、光罩</td><td class="nw">Foundry + 設計</td></tr>
+<tr><td class="nw">缺陷密度控制</td><td class="nw">外質模式</td><td class="nw"><b>極大</b>（若外質支配）</td><td class="nw">良率成本</td><td class="nw"><b>Foundry</b></td></tr>
+<tr><td class="nw">氮化 SiON</td><td class="nw">E<sub>ox</sub> + β</td><td class="nw">中～大</td><td class="nw"><b>惡化 NBTI</b></td><td class="nw">Foundry</td></tr>
+<tr><td class="nw">Antenna 規則</td><td class="nw">外質模式</td><td class="nw">中～大</td><td class="nw">繞線自由度</td><td class="nw">Foundry 開規則 / 設計遵守</td></tr>
+<tr><td class="nw">疊接分壓</td><td class="nw">E<sub>ox</sub></td><td class="nw">大</td><td class="nw">面積、速度</td><td class="nw">電路</td></tr>
+<tr><td class="nw">閘極面積 / decap 選型</td><td class="nw">A</td><td class="nw">中</td><td class="nw">面積、雜訊</td><td class="nw">設計</td></tr>
+<tr><td class="nw">Burn-in</td><td class="nw">外質模式</td><td class="nw">中</td><td class="nw">成本、傷好品</td><td class="nw">產品 / 品保</td></tr>
+<tr><td class="nw">突波與時序控制</td><td class="nw">E<sub>ox</sub> 峰值</td><td class="nw">中</td><td class="nw">設計複雜度</td><td class="nw">系統 / 電路</td></tr>
+<tr><td class="nw">溫度管理</td><td class="nw">T</td><td class="nw"><b>小</b></td><td class="nw">散熱成本</td><td class="nw">系統</td></tr>
+<tr><td class="nw">High-k</td><td class="nw">漏電（非 TDDB）</td><td class="nw"><b>不確定</b></td><td class="nw">全新的缺陷物理</td><td class="nw">Foundry</td></tr>
+</tbody></table>
+<p class="note"><b>兩個容易被忽略的重點：</b>
+（一）表中「槓桿極大」的三項裡有兩項不在 foundry 手上 —— TDDB 是<b>跨層的問題</b>；
+（二）氮化這一項是 TDDB 與 NBTI 的直接對打，
+單獨最佳化任何一個機制都會把另一個弄壞。可靠度是聯合最佳化，不是逐項闖關。</p>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>主管要你「把 TDDB 壽命提升 10 倍」，預算只夠做一件事。你會先看什麼？</summary><div class="a">先看<b>現在是外質支配還是本質支配</b>。把 V-Ramp / J-Ramp 的 wafer map 與定電壓 TDDB 的 Weibull 圖攤開來：如果 Weibull 圖左下角有明顯翹起的早夭群（β 遠低於 t<sub>ox</sub>/a₀），那是外質，錢要花在潔淨度、antenna 規則、電漿損傷；如果分布是乾淨的單一直線，才是本質問題，錢要花在加厚 / 降壓。<b>順序搞反的話，改善本質壽命 10 倍在 ppm 判定上會完全看不到效果。</b></div></details><details><summary>為什麼 high-k 讓漏電降了三個數量級，TDDB 卻沒有等比例改善？</summary><div class="a">因為串聯介電層的<b>位移場連續</b>：E<sub>IL</sub>/E<sub>hk</sub> = k<sub>hk</sub>/k<sub>IL</sub>，薄的低 k 界面層承受的電場最高，而且 E<sub>IL</sub> 其實就等於 V/EOT —— 跟同樣 EOT 的純 SiO₂ 一模一樣。漏電是<b>穿隧</b>問題（看物理厚度，high-k 大勝），TDDB 是<b>界面層電場與缺陷生成</b>問題（看 EOT，沒有變好）。兩個機制看的是不同的厚度，這是 high-k 最容易被誤解的地方。</div></details><details><summary>氮化可以同時降電場又拉大 β，聽起來全是好處。為什麼不氮化到底？</summary><div class="a">因為界面附近的氮會<b>顯著惡化 NBTI</b>（產生更多可被電洞活化的界面態前驅物）。TDDB 與 NBTI 在「氮放多少、放哪裡」這件事上是直接對打的。現代做法是電漿氮化加後退火，把氮往遠離 Si/SiO₂ 界面的方向推，取一個折衷。這是可靠度工程的常態：<b>沒有單向的改善，只有取捨的位置</b>。</div></details><details><summary>電路端說「我降 0.1 V 就好」，這對 TDDB 有多少用？</summary><div class="a">算一下就知道：E-model 下壽命 ∝ exp(−γE)，γ = 2 cm/MV。t<sub>ox</sub> = 3 nm 時，降 0.1 V 等於降 0.33 MV/cm，壽命 ×exp(0.67) ≈ <b>2 倍</b>。對照之下，降 20 °C 也只有約 1.8 倍。<b>0.1 V 就抵得上 20 °C 的散熱工程</b> —— 這就是為什麼要先去談電壓，再去談散熱。</div></details><details><summary>Burn-in 條件開得越兇越好嗎？</summary><div class="a">不是。burn-in 用的是同一套加速模型，它同時在加速外質<b>和</b>本質。條件太兇時，外質確實燒得快，但好品也被消耗掉不可忽略的壽命，甚至可能製造出新的缺陷（尤其電壓拉太高進入不同的損傷機制）。正確做法是用外質與本質的<b>兩條加速曲線</b>算出一個窗口：在該條件下外質失效時間 ≪ burn-in 時間 ≪ 本質壽命的可忽略比例。</div></details></div>
+<div class="pager"><a class="prev" href="tddb-5-spec.html"><div class="d">← 上一課 · 階段 5</div><div class="t">TDDB 規格</div></a><a class="next" href="tddb-7-playground.html"><div class="d">下一課 · 階段 7 →</div><div class="t">可調模型</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<div class="key"><b>Look closely at this: as long as the extrinsic defect fraction is higher than your target failure rate, that line is entirely determined by extrinsics.</b>
+At that point, no amount of improving the intrinsic lifetime (thicker oxide, lower voltage) will improve the verdict —
+what you need to do is <b>eliminate the extrinsic mode</b> (process cleanliness, antenna rules) or <b>screen it out</b> (burn-in).
+Conversely, once extrinsics drop below the target failure rate, the intrinsic lifetime becomes the bottleneck again.
+<b>Not knowing which regime you're in is the single most common waste in a TDDB improvement effort.</b></div>
+
+<h2>Countermeasure set 1: Process</h2>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>① Defect-density control — cleanliness, particles, metal contamination</h4>
+<p>Extrinsic gate-oxide breakdown overwhelmingly traces back to the surface state before growth: particles, organic residue, metal ions (Fe, Cu, Ni).
+<b>This is the only lever a foundry has that can genuinely push the extrinsic mode below ppm</b> — and it's the least glamorous but most effective one.</p>
+<p class="note"><b>How to tell if it's working:</b> V-Ramp / J-Ramp wafer maps.
+Extrinsic failures show up as clusters of low V<sub>BD</sub> at the edge or in specific regions; intrinsic failures are uniform across the whole wafer.</p></div>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>② Nitridation (SiON) — thicken the physical layer at the same EOT</h4>
+<p>Nitrogen incorporated into the oxide pulls the dielectric constant from 3.9 up to 4.2–4.8, so <b>the same EOT now corresponds to a thicker physical film</b>:
+the field drops and β rises, benefiting TDDB both ways. As a bonus, it also blocks boron penetration into the PMOS gate.</p>
+<p class="note"><b>Cost:</b> nitrogen near the interface noticeably <b>worsens NBTI</b>.
+That's why modern processes use <b>plasma nitridation + post-nitridation anneal (DPN + PNA)</b>, pushing nitrogen toward the top surface, away from the Si/SiO₂ interface.
+"Where the nitrogen sits" is a direct trade-off between TDDB and NBTI.</p></div>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>③ High-k / metal gate — but it does <u>not</u> automatically improve TDDB</h4>
+<p>This is the most commonly misunderstood item. A high dielectric constant lets you build a physically thick film at the same EOT, cutting leakage dramatically —
+<b>but the field felt by the interfacial layer (IL) of SiO₂ is still just V / EOT</b>.
+Because the displacement field is continuous across series capacitors, E<sub>IL</sub> / E<sub>hk</sub> = k<sub>hk</sub> / k<sub>IL</sub>,
+so <b>the thin, low-k interfacial layer actually carries the highest field</b>. And TDDB's percolation path usually forms in the IL first.</p>
+<p class="note"><b>So:</b> high-k's TDDB benefit comes from "being able to use a thicker IL without sacrificing drive current" and "a longer total path,"
+not from lowering the field. HfO₂ itself also has a high density of oxygen-vacancy defects (V<sub>O</sub>),
+whose generation rate differs completely from SiO₂'s, so β and the acceleration parameters must be re-measured — they can't just be carried over from SiO₂.</p></div>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>④ The oxidation process itself: ISSG / RTO vs. furnace</h4>
+<p>Rapid thermal oxidation and in-situ steam generation give lower interface-trap density and better thickness uniformity.
+Thickness uniformity directly affects the β measurement — <b>a spread of thickness can be misread as a wider distribution</b>.</p></div>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>⑤ Anneal and passivation (forming gas / deuterium)</h4>
+<p>H₂ or D₂ anneal passivates dangling bonds at the Si/SiO₂ interface, lowering the initial defect density.
+Deuterium's advantage is that it's heavier and harder for hot carriers to dissociate (a large effect for HCI); for TDDB it mainly just lowers the initial defect count.</p></div>
+
+<div class="fixcard proc"><div class="lv">Process</div>
+<h4>⑥ Plasma-induced charging damage and antenna rules</h4>
+<p>During metal etch and plasma steps, a large area of metal collects charge and dumps all of it into whichever gate it's connected to —
+injecting a batch of defects <b>before the part has even shipped</b>. This is a major source of extrinsic failure.</p>
+<p class="note"><b>Countermeasure:</b> the antenna-ratio limit in design rules (a cap on metal area / gate area), adding protection diodes,
+and routing long metal runs up through a via to a higher layer before coming back down. <b>This rule is issued by the foundry to the design side — violating it, even the foundry can't save you.</b></p></div>
+
+<h2>Countermeasure set 2: Device design</h2>
+
+<div class="fixcard dev"><div class="lv">Device</div>
+<h4>⑦ Dual gate oxide</h4>
+<p>Thin oxide for core logic chasing performance, thick oxide for I/O and high-voltage nodes carrying the voltage.
+This is the most direct and most common approach — because t<sub>ox</sub> improves both E<sub>ox</sub> and β at once.</p>
+<p class="note"><b>Cost:</b> an extra mask and oxidation step; the thick-oxide device gives up drive current and area.</p></div>
+
+<div class="fixcard dev"><div class="lv">Device</div>
+<h4>⑧ Total gate-area management — don't forget decoupling capacitors</h4>
+<p>TDDB's failure rate scales directly with area. On most chips, <b>the single largest gate area usually isn't a logic gate — it's the MOS decap</b>,
+and it sits under the full V<sub>DD</sub> around the clock.
+Many "mysterious TDDB failures" trace back to decap, once you dig far enough.</p>
+<p class="note"><b>Countermeasure:</b> switch to MOM / MIM capacitors, use a thick-oxide device for decap, or stack two in series to split the voltage.</p></div>
+
+<div class="fixcard dev"><div class="lv">Device</div>
+<h4>⑨ Stacked / cascode devices</h4>
+<p>Two devices in series, each carrying half the voltage. Because lifetime depends <b>exponentially</b> on field,
+the lifetime gain from halving the voltage vastly outweighs the cost of doubling the area.</p>
+<p class="note"><b>Cost:</b> area, speed, and the extra circuitry needed to hold the mid-node bias steady.</p></div>
+
+<div class="fixcard dev"><div class="lv">Device</div>
+<h4>⑩ Layout and corner effects</h4>
+<p>STI corners, gate edges, and anywhere with high curvature — the oxide there tends to thin out and the field concentrates.
+On a layout, these are "locally thin oxide" spots, and they show up on a Weibull plot as early failures.</p>
+<p class="note"><b>Countermeasure:</b> rounded STI corner processes, avoiding minimum-size gates right at active-area boundaries,
+and DRC rules that require gate-extension margins at gate ends.</p></div>
+
+<h2>Countermeasure set 3: Circuit and use condition</h2>
+
+<div class="fixcard ckt"><div class="lv">Circuit</div>
+<h4>⑪ Lower the operating voltage — always the first countermeasure</h4>
+<p>Lifetime depends exponentially on field. With γ = 2 cm/MV and t<sub>ox</sub> = 3 nm,
+<b>dropping 0.3 V buys about 7× lifetime</b>; by comparison, dropping 20 °C only buys about 2×.
+DVFS (dynamic voltage-frequency scaling) saves power, but it's also saving TDDB lifetime.</p></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit</div>
+<h4>⑫ Power-up sequencing and surges — transients hurt more than steady state</h4>
+<p>Because of the exponential dependence, the damage from a 10% overvoltage surge is far larger than the fraction of time it occupies.
+A gate reaching its final voltage before the substrate due to bad power-up ordering, ESD events, and inductive-load kickback are all real TDDB killers.</p>
+<p class="note"><b>Countermeasure:</b> power sequencing, soft-start, clamp diodes,
+and integrating <b>along the actual waveform</b> during reliability simulation rather than only looking at the DC operating point —
+exactly the same logic as HCI's age function.</p></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit</div>
+<h4>⑬ Charge pumps and high-voltage nodes</h4>
+<p>Non-volatile memory write voltages, an LDO's pass device, the cross-domain node of a level shifter —
+the gate voltage at these spots often exceeds the standard V<sub>DD</sub>. These nodes must be budgeted for TDDB separately.</p></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit</div>
+<h4>⑭ Burn-in: screens extrinsics only, doesn't change intrinsics</h4>
+<p>Short-duration high temperature and voltage burns out extrinsic early failures. <b>It does nothing at all for intrinsic TDDB</b> —
+the intrinsic lifetime is still decades away; burn-in only consumes a negligible sliver of it.</p>
+<p class="note"><b>Cost:</b> cost itself, plus burn-in also damages good parts.
+Conditions must be worked out from the same acceleration model to make sure "burning out extrinsics" happens far faster than "damaging intrinsics."</p></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit</div>
+<h4>⑮ Thermal management</h4>
+<p>E<sub>a</sub> ≈ 0.75 eV, so the leverage is small (dropping 20 °C ≈ 2×), but it's often a free byproduct of thermal design anyway.
+Worth noting: it points opposite to HCI — <b>making the chip colder improves TDDB but worsens HCI</b>.</p></div>
+
+<h2>Countermeasure quick-reference table</h2>
+<table>
+<thead><tr><th class="nw">Countermeasure</th><th class="nw">Mainly acts on</th><th class="nw">Leverage</th><th class="nw">Cost</th><th class="nw">Owned by</th></tr></thead>
+<tbody>
+<tr><td class="nw">Lower operating voltage</td><td class="nw">E<sub>ox</sub> (exponential)</td><td class="nw"><b>Very large</b></td><td class="nw">Performance</td><td class="nw">System / circuit</td></tr>
+<tr><td class="nw">Thicker oxide / dual gate oxide</td><td class="nw">E<sub>ox</sub> + β</td><td class="nw"><b>Very large</b></td><td class="nw">Drive current, extra mask</td><td class="nw">Foundry + design</td></tr>
+<tr><td class="nw">Defect-density control</td><td class="nw">Extrinsic mode</td><td class="nw"><b>Very large</b> (if extrinsics dominate)</td><td class="nw">Yield cost</td><td class="nw"><b>Foundry</b></td></tr>
+<tr><td class="nw">SiON nitridation</td><td class="nw">E<sub>ox</sub> + β</td><td class="nw">Medium–large</td><td class="nw"><b>Worsens NBTI</b></td><td class="nw">Foundry</td></tr>
+<tr><td class="nw">Antenna rules</td><td class="nw">Extrinsic mode</td><td class="nw">Medium–large</td><td class="nw">Routing freedom</td><td class="nw">Foundry issues rule / design complies</td></tr>
+<tr><td class="nw">Stacked / cascode</td><td class="nw">E<sub>ox</sub></td><td class="nw">Large</td><td class="nw">Area, speed</td><td class="nw">Circuit</td></tr>
+<tr><td class="nw">Gate area / decap choice</td><td class="nw">A</td><td class="nw">Medium</td><td class="nw">Area, noise</td><td class="nw">Design</td></tr>
+<tr><td class="nw">Burn-in</td><td class="nw">Extrinsic mode</td><td class="nw">Medium</td><td class="nw">Cost, damages good parts</td><td class="nw">Product / quality</td></tr>
+<tr><td class="nw">Surge & sequencing control</td><td class="nw">Peak E<sub>ox</sub></td><td class="nw">Medium</td><td class="nw">Design complexity</td><td class="nw">System / circuit</td></tr>
+<tr><td class="nw">Thermal management</td><td class="nw">T</td><td class="nw"><b>Small</b></td><td class="nw">Cooling cost</td><td class="nw">System</td></tr>
+<tr><td class="nw">High-k</td><td class="nw">Leakage (not TDDB)</td><td class="nw"><b>Uncertain</b></td><td class="nw">Entirely new defect physics</td><td class="nw">Foundry</td></tr>
+</tbody></table>
+<p class="note"><b>Two easily-overlooked points:</b>
+(1) of the three "very large leverage" items in the table, two aren't in the foundry's hands — TDDB is <b>a cross-layer problem</b>;
+(2) nitridation pits TDDB directly against NBTI —
+optimizing either mechanism alone will damage the other. Reliability engineering is a joint optimization, not a sequence of independent wins.</p>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Your manager wants "10× TDDB lifetime," but the budget only covers one change. What do you check first?</summary><div class="a">Whether you're currently <b>extrinsic-dominated or intrinsic-dominated</b>. Lay out the V-Ramp / J-Ramp wafer map alongside the constant-voltage TDDB Weibull plot: if the Weibull plot shows an upturned early-death cluster at the lower left (β far below t<sub>ox</sub>/a₀), that's extrinsic — spend on cleanliness, antenna rules, plasma-damage control. If the distribution is a clean single line, it's an intrinsic problem — spend on a thicker oxide or lower voltage. <b>Get the order backward and a 10× improvement in intrinsic lifetime will show up as zero improvement in the ppm verdict.</b></div></details><details><summary>Why doesn't high-k improve TDDB proportionally, even though it drops leakage by three orders of magnitude?</summary><div class="a">Because the <b>displacement field is continuous</b> across series dielectrics: E<sub>IL</sub>/E<sub>hk</sub> = k<sub>hk</sub>/k<sub>IL</sub>, so the thin low-k interfacial layer carries the highest field, and E<sub>IL</sub> actually just equals V/EOT — identical to plain SiO₂ at the same EOT. Leakage is a <b>tunneling</b> problem (depends on physical thickness, where high-k wins big); TDDB is an <b>interfacial-layer field and defect-generation</b> problem (depends on EOT, which hasn't improved). The two mechanisms look at different thicknesses — this is where high-k is most easily misunderstood.</div></details><details><summary>Nitridation lowers the field and raises β at the same time — sounds like pure upside. Why not nitride to the max?</summary><div class="a">Because nitrogen near the interface <b>significantly worsens NBTI</b> (it creates more interface-trap precursors that holes can activate). TDDB and NBTI pit directly against each other over "how much nitrogen, and where." The modern approach is plasma nitridation plus a post-anneal that pushes nitrogen away from the Si/SiO₂ interface — a compromise. This is the norm in reliability engineering: <b>there's no one-directional improvement, only a choice of where to sit on the trade-off.</b></div></details><details><summary>The circuit team says "we can only spare 0.1 V." How much does that actually help TDDB?</summary><div class="a">Just calculate it: under the E-model, lifetime ∝ exp(−γE), γ = 2 cm/MV. At t<sub>ox</sub> = 3 nm, dropping 0.1 V is a 0.33 MV/cm field drop, so lifetime ×exp(0.67) ≈ <b>2×</b>. For comparison, dropping 20 °C only buys about 1.8×. <b>0.1 V is worth about as much as 20 °C of thermal engineering</b> — which is why voltage should always be discussed before cooling.</div></details><details><summary>Is a harsher burn-in condition always better?</summary><div class="a">No. Burn-in runs on the same acceleration model, so it accelerates extrinsics <b>and</b> intrinsics simultaneously. Push the conditions too hard and extrinsics do burn out faster, but good parts also lose a non-negligible chunk of lifetime — and may even develop new defects (especially if the voltage is pushed high enough to trigger a different damage mechanism). The right approach is to use the <b>two acceleration curves</b> for extrinsic and intrinsic to find a window where: extrinsic failure time ≪ burn-in duration ≪ a negligible fraction of the intrinsic lifetime.</div></details></div>
+<div class="pager"><a class="prev" href="tddb-5-spec.html"><div class="d">← Previous · Stage 5</div><div class="t">TDDB Specs</div></a><a class="next" href="tddb-7-playground.html"><div class="d">Next · Stage 7 →</div><div class="t">Tunable Model</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+const T0F=3.6e8, GAMF=2.0, EAF=0.75, ATESTF=1e-4, ACHIPF=0.1;
+const S5={eot:2.5,V:1.8,T:125,xf:Math.pow(10,-3.7),nit:false,bi:false};
+function calc5(){
+  const k = S5.nit?4.5:3.9;
+  const tp = S5.eot*(k/3.9);
+  const b  = beta_of(tp);
+  const E  = S5.V/(tp*1e-7)/1e6;
+  const t63= T0F*Math.exp(-GAMF*E)*Math.exp(EAF/(KB*(S5.T+273.15)));
+  const t63c = t63*Math.pow(ATESTF/ACHIPF,1/b);
+  const xf = S5.bi ? S5.xf*0.02 : S5.xf;          /* burn-in 篩掉 98% 外質 */
+  const bx = 1.1;                                  /* 外質 Weibull 斜率 */
+  const etax = t63c*1e-3;                          /* 外質特徵壽命遠短 */
+  return {k:k,tp:tp,b:b,E:E,t63c:t63c,xf:xf,bx:bx,etax:etax};
+}
+const Fint=(t,c)=>1-Math.exp(-Math.pow(t/c.t63c,c.b));
+const Fext=(t,c)=>c.xf*(1-Math.exp(-Math.pow(t/c.etax,c.bx)));
+const Ftot=(t,c)=>1-(1-Fint(t,c))*(1-Fext(t,c));
+function invF(target,fn,c){
+  let lo=1e-6,hi=1e22;
+  for(let i=0;i<200;i++){const m=Math.sqrt(lo*hi); if(fn(m,c)<target)lo=m;else hi=m;}
+  return Math.sqrt(lo*hi);
+}
+function draw5(){
+  const c=calc5();
+  const box=$('wb5'),Wpx=box.clientWidth||820,H=320,M={l:64,r:18,t:14,b:42};
+  const iw=Wpx-M.l-M.r,ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('使用條件下的本質與外質 Weibull 分布','Intrinsic and extrinsic Weibull distributions at use condition'));
+  const ylo=Math.log(-Math.log(1-1e-8)), yhi=Math.log(-Math.log(1-0.9));
+  const tI=invF(1e-6,Fint,c), tT=invF(1e-6,Ftot,c);
+  const xlo=Math.log10(Math.min(tT,tI)/30), xhi=Math.log10(c.t63c*30);
+  const X=t=>M.l+(Math.log10(Math.max(t,1e-30))-xlo)/(xhi-xlo)*iw;
+  const Y=v=>M.t+ih-(v-ylo)/(yhi-ylo)*ih;
+  [1e-7,1e-6,1e-5,1e-4,1e-3,1e-2,0.1,0.632].forEach(function(F){
+    const y=Y(Math.log(-Math.log(1-F)));if(y<M.t-1||y>M.t+ih+1)return;
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,
+      stroke:F===1e-6?css('--crit'):css('--grid'),'stroke-width':F===1e-6?1.4:1,
+      'stroke-dasharray':F===1e-6?'5 4':''}));
+    svg.appendChild(txt(M.l-7,y,F<1e-3?(F*1e6<1?(F*1e9)+' ppb':(F*1e6)+' ppm'):(F*100).toFixed(F<0.01?1:0)+'%',
+      {ta:'end',db:'middle',fs:10,fill:F===1e-6?css('--crit'):css('--muted')}));});
+  for(let e=Math.ceil(xlo);e<=Math.floor(xhi);e++){
+    const x=M.l+(e-xlo)/(xhi-xlo)*iw;
+    svg.appendChild(el('line',{x1:x,x2:x,y1:M.t,y2:M.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(x,M.t+ih+15,pw10(e),{ta:'middle',fs:10}));}
+  const TEN=10*365.25*86400;
+  if(Math.log10(TEN)>xlo&&Math.log10(TEN)<xhi){
+    svg.appendChild(el('line',{x1:X(TEN),x2:X(TEN),y1:M.t,y2:M.t+ih,
+      stroke:css('--good'),'stroke-width':1.8,'stroke-dasharray':'7 4'}));
+    svg.appendChild(txt(X(TEN)+5,M.t+12,L('10 年','10 yr'),{fs:11,fw:700,fill:css('--good')}));}
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('時間（秒，對數）　→','Time (s, log)　→'),{ta:'middle',fs:11}));
+  svg.appendChild(txt(14,M.t+ih/2,L('累積失效率','Cumulative failure rate'),{ta:'middle',fs:11,rot:-90}));
+  function curve(fn,col,w,dash){
+    let d='';
+    for(let i=0;i<=180;i++){
+      const t=Math.pow(10,xlo+(xhi-xlo)*i/180), F=fn(t,c);
+      if(!(F>0)||F>=1)continue;
+      const yv=Math.log(-Math.log(1-F)); if(yv<ylo||yv>yhi)continue;
+      d+=(d?' L ':'M ')+X(t).toFixed(1)+' '+Y(yv).toFixed(1);}
+    if(d)svg.appendChild(el('path',{d:d,fill:'none',stroke:col,'stroke-width':w,
+      'stroke-linejoin':'round','stroke-dasharray':dash||''}));}
+  curve(Fint,css('--e'),2.4,'6 4');
+  curve(Ftot,css('--crit'),2.6);
+  [[tI,css('--e')],[tT,css('--crit')]].forEach(function(pr){
+    svg.appendChild(el('circle',{cx:X(pr[0]),cy:Y(Math.log(-Math.log(1-1e-6))),r:4.5,fill:pr[1]}));});
+  box.innerHTML='';box.appendChild(svg);
+  const tI2=tI,tT2=tT;
+  $('f1').textContent=c.tp.toFixed(2);
+  $('f2').textContent=c.b.toFixed(2);
+  $('f3').textContent=fmtYears(tI2);
+  $('f4').textContent=fmtYears(tT2);
+  const dom = c.xf>1e-6;
+  $('f5').innerHTML=L(
+    '外質不良比例 = <b>'+(c.xf*1e6).toPrecision(3)+' ppm</b>'+(S5.bi?'（burn-in 後）':'')+
+    '，目標失效率 = 1 ppm。'+
+    (dom
+     ? '<b style="color:var(--crit)">外質比例高於目標失效率 → 1 ppm 的判定完全落在外質分布上，'+
+       '本質壽命（'+fmtYears(tI2)+'）此刻毫無意義。</b>先解決缺陷密度或加 burn-in。'
+     : '<b style="color:var(--gtext)">外質比例已低於目標失效率 → 判定回到本質分布上（'+fmtYears(tI2)+'）。'+
+       '此時加厚、降壓才開始有回報。</b>')+
+    '　物理厚度 '+c.tp.toFixed(2)+' nm，E<sub>ox</sub> = '+c.E.toFixed(2)+' MV/cm。',
+    'Extrinsic defect fraction = <b>'+(c.xf*1e6).toPrecision(3)+' ppm</b>'+(S5.bi?' (after burn-in)':'')+
+    ', target failure rate = 1 ppm.'+
+    (dom
+     ? ' <b style="color:var(--crit)">Extrinsic fraction is above the target failure rate → the 1-ppm verdict falls entirely on the extrinsic distribution; '+
+       'the intrinsic lifetime ('+fmtYears(tI2)+') is meaningless right now.</b> Fix defect density or add burn-in first.'
+     : ' <b style="color:var(--gtext)">Extrinsic fraction is already below the target failure rate → the verdict falls back onto the intrinsic distribution ('+fmtYears(tI2)+'). '+
+       'Thickening the oxide or lowering voltage finally starts to pay off.</b>')+
+    '　Physical thickness '+c.tp.toFixed(2)+' nm, E<sub>ox</sub> = '+c.E.toFixed(2)+' MV/cm.'
+  );
+}
+[['fEOT',v=>S5.eot=v],['fV',v=>S5.V=v],['fT',v=>S5.T=v],['fX',v=>S5.xf=Math.pow(10,v)]]
+ .forEach(p=>$(p[0]).addEventListener('input',e=>{p[1](parseFloat(e.target.value));lab5();draw5();}));
+function tog(id,key){$(id).addEventListener('click',function(){
+  S5[key]=!S5[key];this.setAttribute('aria-pressed',S5[key]?'true':'false');draw5();});}
+tog('bNIT','nit');tog('bBI','bi');
+function lab5(){
+  $('fvEOT').textContent=S5.eot.toFixed(1)+' nm';
+  $('fvV').textContent=S5.V.toFixed(2)+' V';
+  $('fvT').textContent=S5.T+' °C';
+  $('fvX').textContent=(S5.xf*1e6).toPrecision(3)+' ppm';
+}
+function refreshLegend5(){
+  $('lg5').innerHTML=
+    '<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('本質分布（滲流）','Intrinsic distribution (percolation)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--crit')+'"></i>'+L('實際分布（本質 + 外質）','Actual distribution (intrinsic + extrinsic)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--good')+'"></i>'+L('十年門檻','ten-year threshold')+'</span>'+
+    '<span style="color:var(--crit)">'+L('紅色虛線 = 1 ppm 判定線','red dashed line = 1-ppm verdict line')+'</span>';
+}
+refreshLegend5();
+window.__rebuild=function(){refreshLegend5();lab5();draw5();};
+lab5();draw5();
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

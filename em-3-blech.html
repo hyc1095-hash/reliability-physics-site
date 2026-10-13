@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Blech 長度與背向擴散：為什麼夠短的導線在給定電流密度下理論上對電遷移免疫。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 3 · Blech 長度">
+<meta property="og:description" content="j·L 乘積如何決定一段導線是否落入 EM 免疫區。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 3 · Blech 長度 · 電遷移</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">EM · 電遷移</span><div class="steps"><a href="em.html"><span class="n">0</span>課程地圖</a><a href="em-1-intuition.html"><span class="n">1</span>直覺</a><a href="em-2-model.html"><span class="n">2</span>Black 方程式與材料</a><a href="em-3-blech.html" aria-current="page"><span class="n">3</span>Blech 長度</a><a href="em-4-spec.html"><span class="n">4</span>統計與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:60%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 3 / 4 · Blech 長度</p>
+<h1>短導線可以「免疫」</h1>
+<p class="lede">原子被電子風吹走的同時，會在陽極端堆出應力、在陰極端拉出張應力 ——
+這個應力梯度本身會推動原子往回流。線夠短時，回流剛好抵銷電子風，淨通量趨近於零。</p>
+
+<div class="eq"><span class="lbl">Blech 免疫條件</span>
+j · L &lt; (j · L)<sub>threshold</sub>　→　永生（immortal）
+<span class="say">j：電流密度。L：導線長度（更精確地說是兩個阻擋層之間的距離）。
+乘積 j·L 是判準，<b>不是 j 或 L 單獨</b>。threshold 是材料與製程相依的常數，需要實測校準，不能憑空假設。</span></div>
+
+<h2>為什麼是「背向擴散」擋住了電子風</h2>
+<p>電子風把原子往陽極端推，陽極端原子堆積、產生壓應力；陰極端原子被掏空、產生張應力。
+這個應力梯度本身會驅動原子從高應力（陽極）往低應力（陰極）擴散 —— 方向剛好跟電子風相反。
+線越短，同樣的原子通量造成的應力梯度越陡（應力集中在更短的距離裡），背向擴散就越強，
+直到兩者打平，淨通量歸零。</p>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0">這不是「線短所以電流密度低」的錯覺 —— j 可以一樣高。
+真正在保護短線的是<b>應力梯度能不能在給定長度裡建立起足夠的背向通量</b>，這件事只跟 j·L 有關。</p></div>
+
+<h2>互動：這條線會不會免疫</h2>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 3 / 4 · Blech Length</p>
+<h1>Short wires can be "immune"</h1>
+<p class="lede">As atoms get blown away by the electron wind, they build up compressive stress at the anode end and pull tensile stress at the cathode end —
+and that stress gradient itself drives atoms to flow back. When the wire is short enough, the back-flow exactly cancels the electron wind, and net flux approaches zero.</p>
+
+<div class="eq"><span class="lbl">The Blech immunity condition</span>
+j · L &lt; (j · L)<sub>threshold</sub>　→　immortal
+<span class="say">j: current density. L: wire length (more precisely, the distance between two blocking boundaries).
+The product j·L is the criterion — <b>not j or L alone</b>. The threshold is a material- and process-dependent constant that needs measured calibration; it can't be assumed out of thin air.</span></div>
+
+<h2>Why "back-diffusion" is what blocks the electron wind</h2>
+<p>The electron wind pushes atoms toward the anode end, where they pile up and create compressive stress; at the cathode end, atoms get hollowed out, creating tensile stress.
+That stress gradient itself drives atoms to diffuse from high stress (anode) toward low stress (cathode) — exactly opposite the electron wind's direction.
+The shorter the wire, the steeper the stress gradient produced by the same atomic flux (stress concentrates over a shorter distance), so back-diffusion gets stronger,
+until the two exactly balance and net flux goes to zero.</p>
+
+<div class="key"><div class="t">The key intuition</div>
+<p style="margin:0">This isn't the illusion of "the wire is short, so current density is low" — j can stay just as high.
+What actually protects a short wire is <b>whether the stress gradient can build enough back-flux within the given length</b>, and that depends only on j·L.</p></div>
+
+<h2>Interactive: will this wire be immune?</h2>
+</div>
+
+<div class="card">
+<div class="ctrls">
+  <div class="ctrl"><label for="jB"><span lang="zh-Hant">電流密度 j（MA/cm²）</span><span lang="en">Current density j (MA/cm²)</span></label>
+    <div class="row"><input type="range" id="jB" min="0.5" max="10" step="0.1" value="3"><span class="val" id="vjB">3.0</span></div></div>
+  <div class="ctrl"><label for="LB"><span lang="zh-Hant">導線長度 L（μm）</span><span lang="en">Wire length L (μm)</span></label>
+    <div class="row"><input type="range" id="LB" min="0.2" max="20" step="0.1" value="5"><span class="val" id="vLB">5.0</span></div></div>
+  <div class="ctrl"><label for="thB"><span lang="zh-Hant">(j·L)<sub>threshold</sub>（示意值，MA/cm²·μm）</span><span lang="en">(j·L)<sub>threshold</sub> (illustrative, MA/cm²·μm)</span></label>
+    <div class="row"><input type="range" id="thB" min="1000" max="6000" step="100" value="3000"><span class="val" id="vthB">3000</span></div></div>
+</div>
+<div class="tiles" style="margin-top:14px">
+<div class="tile"><div class="k">j · L</div><div class="v" id="outJL">—</div></div>
+<div class="tile hl"><div class="k"><span lang="zh-Hant">狀態</span><span lang="en">Status</span></div><div class="v" id="outStatus">—</div></div>
+</div>
+</div>
+
+<div lang="zh-Hant">
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">誠實邊界</div>
+<p style="margin:0;font-size:16px">上面的 threshold 滑桿只是示意用的假設值，<b>不是任何製程的實測 Blech threshold</b>。
+真實 threshold 需要在特定材料、特定阻擋層結構下實測，不同文獻報告的量級可以差好幾倍。
+本頁刻意不給一個「預設 threshold」讓你套用 —— 這比 HCI／TDDB 章節的參數風險更高，
+因為 Blech 免疫是一個「用了就不用再管」的假設，一旦 threshold 抓錯，等於完全誤判某段線的風險。</p></div>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>Blech 效應在版圖上最常被用在哪裡？</summary>
+<div class="a">大量短的 via 到下一層金屬的跳接、或是短的局部連接。這些線段如果落在 j·L 免疫區內，
+理論上可以豁免傳統的 EM 電流密度上限檢查 —— 但實務上仍需搭配製程校準的 threshold，
+且不同金屬層、不同阻擋層材料的 threshold 都要分開驗證，不能整片版圖套同一個數字。</div></details>
+<details><summary>如果一條線一半長度符合免疫條件、一半不符合，算不算免疫？</summary>
+<div class="a">不算。Blech 免疫條件是針對<b>兩個阻擋層之間連續的一段導線</b>而言 ——
+如果中間被 via 或阻擋層打斷，等效長度 L 要用打斷後的那一段，而不是整條走線的總長。
+這也是為什麼版圖上刻意加短 via 分段有時能讓長線的每一小段各自落入免疫區。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-2-model.html"><div class="d">← 上一課 · 階段 2</div><div class="t">Black 方程式與材料</div></a><a class="next" href="em-4-spec.html"><div class="d">下一課 · 階段 4 →</div><div class="t">統計與防治</div></a></div>
+<div class="foot"><b>模型範圍</b>：本模組的 Black 方程式與 Blech length 計算採文獻常見量級的代表值，<b>不是任何製程的實測資料</b>；材料活化能表已逐項附來源，分歧處兩個都列。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。電流擁擠（current crowding）、應力誘發空洞化（SIV）、先進封裝层級 EM（RDL／凸塊）未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="warn" style="border-left:3px solid var(--h);background:var(--surface);border-radius:0 10px 10px 0;padding:13px 17px;margin:14px 0">
+<div style="font-size:13.5px;font-weight:750;letter-spacing:.05em;color:var(--h);margin-bottom:3px">Honesty note</div>
+<p style="margin:0;font-size:16px">The threshold slider above is only an illustrative assumed value — <b>not a measured Blech threshold from any real process</b>.
+A real threshold requires measurement under specific materials and specific blocking-layer structures, and the scale reported across the literature can differ by several times.
+This page deliberately doesn't hand you a "default threshold" to apply — this parameter carries more risk than the HCI/TDDB chapters' parameters do,
+because Blech immunity is a "set it and forget it" assumption: get the threshold wrong once, and you've completely misjudged that segment's risk.</p></div>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Where is the Blech effect most commonly exploited in layout?</summary>
+<div class="a">Large numbers of short via hops to the next metal layer, or short local connections. If these segments fall within the j·L immunity zone,
+they can in principle be exempted from the conventional EM current-density ceiling check — but in practice this still needs a process-calibrated threshold,
+and the threshold must be verified separately for each metal layer and each blocking-layer material — you can't apply one number across the whole layout.</div></details>
+<details><summary>If half of a wire's length meets the immunity condition and half doesn't, does it count as immune?</summary>
+<div class="a">No. The Blech immunity condition applies to <b>one continuous stretch of wire between two blocking boundaries</b> —
+if it's interrupted partway by a via or a blocking layer, the effective length L to use is the segment after the interruption, not the total length of the whole run.
+This is also why deliberately adding short via segmentation in a layout can sometimes let each small piece of a long line fall into the immunity zone on its own.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em-2-model.html"><div class="d">← Previous · Stage 2</div><div class="t">Black Equation & Materials</div></a><a class="next" href="em-4-spec.html"><div class="d">Next · Stage 4 →</div><div class="t">Statistics & Mitigation</div></a></div>
+<div class="foot"><b>Model scope</b>: this module's Black-equation and Blech-length calculations use representative literature-scale values — <b>not measured data from any specific process</b>; the material activation-energy table cites sources item by item, and lists both values where the literature disagrees. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules. Current crowding, stress-induced voiding (SIV), and advanced-packaging-level EM (RDL / bumps) are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script>
+(function(){
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+var jB=document.getElementById('jB'),LB=document.getElementById('LB'),thB=document.getElementById('thB');
+function upd(){
+  var j=parseFloat(jB.value),Lw=parseFloat(LB.value),th=parseFloat(thB.value);
+  document.getElementById('vjB').textContent=j.toFixed(1);
+  document.getElementById('vLB').textContent=Lw.toFixed(1);
+  document.getElementById('vthB').textContent=th.toFixed(0);
+  var jlDisp=(j*Lw*1000).toFixed(0);
+  document.getElementById('outJL').textContent=jlDisp;
+  var immune = (j*Lw*1000) < th;
+  var st=document.getElementById('outStatus');
+  st.textContent = immune ? L('低於門檻 · 示意上「免疫」','Below threshold · illustratively "immune"') : L('高於門檻 · 一般 EM 規則仍適用','Above threshold · standard EM rules still apply');
+  st.style.color = immune ? css('--gtext') : css('--h');
+}
+[jB,LB,thB].forEach(function(el){el.addEventListener('input',upd);});
+window.__rebuild=upd;
+upd();
+})();
+</script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

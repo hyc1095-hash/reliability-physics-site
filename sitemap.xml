@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>index.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-1-intuition.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-2-mechanism.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-3-model.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-4-formula.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-5-spec.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-6-fix.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>hci-7-playground.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>materials.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-1-intuition.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-2-percolation.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-3-trapsize.html</loc><lastmod>2026-10-13</lastmod></url>
+  <url><loc>tddb-4-model.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-5-spec.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-6-fix.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tddb-7-playground.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>tools.html</loc><lastmod>2026-08-23</lastmod></url>
+  <url><loc>nbti.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>nbti-1-intuition.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>nbti-2-mechanism.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>nbti-3-recovery.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>nbti-4-spec.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>em.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>em-1-intuition.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>em-2-model.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>em-3-blech.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>em-4-spec.html</loc><lastmod>2026-08-24</lastmod></url>
+  <url><loc>coupling.html</loc><lastmod>2026-08-24</lastmod></url>
+</urlset>

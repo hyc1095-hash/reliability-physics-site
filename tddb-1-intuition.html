@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 1：直覺 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 1：直覺 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+.oxfig{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html" aria-current="page"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:14%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 1 / 7 · 直覺</p>
+<h1>絕緣層為什麼會「用久了就破」</h1>
+<p class="lede">閘極氧化層只有幾個原子層厚，卻要擋住整個工作電壓十年。這一頁講它是怎麼慢慢輸掉的。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>電子會穿隧通過氧化層。每一次穿隧都有<b>很小的機率</b>打斷一個 Si–O 鍵，留下一個永久缺陷——
+就像上一頁比喻的那面磚牆，每次電子經過都有機會弄壞一塊磚。
+缺陷位置是隨機的。當它們剛好連成一條從上到下的通路，電流找到捷徑 —— <b>崩潰</b>。
+所以崩潰不是「磨到極限」，而是<b>等一個隨機組合湊齊</b>。</p></div>
+
+<h2>三件同時在發生的事</h2>
+<table>
+<thead><tr><th class="nw">步驟</th><th>發生什麼</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>1. 穿隧</b></td>
+  <td>氧化層雖然是絕緣體，但只有 1–5 nm 厚。量子力學允許電子<b>直接穿隧</b>過去（薄氧）
+  或在高場下經由三角位障穿隧（Fowler–Nordheim，厚氧）。所以「絕緣層」其實一直有微弱電流通過——它從來不是完美的牆。</td></tr>
+<tr><td class="nw"><b>2. 生成缺陷</b></td>
+  <td>穿過去的電子帶著能量。它可能直接打斷 Si–O 鍵，也可能在陽極撞出電洞、電洞再回頭注入造成損傷
+  （這條路徑叫 anode hole injection）。無論哪條路徑，結果都一樣：<b>在氧化層裡留下一個可以導電的陷阱（trap）</b>。</td></tr>
+<tr><td class="nw"><b>3. 連成通路</b></td>
+  <td>陷阱位置隨機分布。電子可以在相鄰的陷阱之間跳躍導電。當陷阱多到<b>剛好形成一條從閘極貫穿到基板的鏈</b>，
+  就出現一條低阻抗路徑 —— 電流暴衝、局部發熱、氧化層熔穿。<b>這就是崩潰。</b></td></tr>
+</tbody>
+</table>
+
+<h2>為什麼這件事「本質上是隨機的」</h2>
+<p class="cap">下面是一片氧化層的側視圖，每個小方格代表一小塊氧化層。拖滑桿改變厚度與電場，按「開始」讓缺陷隨機長出來，看它們什麼時候剛好連成一條路。
+每按一次重來，崩潰的時間都不一樣 —— <b>這不是模擬的雜訊，這就是物理本身。</b></p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 1 / 7 · Intuition</p>
+<h1>Why insulation "wears out and breaks"</h1>
+<p class="lede">A gate oxide is only a few atomic layers thick, yet it has to hold off the full operating voltage for ten years. This page covers how it slowly loses that fight.</p>
+
+<div class="tldr"><div class="t">The one-minute version</div>
+<p>Electrons tunnel through the oxide. Every tunneling event has a <b>small probability</b> of breaking a Si–O bond, leaving behind a permanent defect —
+just like the brick-wall analogy from the previous page: every electron that passes has a chance of damaging one brick.
+Defect locations are random. The instant they happen to connect into a path from top to bottom, current finds a shortcut — <b>breakdown</b>.
+So breakdown isn't "wearing down to a limit" — it's <b>waiting for a random combination to line up</b>.</p></div>
+
+<h2>Three things happening at once</h2>
+<table>
+<thead><tr><th class="nw">Step</th><th>What happens</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>1. Tunneling</b></td>
+  <td>The oxide is an insulator, but it's only 1–5 nm thick. Quantum mechanics lets electrons <b>tunnel straight through</b> (thin oxide)
+  or tunnel through a triangular barrier under high field (Fowler–Nordheim, thicker oxide). So an "insulator" always carries a faint current — it was never a perfect wall.</td></tr>
+<tr><td class="nw"><b>2. Defect generation</b></td>
+  <td>Electrons that tunnel through carry energy. They can directly break a Si–O bond, or knock loose a hole at the anode that then injects back and causes damage
+  (this path is called anode hole injection). Either way, the result is the same: <b>a conductive trap is left behind in the oxide</b>.</td></tr>
+<tr><td class="nw"><b>3. Connecting into a path</b></td>
+  <td>Trap locations are randomly distributed. Electrons can hop conductively between neighboring traps. Once there are enough traps to <b>happen to form a chain from the gate all the way to the substrate</b>,
+  a low-impedance path appears — current surges, local heating, the oxide melts through. <b>That's breakdown.</b></td></tr>
+</tbody>
+</table>
+
+<h2>Why this is "fundamentally random"</h2>
+<p class="cap">Below is a side view of a slab of oxide — each small square represents a tiny patch of it. Drag the sliders to change thickness and field, then hit "Start" and watch defects appear at random until they happen to connect into a path.
+Every re-run gives a different breakdown time — <b>that's not simulation noise, that's the physics itself.</b></p>
+</div>
+
+<div class="card">
+  <div class="ctrls">
+    <div class="ctrl"><label for="rTox1"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+      <div class="row"><input type="range" id="rTox1" min="1.5" max="8" step="0.5" value="3">
+      <span class="val" id="vTox1">—</span></div></div>
+    <div class="ctrl"><label for="rRate1"><span lang="zh-Hant">缺陷生成速率（由電場決定）</span><span lang="en">Defect generation rate (set by field)</span></label>
+      <div class="row"><input type="range" id="rRate1" min="0.3" max="3" step="0.05" value="1">
+      <span class="val" id="vRate1">—</span></div></div>
+  </div>
+  <div class="tools" style="margin:12px 0 8px">
+    <button class="tg" id="go1">▶ 開始</button>
+    <button class="tg" id="rs1"><span lang="zh-Hant">重來</span><span lang="en">Reset</span></button>
+    <span class="note" id="st1"></span>
+  </div>
+  <div class="oxfig"><div id="ox1"></div></div>
+  <div class="legend" id="lg1"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><div class="t">最重要的一句話</div>
+<p style="margin:0">TDDB <b>不是「磨損到極限」，而是「等一個隨機組合湊齊」</b>。
+兩顆一模一樣的元件、跑一模一樣的條件，壞掉的時間可以差好幾倍。
+<br><br>這就是為什麼 TDDB 的規格不能寫「壽命 10 年」，只能寫
+<b>「十年後累積失效率低於 X ppm，信心水準 Y%」</b>。統計不是附註，統計就是規格本身。</p></div>
+
+<h2>和 HCI 的三個關鍵差異</h2>
+<table>
+<thead><tr><th class="nw">面向</th><th>HCI</th><th>TDDB</th></tr></thead>
+<tbody>
+<tr><td class="nw">失效型態</td><td>參數連續漂移，人為畫線定義失效</td>
+  <td><b>一次性崩潰</b>，元件從正常直接變短路</td></tr>
+<tr><td class="nw">位置</td><td>局部：汲極端幾十奈米</td>
+  <td><b>整片閘極面積</b>都是候選位置 → 面積越大越容易壞</td></tr>
+<tr><td class="nw">溫度</td><td><b>負</b>活化能（低溫較嚴重）</td>
+  <td><b>正</b>活化能（高溫較嚴重）→ HTOL 抓得到</td></tr>
+<tr><td class="nw">關鍵變數</td><td>橫向電場 E<sub>m</sub>（汲極端）</td>
+  <td><b>縱向電場 E<sub>ox</sub> = V/t<sub>ox</sub></b>（整片均勻）</td></tr>
+<tr><td class="nw">統計</td><td>次要</td><td><b>核心</b> —— Weibull 分布、面積縮放、ppm 外推</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼氧化層越薄，反而是「一開始就有電流」而不是完全絕緣？</summary><div class="a">因為量子穿隧的機率隨厚度<b>指數</b>下降。5 nm 以上時穿隧電流可以忽略；到了 2 nm 以下，直接穿隧電流大到會影響待機功耗 —— 這正是先進製程要改用 high-k 的原因之一（用較厚的物理厚度達到同樣的等效電容）。</div></details><details><summary>既然缺陷是隨機的，為什麼厚一點的氧化層反而「比較好預測」？</summary><div class="a">因為要貫穿一層厚氧化層，需要<b>更多缺陷剛好排成一列</b>。需要的條件越苛刻，各顆元件之間的差異反而越小（相對變異變小）—— 統計上就是 <b>Weibull 斜率 β 變大、分布變窄</b>。<br><br>反過來，超薄氧化層只要兩三個缺陷就能連通，運氣成分極大、分布極寬。階段 2 的模擬會把這件事直接跑出來給你看。</div></details><details><summary>同樣的電壓，把面積放大十倍，崩潰會提早嗎？</summary><div class="a"><b>會。</b>面積越大，等於同時擲更多次骰子 —— 只要<b>任何一處</b>形成貫穿路徑，整顆元件就完了。<br><br>這是 TDDB 特有的性質（HCI 沒有）：<b>壽命隨面積縮放</b>。所以在小面積測試電容上量到的漂亮數據，外推到整顆晶片的閘極總面積時會大幅縮水。階段 4 會算給你看。</div></details></div>
+<div class="pager"><a class="prev" href="tddb.html"><div class="d">← 上一課 · 階段 0</div><div class="t">課程地圖</div></a><a class="next" href="tddb-2-percolation.html"><div class="d">下一課 · 階段 2 →</div><div class="t">滲流模型</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<div class="key"><div class="t">The one sentence that matters most</div>
+<p style="margin:0">TDDB is <b>not "wearing down to a limit" — it's "waiting for a random combination to line up."</b>
+Two identical devices, run under identical conditions, can fail at times that differ by several times over.
+<br><br>That's why a TDDB spec can never say "10-year lifetime" — it can only say
+<b>"cumulative failure rate below X ppm after ten years, at Y% confidence."</b> Statistics isn't a footnote here; statistics is the spec itself.</p></div>
+
+<h2>Three key differences from HCI</h2>
+<table>
+<thead><tr><th class="nw">Aspect</th><th>HCI</th><th>TDDB</th></tr></thead>
+<tbody>
+<tr><td class="nw">Failure mode</td><td>Continuous parameter drift; failure is an arbitrary line drawn by engineers</td>
+  <td><b>One-shot breakdown</b> — the device goes straight from fine to short-circuited</td></tr>
+<tr><td class="nw">Location</td><td>Localized: tens of nm at the drain</td>
+  <td><b>The entire gate area</b> is a candidate location → bigger area fails sooner</td></tr>
+<tr><td class="nw">Temperature</td><td><b>Negative</b> activation energy (worse at low temperature)</td>
+  <td><b>Positive</b> activation energy (worse at high temperature) → HTOL actually catches it</td></tr>
+<tr><td class="nw">Key variable</td><td>Lateral field E<sub>m</sub> (at the drain)</td>
+  <td><b>Vertical field E<sub>ox</sub> = V/t<sub>ox</sub></b> (uniform across the whole area)</td></tr>
+<tr><td class="nw">Statistics</td><td>Secondary</td><td><b>Central</b> — Weibull distribution, area scaling, ppm extrapolation</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why does a thinner oxide mean there's already a current flowing from the start, rather than perfect insulation?</summary><div class="a">Because tunneling probability drops <b>exponentially</b> with thickness. Above 5 nm, tunneling current is negligible; below 2 nm, direct tunneling current gets large enough to affect standby power — this is one reason advanced processes switch to high-k (a physically thicker layer gives the same equivalent capacitance).</div></details><details><summary>If defects are random, why is a thicker oxide actually "more predictable"?</summary><div class="a">Because breaking through a thicker oxide requires <b>more defects to happen to line up</b>. The stricter the requirement, the smaller the relative variation between devices — statistically, that means <b>a larger Weibull slope β and a narrower distribution</b>.<br><br>Conversely, an ultra-thin oxide can be bridged by just two or three defects, so luck dominates and the distribution is very wide. Stage 2's simulation will show you this directly.</div></details><details><summary>Same voltage, ten times the area — does breakdown happen sooner?</summary><div class="a"><b>Yes.</b> A larger area is like rolling more dice at once — the moment <b>any single spot</b> forms a percolation path, the whole device is done for.<br><br>This is a property unique to TDDB (HCI doesn't have it): <b>lifetime scales with area</b>. So the clean numbers measured on a small test capacitor shrink substantially once extrapolated to a whole chip's total gate area. Stage 4 works out the numbers.</div></details></div>
+<div class="pager"><a class="prev" href="tddb.html"><div class="d">← Previous · Stage 0</div><div class="t">Course Map</div></a><a class="next" href="tddb-2-percolation.html"><div class="d">Next · Stage 2 →</div><div class="t">Percolation Model</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+var S1={tox:3,rate:1,run:false,t:0,grid:null,W:52,N:3,bd:false,tbd:0};
+function mkGrid(){
+  S1.N=Math.max(2,Math.round(S1.tox/A0));
+  S1.grid=[]; for(var y=0;y<S1.N;y++){var r=[];for(var x=0;x<S1.W;x++)r.push(0);S1.grid.push(r);}
+  S1.t=0;S1.bd=false;S1.tbd=0;S1.path=null;
+}
+function span(){
+  /* BFS 從最上層的缺陷往下找貫穿路徑（8 鄰接） */
+  var N=S1.N,W=S1.W,g=S1.grid,prev={},q=[];
+  for(var x=0;x<W;x++) if(g[0][x]){q.push([x,0]);prev[x+',0']=null;}
+  while(q.length){
+    var c=q.shift(),cx=c[0],cy=c[1];
+    if(cy===N-1){var path=[],k=cx+','+cy;while(k){var pp=k.split(',');path.push([+pp[0],+pp[1]]);k=prev[k];}return path;}
+    for(var dx=-1;dx<=1;dx++)for(var dy=-1;dy<=1;dy++){
+      if(!dx&&!dy)continue;
+      var nx=cx+dx,ny=cy+dy;
+      if(nx<0||nx>=W||ny<0||ny>=N)continue;
+      if(!g[ny][nx])continue;
+      var key=nx+','+ny; if(key in prev)continue;
+      prev[key]=cx+','+cy; q.push([nx,ny]);
+    }
+  }
+  return null;
+}
+function draw1(){
+  var W=1020,H=210,pad=54;
+  var cw=(W-2*pad)/S1.W, ch=Math.min(26,(H-90)/S1.N);
+  var y0=(H-S1.N*ch)/2;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  /* 閘極與基板 */
+  svg.appendChild(el('rect',{x:pad,y:y0-26,width:W-2*pad,height:20,rx:3,fill:css('--seq4'),opacity:.85}));
+  svg.appendChild(txt(pad+8,y0-12,L('閘極（poly / metal）','Gate (poly / metal)'),{fs:11,fw:650,fill:'#fff',db:'middle'}));
+  svg.appendChild(el('rect',{x:pad,y:y0+S1.N*ch+6,width:W-2*pad,height:20,rx:3,fill:css('--muted'),opacity:.55}));
+  svg.appendChild(txt(pad+8,y0+S1.N*ch+16,L('矽基板','Silicon substrate'),{fs:11,fw:650,db:'middle',fill:css('--ink')}));
+  /* 格點 */
+  for(var y=0;y<S1.N;y++)for(var x=0;x<S1.W;x++){
+    var f=S1.grid[y][x];
+    svg.appendChild(el('rect',{x:pad+x*cw,y:y0+y*ch,width:cw-0.7,height:ch-0.7,rx:1.5,
+      fill:f?css('--h'):css('--grid'),opacity:f?0.92:0.5}));
+  }
+  /* 貫穿路徑 */
+  if(S1.bd&&S1.path){
+    var d='';
+    S1.path.forEach(function(c,i){d+=(i?'L':'M')+(pad+c[0]*cw+cw/2).toFixed(1)+' '+(y0+c[1]*ch+ch/2).toFixed(1);});
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--crit'),'stroke-width':4,
+      'stroke-linecap':'round','stroke-linejoin':'round',opacity:.95}));
+    svg.appendChild(txt(W/2,H-8,L('⚡ 崩潰！貫穿路徑形成 —— 缺陷數 = ','⚡ Breakdown! Percolation path formed — defect count = ')+S1.t,
+      {ta:'middle',fs:14,fw:750,fill:css('--crit')}));
+  }
+  svg.appendChild(txt(pad-8,y0+S1.N*ch/2,'t~ox~ = '+S1.tox.toFixed(1)+' nm',
+    {ta:'end',db:'middle',fs:11,fill:css('--ink2')}));
+  svg.appendChild(txt(pad-8,y0+S1.N*ch/2+15,'（'+S1.N+' '+L('層','layers')+'）',{ta:'end',db:'middle',fs:10}));
+  $('ox1').innerHTML='';$('ox1').appendChild(svg);
+}
+function tick1(){
+  if(!S1.run||S1.bd) return;
+  var n=Math.max(1,Math.round(S1.rate*1.6));
+  for(var i=0;i<n;i++){
+    var x=Math.floor(Math.random()*S1.W), y=Math.floor(Math.random()*S1.N);
+    if(!S1.grid[y][x]){S1.grid[y][x]=1;S1.t++;}
+  }
+  var p=span();
+  if(p){S1.bd=true;S1.path=p;S1.run=false;relabelGo1();}
+  draw1(); stat1();
+}
+function stat1(){
+  var tot=S1.W*S1.N;
+  $('st1').innerHTML=S1.bd
+    ? '<b style="color:'+css('--crit')+'">'+L('已崩潰','Broken down')+'</b> · '+L('缺陷數 ','Defects ')+S1.t+' / '+tot+'（'+L('佔比 ','fraction ')+((S1.t/tot)*100).toFixed(1)+'%）'
+    : L('缺陷數 ','Defects ')+S1.t+' / '+tot+'（'+L('佔比 ','fraction ')+((S1.t/tot)*100).toFixed(1)+'%）· '+L('尚未貫穿','not yet broken down');
+}
+function relabelGo1(){ $('go1').textContent = S1.run ? L('⏸ 暫停','⏸ Pause') : L('▶ 開始','▶ Start'); }
+function updateVTox1(){ $('vTox1').textContent=S1.tox.toFixed(1)+' nm  ('+Math.max(2,Math.round(S1.tox/A0))+' '+L('層','layers')+')'; }
+function refreshLegend1(){
+  $('lg1').innerHTML='<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('缺陷（trap）','defect (trap)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--crit')+'"></i>'+L('貫穿路徑','breakdown path')+'</span>'+
+    '<span style="color:var(--ink)">'+L('每次重來的崩潰時間都不一樣 —— <b>這就是 TDDB 的統計本質</b>','Every re-run breaks down at a different time — <b>that\'s the statistical essence of TDDB</b>')+'</span>';
+}
+refreshLegend1();
+$('go1').addEventListener('click',function(){
+  if(S1.bd){mkGrid();}
+  S1.run=!S1.run; relabelGo1();});
+$('rs1').addEventListener('click',function(){mkGrid();S1.run=false;relabelGo1();draw1();stat1();});
+$('rTox1').addEventListener('input',function(e){S1.tox=parseFloat(e.target.value);
+  updateVTox1();
+  mkGrid();S1.run=false;relabelGo1();draw1();stat1();});
+$('rRate1').addEventListener('input',function(e){S1.rate=parseFloat(e.target.value);
+  $('vRate1').textContent='×'+S1.rate.toFixed(2);});
+updateVTox1(); $('vRate1').textContent='×1.00'; relabelGo1();
+window.__rebuild=function(){ refreshLegend1(); updateVTox1(); relabelGo1(); draw1(); stat1(); };
+mkGrid();draw1();stat1();setInterval(tick1,90);
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

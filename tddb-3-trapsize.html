@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB 的 Weibull 斜率 β 如何隨陷阱尺寸 a₀ 改變：cell-based 模型 β = m·t_ox/a₀、文獻萃取出的 a₀ 從 0.4 nm 到 3 nm、以及這個分歧對 ppm 壽命外推與面積縮放的後果。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 3：陷阱尺寸與 Weibull 斜率 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="β = m·t_ox/a₀。同一批資料，陷阱尺寸假設差 7 倍，ppm 壽命結論差好幾個數量級。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 3：陷阱尺寸與 Weibull 斜率 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+.outline li{margin:7px 0}
+.litab{font-size:15px}
+.litab td,.litab th{vertical-align:top}
+.litab .cite{font-size:14px;color:var(--ink2);display:block;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html" aria-current="page"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:43%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 3 / 7</p>
+<h1>陷阱尺寸與 Weibull 斜率：<br>β 裡面藏了兩個你沒看到的參數</h1>
+<p class="lede">階段 2 的模擬給了一個漂亮的結果：<b>β ≈ t<sub>ox</sub>/a₀</b>，而我們把 a₀ 設成 1 nm。
+但那個 1 nm 是<b>怎麼來的</b>？翻開文獻你會發現一件不太舒服的事：
+同樣是用滲流模型去擬合崩潰分布，不同論文萃取出來的陷阱尺寸 a₀ 從 <b>0.4 nm 到 3 nm</b> 都有 —— 差了將近一個數量級。
+而 β 跟 a₀ 成反比，所以<b>光是這個參數的分歧，就能讓同一批資料外推出的 ppm 壽命差好幾個數量級</b>。
+這一頁把 a₀ 攤開來講：它到底是什麼尺寸、為什麼每篇論文量到的都不一樣、以及這件事在規格上的代價。</p>
+
+<div class="tldr"><div class="t">本頁大綱</div>
+<ol class="outline" style="margin:0;padding-left:20px">
+<li><b>β 不是一個數，是兩個數的乘積</b> —— 把 β = m·(t<sub>ox</sub>/a₀) 拆開，看清階段 2 偷偷假設了什麼</li>
+<li><b>a₀ 到底是什麼尺寸</b> —— 它不是原子半徑，是「一個缺陷在電性上搭得上下一個缺陷」的距離</li>
+<li><b>文獻萃取出的 a₀ 差了 7 倍</b> —— 六篇論文、六種幾何、六個數字，以及它們為什麼不互相矛盾</li>
+<li><b>互動：同一個中位數壽命，三種陷阱尺寸</b> —— 把 a₀ 的分歧直接畫在 Weibull 圖上</li>
+<li><b>三個可檢驗的後果</b> —— ppm 外推、面積縮放、以及 t<sub>ox</sub> &lt; a₀ 時的奇異行為</li>
+<li><b>high-k 疊層</b> —— 兩層不同的 a₀ 與 m，為什麼會看到兩段斜率</li>
+</ol></div>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 3 / 7</p>
+<h1>Trap size and the Weibull slope:<br>β hides two parameters you never saw</h1>
+<p class="lede">Stage 2 produced a beautiful result — <b>β ≈ t<sub>ox</sub>/a₀</b> — and we set a₀ to 1 nm.
+But where did that 1 nm <b>come from</b>? Open the literature and you find something uncomfortable:
+fitting the same percolation model to breakdown distributions, different papers extract trap sizes a₀ anywhere from <b>0.4 nm to 3 nm</b> — nearly an order of magnitude apart.
+And since β is inversely proportional to a₀, <b>that one disagreement alone can shift the ppm lifetime extrapolated from the same data by orders of magnitude</b>.
+This page opens a₀ up: what size it actually is, why every paper measures a different one, and what that costs you in a spec.</p>
+
+<div class="tldr"><div class="t">Page outline</div>
+<ol class="outline" style="margin:0;padding-left:20px">
+<li><b>β isn't one number, it's a product of two</b> — split β = m·(t<sub>ox</sub>/a₀) apart and see what Stage 2 quietly assumed</li>
+<li><b>What size a₀ actually is</b> — not an atomic radius, but the distance over which one defect can electrically "reach" the next</li>
+<li><b>Extracted a₀ values differ by 7×</b> — six papers, six geometries, six numbers, and why they don't actually contradict each other</li>
+<li><b>Interactive: one median lifetime, three trap sizes</b> — the a₀ disagreement drawn straight onto a Weibull plot</li>
+<li><b>Three testable consequences</b> — ppm extrapolation, area scaling, and the singular behavior when t<sub>ox</sub> &lt; a₀</li>
+<li><b>High-k stacks</b> — two layers with different a₀ and m, and why you see two slopes</li>
+</ol></div>
+</div>
+
+<div lang="zh-Hant">
+<h2>① β 不是一個數，是兩個數的乘積</h2>
+<p>階段 2 用「缺陷一顆顆隨機長出來，連成一條路就崩潰」導出 Weibull 分布，形狀參數等於路徑上的缺陷數 N。
+那個推導其實偷偷用了一個假設：<b>缺陷密度隨時間線性增加</b>。
+真實的陷阱生成不是線性的，而是冪次律：N<sub>trap</sub> ∝ t<sup>m</sup>。把這個 m 放回去，關係式變成：</p>
+
+<div class="eq"><span class="lbl">cell-based 滲流模型的 Weibull 斜率</span>
+β = m · N = m · t<sub>ox</sub> / a₀
+<span class="say">β 是<b>時間</b>分布的形狀參數，而滲流幾何只決定<b>缺陷密度</b>分布的形狀（那個才等於 N）。
+兩者之間差的就是 m —— 把「要幾顆缺陷」翻譯成「要多久」的匯率。</span></div>
+
+<table class="symtab"><tbody>
+<tr><td>β</td><td>—</td><td>Weibull 形狀參數（斜率），對時間分布而言</td></tr>
+<tr><td>m</td><td>—</td><td>陷阱生成冪次，N<sub>trap</sub> ∝ t<sup>m</sup>。實測約 0.26–1.0</td></tr>
+<tr><td>N</td><td>—</td><td>一條貫穿路徑所需的缺陷數 = t<sub>ox</sub>/a₀</td></tr>
+<tr><td>a₀</td><td>nm</td><td>陷阱尺寸，也就是滲流格點的邊長</td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">階段 2 偷偷做了什麼</div>
+階段 2 的蒙地卡羅假設缺陷密度隨時間線性增加，<b>等於設定 m = 1</b>。
+所以那一頁量到的 β 其實就是 N，看起來 β = t<sub>ox</sub>/a₀ 乾淨得不像話。
+一旦 m 回到實測的 0.26–0.6，<b>同樣的 t<sub>ox</sub> 與 a₀ 會給出只有一半甚至四分之一的 β</b>。
+這也是為什麼先進製程量到的 β 常常低於 1 —— 不一定是製程不好，而是 m 與 a₀ 兩個因子一起把它壓下來。</div>
+
+<p>這條關係式的原始出處是 Suñé 在 2001 年提出的解析 cell-based 模型。
+它的賣點正是「不用跑蒙地卡羅也能得到正確的厚度縮放」：摘要原文寫的是
+<i>“The scaling with oxide thickness of the Weibull slope and the mean critical density of defects at breakdown are accounted for correctly.”</i></p>
+
+<p>同一條式子在高介電常數材料的文獻裡常寫成 β = m·β<sub>ot</sub>，其中 β<sub>ot</sub> 就是路徑上的陷阱數。
+O'Connor 等人 2010 年的 IRPS 論文把它的意涵講得最直白：
+<i>“a high Weibull slope is caused either by more traps being required to trigger the breakdown or a higher trap generation rate.”</i>
+—— <b>β 高只有兩種可能：路徑需要更多顆陷阱（a₀ 小），或者陷阱生成得更快（m 大）。單看 β 分不出是哪一個。</b></p>
+</div>
+<div lang="en">
+<h2>① β isn't one number, it's a product of two</h2>
+<p>Stage 2 derived the Weibull distribution from "defects appear one at a time at random, and a connected path means breakdown," with the shape parameter equal to the number of defects N in the path.
+That derivation quietly used one assumption: <b>defect density grows linearly with time</b>.
+Real trap generation isn't linear — it's a power law: N<sub>trap</sub> ∝ t<sup>m</sup>. Put that m back in and the relation becomes:</p>
+
+<div class="eq"><span class="lbl">Weibull slope in the cell-based percolation model</span>
+β = m · N = m · t<sub>ox</sub> / a₀
+<span class="say">β is the shape parameter of the <b>time</b> distribution, while percolation geometry only sets the shape of the <b>defect-density</b> distribution (that one equals N).
+What sits between them is m — the exchange rate that converts "how many defects" into "how long."</span></div>
+
+<table class="symtab"><tbody>
+<tr><td>β</td><td>—</td><td>Weibull shape parameter (slope), for the time distribution</td></tr>
+<tr><td>m</td><td>—</td><td>trap-generation power-law exponent, N<sub>trap</sub> ∝ t<sup>m</sup>. Measured values ≈ 0.26–1.0</td></tr>
+<tr><td>N</td><td>—</td><td>number of defects needed for a percolating path = t<sub>ox</sub>/a₀</td></tr>
+<tr><td>a₀</td><td>nm</td><td>trap size — equivalently, the side length of the percolation cell</td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">What Stage 2 quietly did</div>
+Stage 2's Monte Carlo assumed defect density grows linearly with time, which <b>is the same as setting m = 1</b>.
+So the β measured on that page really was N, which is why β = t<sub>ox</sub>/a₀ came out implausibly clean.
+Restore m to a measured 0.26–0.6 and <b>the same t<sub>ox</sub> and a₀ give a β half or even a quarter as large</b>.
+That is also why advanced processes routinely measure β below 1 — not necessarily a bad process, but m and a₀ pushing it down together.</div>
+
+<p>The relation originates in the analytic cell-based model Suñé published in 2001.
+Its whole selling point is getting the thickness scaling right without running a Monte Carlo; the abstract reads
+<i>“The scaling with oxide thickness of the Weibull slope and the mean critical density of defects at breakdown are accounted for correctly.”</i></p>
+
+<p>The same equation is usually written β = m·β<sub>ot</sub> in the high-k literature, where β<sub>ot</sub> is the number of traps in the path.
+O'Connor et al.'s 2010 IRPS paper states the implication most bluntly:
+<i>“a high Weibull slope is caused either by more traps being required to trigger the breakdown or a higher trap generation rate.”</i>
+— <b>there are only two ways to get a high β: the path needs more traps (small a₀), or traps are generated faster (large m). From β alone you cannot tell which.</b></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>② a₀ 到底是什麼尺寸</h2>
+<p>最容易犯的錯是把 a₀ 當成「一個氧空缺有多大」。它不是。
+a₀ 是<b>一個缺陷在電性上能搭上下一個缺陷的距離</b> —— 決定它的是捕獲截面與陷阱輔助穿隧的重疊範圍，不是原子半徑。
+所以同樣的物理缺陷，換一種介電質、換一個陷阱能階，a₀ 就會變。</p>
+
+<div class="key"><div class="t">這就是「陷阱尺寸會改變 Weibull 分布」的物理槓桿</div>
+陷阱能階越淺、位能障越低 → <b>捕獲截面越大</b> → a₀ 越大 → 一條貫穿路徑需要的缺陷數 N 越少 → <b>β 越小、分布越散</b>。
+反過來，深層陷阱的捕獲截面小，a₀ 小，同樣厚度需要更多顆缺陷才連得起來，β 就高。</div>
+
+<p>high-k 材料正是這個效應的典型案例。O'Connor 等人的說法是：
+<i>“it is commonly accepted that due the reduced barrier height of the high-k compared with SiO<sub>2</sub> the effective capture cross section of a high-k defect is larger than that of an SiO<sub>2</sub> defect,
+meaning that the percolation distance is more likely to be reduced in the high-k.”</i>
+翻成人話：<b>high-k 的缺陷「比較大顆」，所以兩三顆就能把路連起來，而同樣厚度的 SiO₂ 需要三顆以上。</b></p>
+
+<p>而這個「缺陷有尺寸」的觀點本身也有極限。Suñé、Wu 與 Tous 在 2007 年直接點名這件事：
+<i>“this simple geometric picture reaches its limit when the oxide thickness is scaled down and becomes comparable to the ‘size’ of the involved defects.”</i>
+他們的做法是把純幾何的格點模型換掉，改用陷阱輔助穿隧耦合缺陷位置的統計分布，
+於是分布形狀會隨<b>你用多大的漏電跳階當崩潰判準（I<sub>BD</sub>）</b>而改變 —— a₀ 不再是一個固定長度，而是一個跟量測條件綁在一起的量。</p>
+</div>
+<div lang="en">
+<h2>② What size a₀ actually is</h2>
+<p>The easiest mistake is to read a₀ as "how big one oxygen vacancy is." It isn't.
+a₀ is <b>the distance over which one defect can electrically reach the next</b> — set by the capture cross section and the overlap range for trap-assisted tunneling, not by an atomic radius.
+So the same physical defect gives a different a₀ in a different dielectric, or at a different trap energy level.</p>
+
+<div class="key"><div class="t">This is the physical lever behind "trap size changes the Weibull distribution"</div>
+Shallower trap level, lower barrier → <b>larger capture cross section</b> → larger a₀ → fewer defects N needed for a percolating path → <b>smaller β, wider distribution</b>.
+Conversely, deep traps have a small capture cross section and thus a small a₀, so the same thickness needs more defects to connect, and β comes out high.</div>
+
+<p>High-k dielectrics are the textbook case. O'Connor et al. put it this way:
+<i>“it is commonly accepted that due the reduced barrier height of the high-k compared with SiO<sub>2</sub> the effective capture cross section of a high-k defect is larger than that of an SiO<sub>2</sub> defect,
+meaning that the percolation distance is more likely to be reduced in the high-k.”</i>
+In plain terms: <b>high-k defects are "bigger," so two or three of them bridge the layer, where the same thickness of SiO₂ needs three or more.</b></p>
+
+<p>The "defects have a size" picture has its own limit, and Suñé, Wu and Tous named it directly in 2007:
+<i>“this simple geometric picture reaches its limit when the oxide thickness is scaled down and becomes comparable to the ‘size’ of the involved defects.”</i>
+Their fix was to drop the purely geometric lattice and couple a trap-assisted-tunneling model to the statistics of defect positions,
+so the distribution shape then depends on <b>how large a leakage jump you call breakdown (I<sub>BD</sub>)</b> — a₀ stops being a fixed length and becomes a quantity tied to your measurement condition.</p>
+</div>
+
+<div lang="zh-Hant">
+<h2>③ 文獻萃取出的 a₀ 差了 7 倍</h2>
+<p>下表是同一個現象（Weibull 斜率隨厚度縮放）在六篇論文裡的處理方式。
+重點不是誰對誰錯，而是<b>a₀ 的數值跟你用哪一種滲流幾何綁在一起</b> —— 換了幾何，a₀ 的意思就變了，數字自然不能互相搬用。</p>
+
+<table class="litab"><thead><tr><th class="nw">文獻</th><th>滲流幾何</th><th class="nw">a₀ 的萃取值</th><th>對 β 的意涵</th></tr></thead><tbody>
+<tr><td class="nw">Degraeve et al.<span class="cite">IEDM 1995, p. 863<br>IEEE TED 45, 904 (1998)</span></td>
+  <td>蒙地卡羅：在介電層內隨機產生<b>固定半徑的球體</b>，球體重疊連通上下電極即崩潰</td>
+  <td class="nw">球半徑為擬合參數</td>
+  <td>第一次定量重現「t<sub>ox</sub> 變薄、β 變小」的實測趨勢，建立了 β 與厚度的因果</td></tr>
+<tr><td class="nw">Stathis<span class="cite">J. Appl. Phys. 86, 5757 (1999)</span></td>
+  <td>有限立方格點上的滲流，並額外處理<b>缺陷生成機率在空間上不均勻</b>（梯度滲流）</td>
+  <td class="nw"><b>約 3 nm</b></td>
+  <td>由崩潰分布的厚度依存性反推「有效缺陷尺寸」。預測 t<sub>ox</sub> 小於缺陷尺寸時出現奇異行為</td></tr>
+<tr><td class="nw">Suñé<span class="cite">IEEE EDL 22, 296 (2001)</span></td>
+  <td>解析 cell-based：把介電層切成邊長 a₀ 的格子，<b>同一欄的格子全變成缺陷</b>即崩潰</td>
+  <td class="nw">a₀ = cell 邊長<br>（由 β–t<sub>ox</sub> 斜率擬合）</td>
+  <td>給出封閉式 β = m·t<sub>ox</sub>/a₀。因為 β 在 t<sub>ox</sub> = 0 時不該為零，另外引入界面層厚度偏移</td></tr>
+<tr><td class="nw">Nicollian et al.<span class="cite">IEDM 2006, p. 743</span></td>
+  <td>cell-based，但路徑由<b>bulk 陷阱與界面陷阱混合</b>組成（純界面陷阱模型無法解釋厚度依存性）</td>
+  <td class="nw">bulk 陷阱直徑<br><b>約 0.4 nm</b>（取 m = 0.26）</td>
+  <td><b>a₀ 不是常數</b>：逐點反推的「瞬時 a₀」要到厚度夠大才趨近 bulk 值。SiON 在 EOT 1.0–3.3 nm 量到 β ≈ 0.9–2.0</td></tr>
+<tr><td class="nw">Suñé, Wu &amp; Tous<span class="cite">Microelectron. Eng. 84, 1917 (2007)</span></td>
+  <td>放棄純幾何：陷阱輔助穿隧模型耦合缺陷位置的統計分布</td>
+  <td class="nw">不再是單一幾何長度</td>
+  <td>分布形狀隨崩潰判定電流 I<sub>BD</sub> 改變；明確指出幾何圖像在 t<sub>ox</sub> ≈ 缺陷尺寸時失效</td></tr>
+<tr><td class="nw">Krishnan &amp; Nicollian<span class="cite">IRPS 2007, p. 232</span></td>
+  <td>cell-based 擴充到<b>非柱狀路徑</b>：允許走任意最近鄰格子，並納入既存缺陷與相關性生成</td>
+  <td class="nw">同為 cell 邊長，但路徑數大增</td>
+  <td>同一個 a₀ 下可形成的路徑變多（原文舉例：最底層的一顆陷阱從只能參與 1 條路徑變成 9 條），因此<b>相同 a₀ 預測的 β 下降</b></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">為什麼這六個數字不互相矛盾</div>
+因為 a₀ <b>不是一個可以獨立量測的物理長度</b>，而是某個特定滲流幾何的擬合參數。
+球體重疊模型的「半徑」、立方格點的「有效缺陷尺寸」、cell 模型的「格子邊長」三者定義都不同；
+再加上 β = m·t<sub>ox</sub>/a₀ 裡 m 與 a₀ 乘在一起，<b>只量 β 對 t<sub>ox</sub> 的斜率，本質上無法把 m 和 a₀ 分開</b>。
+所以引用任何一個 a₀ 數值時，<b>必須同時引用它搭配的幾何與 m</b>，否則數字沒有意義。</div>
+
+<div class="eq" style="text-align:left"><span class="lbl">一個具體的工程案例：用 β = m·N 反推，結論會隨 a₀ 假設翻轉</span>
+<p style="font-size:16px;margin:0 0 8px;text-align:left;line-height:1.75">O'Connor 等人在 8 Å EOT 的 HfO₂ nMOSFET 上量到 β = <b>1.54</b>（7.8 Å）與 <b>1.82</b>（8.1 Å），
+遠高於同厚度文獻常見的 0.8–1。他們的推論鏈是：</p>
+<ol style="font-size:16px;margin:0;padding-left:22px;text-align:left;line-height:1.8">
+<li>若沿用 SiO₂ 的滲流距離，這個厚度需要 N = 3 顆陷阱 → 由 β = 1.82 回推 m = <b>0.61</b>，比文獻常見的 0.35–0.4 高很多。</li>
+<li>但 high-k 的捕獲截面比 SiO₂ 大，<b>滲流距離應該更短</b>（a₀ 更大）→ N 應該是 2，或 3 顆但排列不良。</li>
+<li>N 若降到 2，回推的 m 還要更高。<b>兩條路都指向「這個缺陷的生成速率真的異常高」</b>，而不是路徑特別長。</li>
+</ol>
+<span class="say" style="margin-top:10px">注意第 2 步做了什麼：<b>只是改了陷阱尺寸的假設，對 m 的結論就被往上推</b>。
+同一個 β，換個 a₀ 假設，你會把它歸因到完全不同的物理。</span></div>
+
+<h2>④ 互動：同一個中位數壽命，三種陷阱尺寸</h2>
+<p>下面兩張圖用的都是 β = m·t<sub>ox</sub>/a₀。左圖是 Weibull 機率圖，三條彩色線是文獻中三個代表性的 a₀ 取值，
+<b>它們的 t<sub>63</sub> 完全相同</b>（都通過同一個黑點）—— 唯一的差別是斜率。
+請注意要外推到 1 ppm 時，三條線在橫軸上分開了多遠。右圖是同樣三個 a₀ 下 β 隨厚度的變化。</p>
+</div>
+<div lang="en">
+<h2>③ Extracted a₀ values differ by 7×</h2>
+<p>The table below shows how six papers handled the same phenomenon — the Weibull slope scaling with thickness.
+The point isn't who's right; it's that <b>the value of a₀ is bound to whichever percolation geometry you used</b>. Change the geometry and a₀ means something else, so the numbers can't be swapped between models.</p>
+
+<table class="litab"><thead><tr><th class="nw">Reference</th><th>Percolation geometry</th><th class="nw">Extracted a₀</th><th>What it implies for β</th></tr></thead><tbody>
+<tr><td class="nw">Degraeve et al.<span class="cite">IEDM 1995, p. 863<br>IEEE TED 45, 904 (1998)</span></td>
+  <td>Monte Carlo: <b>spheres of fixed radius</b> generated at random positions; breakdown when overlapping spheres connect both electrodes</td>
+  <td class="nw">sphere radius is a fit parameter</td>
+  <td>First quantitative reproduction of the measured trend "thinner t<sub>ox</sub> → smaller β," establishing the causal link to thickness</td></tr>
+<tr><td class="nw">Stathis<span class="cite">J. Appl. Phys. 86, 5757 (1999)</span></td>
+  <td>Percolation on a finite cubic lattice, also treating a <b>spatially non-uniform defect generation probability</b> (gradient percolation)</td>
+  <td class="nw"><b>about 3 nm</b></td>
+  <td>"Effective defect size" back-calculated from the thickness dependence of the breakdown distributions. Predicts singular behavior once t<sub>ox</sub> drops below the defect size</td></tr>
+<tr><td class="nw">Suñé<span class="cite">IEEE EDL 22, 296 (2001)</span></td>
+  <td>Analytic cell-based: slice the dielectric into cells of side a₀; breakdown when <b>a full column of cells</b> turns into defects</td>
+  <td class="nw">a₀ = cell side<br>(fitted from the β–t<sub>ox</sub> slope)</td>
+  <td>Gives the closed form β = m·t<sub>ox</sub>/a₀. Since β shouldn't vanish at t<sub>ox</sub> = 0, an interfacial-layer thickness offset is introduced</td></tr>
+<tr><td class="nw">Nicollian et al.<span class="cite">IEDM 2006, p. 743</span></td>
+  <td>Cell-based, but the path is a <b>mixture of bulk and interface traps</b> (an interface-trap-only model cannot reproduce the thickness dependence)</td>
+  <td class="nw">bulk trap diameter<br><b>about 0.4 nm</b> (at m = 0.26)</td>
+  <td><b>a₀ is not a constant</b>: the "instantaneous a₀" extracted point by point only approaches the bulk value at larger thickness. SiON measures β ≈ 0.9–2.0 over EOT 1.0–3.3 nm</td></tr>
+<tr><td class="nw">Suñé, Wu &amp; Tous<span class="cite">Microelectron. Eng. 84, 1917 (2007)</span></td>
+  <td>Drops pure geometry: a trap-assisted-tunneling model coupled to the statistics of defect positions</td>
+  <td class="nw">no longer a single geometric length</td>
+  <td>Distribution shape changes with the breakdown-detection current I<sub>BD</sub>; states explicitly that the geometric picture fails once t<sub>ox</sub> ≈ the defect size</td></tr>
+<tr><td class="nw">Krishnan &amp; Nicollian<span class="cite">IRPS 2007, p. 232</span></td>
+  <td>Cell-based extended to <b>non-columnar paths</b>: any nearest-neighbor cell may be used, plus pre-existing and correlated defect generation</td>
+  <td class="nw">same cell side, far more paths</td>
+  <td>Many more paths form for the same a₀ (their example: a trap in the bottom row goes from serving 1 path to 9), so <b>the β predicted at a given a₀ drops</b></td></tr>
+</tbody></table>
+
+<div class="key"><div class="t">Why these six numbers don't contradict each other</div>
+Because a₀ <b>is not an independently measurable physical length</b> — it's a fit parameter of one particular percolation geometry.
+The "radius" in an overlapping-sphere model, the "effective defect size" on a cubic lattice, and the "cell side" in a cell model are three different definitions;
+and because m and a₀ multiply together in β = m·t<sub>ox</sub>/a₀, <b>measuring the β-vs-t<sub>ox</sub> slope alone fundamentally cannot separate m from a₀</b>.
+So whenever you quote an a₀ value, <b>you must quote the geometry and the m it came with</b>, or the number means nothing.</div>
+
+<div class="eq" style="text-align:left"><span class="lbl">A concrete engineering case: inferring from β = m·N, the conclusion flips with the a₀ assumption</span>
+<p style="font-size:16px;margin:0 0 8px;text-align:left;line-height:1.75">O'Connor et al. measured β = <b>1.54</b> (7.8 Å) and <b>1.82</b> (8.1 Å) on 8 Å EOT HfO₂ nMOSFETs —
+far above the 0.8–1 commonly reported at that thickness. Their chain of reasoning:</p>
+<ol style="font-size:16px;margin:0;padding-left:22px;text-align:left;line-height:1.8">
+<li>Keeping SiO₂'s percolation distance, this thickness needs N = 3 traps → β = 1.82 backs out m = <b>0.61</b>, well above the 0.35–0.4 usually seen.</li>
+<li>But high-k has a larger capture cross section, so the <b>percolation distance should be shorter</b> (larger a₀) → N should be 2, or 3 poorly aligned.</li>
+<li>If N drops to 2, the inferred m must be higher still. <b>Both routes point to a genuinely anomalous generation rate for this defect</b>, not an unusually long path.</li>
+</ol>
+<span class="say" style="margin-top:10px">Notice what step 2 did: <b>changing only the trap-size assumption pushed the conclusion about m upward</b>.
+Same β, different a₀ assumption, and you attribute it to entirely different physics.</span></div>
+
+<h2>④ Interactive: one median lifetime, three trap sizes</h2>
+<p>Both plots below use β = m·t<sub>ox</sub>/a₀. The left one is a Weibull probability plot; the three colored lines are three representative a₀ values from the literature,
+and <b>all three share exactly the same t<sub>63</sub></b> (they pass through the same black dot) — the only difference is the slope.
+Watch how far apart they spread along the horizontal axis by the time you extrapolate to 1 ppm. The right plot shows β vs thickness for the same three a₀ values.</p>
+</div>
+
+<div class="card">
+<div class="ctrls">
+<div class="ctrl"><label for="sTox"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+  <div class="row"><input type="range" id="sTox" min="0.5" max="8" step="0.1" value="3"><span class="val" id="vTox">3.0 nm</span></div></div>
+<div class="ctrl"><label for="sA0"><span lang="zh-Hant">陷阱尺寸 a₀</span><span lang="en">Trap size a₀</span></label>
+  <div class="row"><input type="range" id="sA0" min="0.3" max="3" step="0.05" value="1"><span class="val" id="vA0">1.00 nm</span></div></div>
+<div class="ctrl"><label for="sM"><span lang="zh-Hant">陷阱生成冪次 m</span><span lang="en">Trap-generation exponent m</span></label>
+  <div class="row"><input type="range" id="sM" min="0.2" max="1" step="0.01" value="0.5"><span class="val" id="vM">0.50</span></div></div>
+</div>
+
+<div class="tiles" style="margin-top:14px">
+<div class="tile"><div class="k"><span lang="zh-Hant">路徑所需缺陷數 N = t<sub>ox</sub>/a₀</span><span lang="en">Defects per path N = t<sub>ox</sub>/a₀</span></div><div class="v" id="tN">—</div></div>
+<div class="tile hl"><div class="k"><span lang="zh-Hant">Weibull 斜率 β = m·N</span><span lang="en">Weibull slope β = m·N</span></div><div class="v" id="tBeta">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">t<sub>1ppm</sub> / t<sub>63</sub></span><span lang="en">t<sub>1ppm</sub> / t<sub>63</sub></span></div><div class="v" id="tPpm">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">面積放大 10<sup>4</sup> 倍後的壽命比</span><span lang="en">Lifetime ratio after 10<sup>4</sup>× area</span></div><div class="v" id="tArea">—</div></div>
+</div>
+
+<div class="legend" style="margin-top:12px">
+<span><i class="sw" style="background:var(--nit)"></i><span lang="zh-Hant">a₀ = 0.4 nm（Nicollian 2006，bulk 陷阱直徑）</span><span lang="en">a₀ = 0.4 nm (Nicollian 2006, bulk trap diameter)</span></span>
+<span><i class="sw" style="background:var(--e)"></i><span lang="zh-Hant">a₀ = 1.0 nm（本教材階段 2 取值）</span><span lang="en">a₀ = 1.0 nm (this course, Stage 2)</span></span>
+<span><i class="sw" style="background:var(--h)"></i><span lang="zh-Hant">a₀ = 3.0 nm（Stathis 1999，有效缺陷尺寸）</span><span lang="en">a₀ = 3.0 nm (Stathis 1999, effective defect size)</span></span>
+<span><i class="sw" style="background:var(--ink)"></i><span lang="zh-Hant">你現在調的 a₀（虛線）</span><span lang="en">your current a₀ (dashed)</span></span>
+</div>
+
+<div class="two" style="margin-top:12px">
+<div><svg id="svgW" viewBox="0 0 560 400" style="width:100%;height:auto;display:block" role="img" aria-label="Weibull probability plot"></svg></div>
+<div><svg id="svgB" viewBox="0 0 560 400" style="width:100%;height:auto;display:block" role="img" aria-label="Weibull slope versus oxide thickness"></svg></div>
+</div>
+<p class="cap" id="capOut" style="margin-top:10px"></p>
+<p class="verify"><b><span lang="zh-Hant">模型輸出</span><span lang="en">Model output</span></b>
+<span lang="zh-Hant">：以 β = m·t<sub>ox</sub>/a₀ 與 Weibull 分布直接計算，<b>不是任何製程的實測資料</b>。
+t<sub>ox</sub> &lt; a₀ 時 N 夾在 1（單一缺陷即可貫穿），此時 β 退化到 m。</span>
+<span lang="en">: computed directly from β = m·t<sub>ox</sub>/a₀ and the Weibull distribution — <b>not measured data from any process</b>.
+For t<sub>ox</sub> &lt; a₀, N is clamped at 1 (a single defect suffices to bridge), so β degenerates to m.</span></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>⑤ 三個可檢驗的後果</h2>
+
+<h3>(a) ppm 外推：a₀ 加倍，外推距離也加倍</h3>
+<p>從 t<sub>63</sub> 外推到失效率 F，用的是 t<sub>F</sub> = t<sub>63</sub>·[−ln(1−F)]<sup>1/β</sup>。
+指數是 <b>1/β</b>，而 β ∝ 1/a₀，所以指數 ∝ a₀ —— <b>a₀ 加倍，外推的對數距離就加倍</b>。</p>
+<table><thead><tr><th class="nw">a₀ 假設</th><th class="nw">β（t<sub>ox</sub> = 3 nm、m = 0.5）</th><th class="nw">t<sub>1ppm</sub> / t<sub>63</sub></th><th class="nw">外推距離</th><th>意思</th></tr></thead><tbody>
+<tr><td class="nw">0.4 nm</td><td class="nw">3.75</td><td class="nw">2.5 × 10<sup>−2</sup></td><td class="nw">1.6 個十進位</td><td>1 ppm 壽命約是中位數壽命的 2.5% —— 還能接受</td></tr>
+<tr><td class="nw">1.0 nm</td><td class="nw">1.50</td><td class="nw">1.0 × 10<sup>−4</sup></td><td class="nw">4.0 個十進位</td><td>再掉 2.4 個數量級</td></tr>
+<tr><td class="nw">3.0 nm</td><td class="nw">0.50</td><td class="nw">1.0 × 10<sup>−12</sup></td><td class="nw">12.0 個十進位</td><td><b>十二個數量級</b>。中位數撐一百年也保證不了 1 ppm 撐十年</td></tr>
+</tbody></table>
+<p class="note">同一批實測資料、同一個 t<sub>63</sub>，只因為引用了不同論文的 a₀，規格結論可以從「通過」變成「差十個數量級」。
+這是 TDDB 外推裡最少被討論、但影響最大的單一假設。</p>
+
+<h3>(b) 面積縮放：同一個指數，同一個懲罰</h3>
+<p>面積縮放律 t<sub>63</sub>(A₂) = t<sub>63</sub>(A₁)·(A₁/A₂)<sup>1/β</sup> 用的也是 1/β。
+所以 a₀ 的分歧會<b>同時</b>放大兩次外推的誤差：從 63% 到 ppm 一次，從測試電容到整顆晶片又一次。
+兩者相乘，才是最終的保證值。</p>
+
+<h3>(c) t<sub>ox</sub> &lt; a₀：滲流圖像自己崩掉</h3>
+<p>這是 Stathis 1999 最有意思的預測，原文是：
+<i>“The model predicts a singular behavior when the oxide thickness becomes less than the defect size,
+because in this limit a single defect near the center of the oxide is sufficient to create a continuous path across the sample.”</i></p>
+<div class="key"><div class="t">N 不可能小於 1</div>
+當 t<sub>ox</sub> &lt; a₀ 時，<b>一顆缺陷就能把上下電極連起來</b>，「路徑長度」這個概念消失，β 不再隨厚度下降，而是停在 m。
+這意味著 β 對厚度的縮放<b>有一個地板</b>：再薄下去，Weibull 斜率不會無限變小，而是被陷阱生成動力學接管。
+Nicollian 等人在 SiON 上量到的現象與此一致 —— EOT 低於 2.2 nm 之後厚度依存性明顯變弱，但到 1.0 nm 仍未消失，
+他們的解釋是路徑至少還需要兩顆陷阱（一顆 bulk、一顆界面）。</div>
+
+<h2>⑥ high-k 疊層：兩層不同的 a₀ 與 m</h2>
+<p>實際的 high-k/metal-gate 閘極是<b>疊層</b>：靠矽那一側有一層 SiO₂ 類的界面層（IL），上面才是 HfO₂。
+兩層的陷阱種類不同 → 捕獲截面不同 → <b>a₀ 不同</b>；缺陷生成機制不同 → <b>m 也不同</b>。
+把兩層放進同一個 β = m·t/a₀，會得到兩個不同的斜率。文獻報告的後果是：崩潰分成兩個階段
+（先在 IL 形成滲流路徑，再往 high-k 層傳播），而 Weibull 圖上可能出現<b>從平緩轉到陡峭的兩段斜率</b>，
+在大面積元件上尤其明顯。</p>
+<p class="note"><b>查證狀態：</b>「IL 主導、兩階段崩潰、雙斜率」這一段是本頁引用的二手整理，
+<b>本教材未取得這些論文全文逐字核對</b>（見下方來源表）。可追的原始文獻為
+Degraeve et al., IEDM 2005, p. 408（0.9 nm EOT SiO₂/ALD HfO₂ 疊層）與
+Kerber et al., IRPS 2009, p. 505（metal gate/high-k 的 TDDB 失效分布）。
+本頁逐字核對過的 high-k 內容只有 O'Connor et al., IRPS 2010 那一篇（捕獲截面與滲流距離的論證、β = 1.54 / 1.82）。</p>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>某製程量到 β = 1.2，t<sub>ox</sub> = 4 nm。這一定代表混進了外質失效嗎？</summary><div class="a">不一定 —— 這是階段 2 那個問題的修正版。若用 a₀ = 1 nm 且 m = 1，β 應該是 4，1.2 看起來確實異常低，容易歸因到外質失效。<b>但把 m 放回實測的 0.3，β = 0.3 × 4 = 1.2，剛好就是量到的值</b>。也就是說同一個數字可以是「本質 TDDB + 低 m」或「本質 TDDB + 外質尾巴」。要分辨必須看<b>分布形狀</b>（外質失效會在左下角翹出一條尾巴，單一 Weibull 擬不動），而不是只看擬合出來的 β 值。</div></details>
+<details><summary>為什麼只量 β 對 t<sub>ox</sub> 的斜率，沒辦法定出陷阱尺寸 a₀？</summary><div class="a">因為 β = m·t<sub>ox</sub>/a₀ 裡，m 與 1/a₀ 是<b>乘在一起</b>的。β 對 t<sub>ox</sub> 的斜率只能給你 m/a₀ 這一個組合，不能給你兩個數。要分開必須另外獨立量測 m —— 例如用 SILC（應力誘發漏電流）隨時間的冪次去定 m，再回頭算 a₀。這正是 Nicollian 等人的做法（取 m = 0.26 才得到 bulk 陷阱直徑 ≈ 0.4 nm），也是為什麼不同論文的 a₀ 數值不能互相搬用。</div></details>
+<details><summary>把介電質從 SiO₂ 換成 high-k，理論上 β 會變大還是變小？</summary><div class="a">單就陷阱尺寸這個因素看，high-k 的位能障較低、缺陷捕獲截面較大 → a₀ 較大 → 一條路徑需要的陷阱數 N 較少 → <b>β 應該變小</b>。但 β = m·N 還有 m 這個因子，而 high-k 的缺陷生成速率可能明顯較高，反而把 β 拉高。O'Connor 等人在 8 Å EOT HfO₂ 上量到 β = 1.54–1.82（高於同厚度常見的 0.8–1），他們的結論就是<b>高 m 蓋過了小 N</b>。所以答案是：<b>兩個因子反向，不能只憑材料猜，必須分別量。</b></div></details>
+<details><summary>如果持續把 t<sub>ox</sub> 縮下去，β 會一路掉到 0 嗎？</summary><div class="a">不會。N = t<sub>ox</sub>/a₀ 的地板是 1：當厚度小於陷阱尺寸，<b>一顆缺陷就足以貫穿</b>，「需要幾顆」這個問題消失（Stathis 1999 的奇異行為預測）。此時 β 停在 m，由陷阱生成動力學單獨決定。實務上這代表：超薄介電質的 Weibull 斜率下限不是幾何問題，而是<b>缺陷生成速率問題</b> —— 改善方向也因此從「加厚」換成「降低生成速率」。</div></details>
+</div>
+
+<h2>來源與查證狀態</h2>
+<p class="note">依照「呈現的資料事實必須與來源相同」的原則，以下標明每一項的查證狀態。
+<b>本頁所有 a₀ 數值都是論文中的擬合參數，不是獨立量測到的物理長度</b>；引用時請一併帶上它搭配的滲流幾何與 m。</p>
+<table><thead><tr><th class="nw">狀態</th><th>內容與出處</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（摘要）</span></td>
+  <td><a href="https://doi.org/10.1063/1.371590">J. H. Stathis, “Percolation models for gate oxide breakdown,” <i>J. Appl. Phys.</i> <b>86</b>(10), 5757–5766 (1999)</a>。
+  已逐字核對官方摘要全文，其中包含：<i>“The effective defect ‘size’ of about 3 nm is obtained from the thickness dependence of the breakdown distributions.”</i>、
+  <i>“The model predicts a singular behavior when the oxide thickness becomes less than the defect size, because in this limit a single defect near the center of the oxide is sufficient to create a continuous path across the sample.”</i>、
+  <i>“The critical defect density for breakdown shows a strong decrease with thickness below about 5 nm, then becomes constant below 3 nm.”</i>
+  以及梯度滲流（non-uniform density of sites）的處理。<b>本文全文未取得</b>，梯度滲流的細節（例如「厚於 2–3 nm 時均勻生成給出最大 β」）引自 Nicollian 論文對本文的轉述。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（摘要）</span></td>
+  <td><a href="https://doi.org/10.1109/55.924847">J. Suñé, “New physics-based analytic approach to the thin-oxide breakdown statistics,” <i>IEEE Electron Device Lett.</i> <b>22</b>(6), 296–298 (2001)</a>。
+  已逐字核對摘要全文：<i>“A new analytic cell-based approach to the modeling of the oxide breakdown statistics is presented.
+  The new model has the same predictive power as the standard percolation approach and the advantage of providing simple analytic results.
+  The scaling with oxide thickness of the Weibull slope and the mean critical density of defects at breakdown are accounted for correctly.”</i>
+  <b>本文全文未取得</b>；β = m·t<sub>ox</sub>/a₀ 這個式子的形式與「因 β 在 t<sub>ox</sub>→0 時不為零而引入界面層偏移」的說明，
+  引自 P. E. Nicollian 博士論文第 4.8.1 節（式 4.48）對本文的轉述。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（全文）</span></td>
+  <td><a href="https://ris.utwente.nl/ws/files/6040695/thesis_P_Nicollian.pdf">P. E. Nicollian, <i>Physics of Trap Generation and Electrical Breakdown in Ultra-thin SiO₂ and SiON Gate Dielectrics</i>（University of Twente 博士論文）</a>，第 4.8 節。
+  已取得全文並逐字核對：式 (4.48) <i>β = m·t<sub>OX</sub>/a₀</i>；
+  <i>“In the cell based approach, the trap size a0 is determined by the slope of β vs. tOX … a single defect size will not be extracted from the slope.
+  Instead, we find the instantaneous value of a0 for each β. When plotted against thickness, a0 asymptotically approaches its bulk value as tOX increases.”</i>；
+  <i>“Using m = 0.26 …, the bulk trap diameter is about 4Å, resulting in the Weibull slope remaining thickness dependent and &gt; 1 down to 10Å EOT.”</i>；
+  以及 <i>“Our experimental values of the trap generation power law exponent ‘m’ are about 0.3 …. This is smaller than the 0.5 to 1.0 values that are often reported in the literature.”</i>
+  本頁「m 實測約 0.26–1.0」與「SiON 在 EOT 1.0–3.3 nm 量到 β ≈ 0.9–2.0」兩項即出自此處（後者讀自論文 Fig. 4.53 的座標範圍，<b>是圖面讀值，不是表格數字</b>）。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（全文）</span></td>
+  <td><a href="https://doras.dcu.ie/15578/1/hughes1.pdf">R. O'Connor, G. Hughes, T. Kauerauf, L.-Å. Ragnarsson, “Time Dependent Dielectric Breakdown and Stress Induced Leakage Current Characteristics of 8Å EOT HfO₂ N-MOSFETS,” <i>IRPS</i> 2010, pp. 799–803</a>。
+  已取得全文並逐字核對本頁所有引句，包括 β = m·β<sub>ot</sub> 的定義、
+  <i>“a high Weibull slope is caused either by more traps being required to trigger the breakdown or a higher trap generation rate”</i>、
+  捕獲截面與滲流距離的論證，以及量測值「7.8 Å 層 β = 1.54、8.1 Å 層 β = 1.82，高於文獻同厚度常見的 ~0.8–1」與「N = 3 時回推 m = 0.61，高於文獻常見的 0.35–0.4」。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已核對（摘要）</span></td>
+  <td>J. Suñé, E. Y. Wu, S. Tous, “A physics-based deconstruction of the percolation model of oxide breakdown,” <i>Microelectron. Eng.</i> <b>84</b>(9–10), 1917–1920 (2007)。
+  本頁引句 <i>“this simple geometric picture reaches its limit when the oxide thickness is scaled down and becomes comparable to the ‘size’ of the involved defects”</i>
+  取自公開摘要。<b>全文未取得</b>，I<sub>BD</sub> 依存性的細節僅依摘要陳述，<b>未逐條核對</b>。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 僅書目核對</span></td>
+  <td><b>以下三篇只核對了書目資料（作者、標題、刊名、卷期頁、年份），全文與內容均未取得</b>，
+  本頁對其內容的描述轉述自上列已核對文獻的引用段落：<br>
+  · R. Degraeve, G. Groeseneken, R. Bellens, M. Depas, H. E. Maes, “A Consistent Model for the Thickness Dependence of Intrinsic Breakdown in Ultra-thin Oxides,” <i>IEDM</i> 1995, p. 863<br>
+  · R. Degraeve, G. Groeseneken, R. Bellens, J. L. Ogier, M. Depas, P. J. Roussel, H. E. Maes, “New insights in the relation between electron trap generation and the statistical properties of oxide breakdown,” <i>IEEE Trans. Electron Devices</i> <b>45</b>, 904–911 (1998)<br>
+  · A. T. Krishnan, P. E. Nicollian, “Analytic Extension of the Cell-Based Oxide Breakdown Model to Full Percolation and its Implications,” <i>IRPS</i> 2007, p. 232</td></tr>
+<tr><td class="nw"><span class="badge warn">! 未取得全文</span></td>
+  <td><b>⑥ high-k 疊層那一節的雙斜率／兩階段崩潰敘述未經逐字核對。</b>
+  可追的原始文獻為 R. Degraeve et al., “Degradation and breakdown of 0.9 nm EOT SiO₂ ALD HfO₂ metal gate stacks under positive constant voltage stress,” <i>IEDM</i> 2005, pp. 408–411，
+  與 A. Kerber, E. Cartier, B. P. Linder, S. A. Krishnan, T. Nigam, “TDDB failure distribution of metal gate/high-k CMOS devices on SOI substrates,” <i>IRPS</i> 2009, pp. 505–509。
+  <b>兩篇全文均未取得</b>，書目資料引自 O'Connor et al. (IRPS 2010) 的參考文獻列表。實際引用請以原文為準。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 模型輸出</span></td>
+  <td>④ 的兩張互動圖與 ⑤(a) 的表格<b>全部是模型輸出</b>，由 β = m·t<sub>ox</sub>/a₀ 與 Weibull 分布直接計算，
+  <b>不含任何實測資料</b>。表中 β 與外推距離四捨五入到小數第一或第二位，t<sub>1ppm</sub>/t<sub>63</sub> 取兩位有效數字。</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="prev" href="tddb-2-percolation.html"><div class="d">← 上一課 · 階段 2</div><div class="t">滲流模型</div></a><a class="next" href="tddb-4-model.html"><div class="d">下一課 · 階段 4 →</div><div class="t">統計與外推</div></a></div>
+<div class="foot"><b>模型範圍</b>：本頁的 β 全部由 cell-based 關係式 β = m·t<sub>ox</sub>/a₀ 直接計算，a₀ 與 m 由使用者指定；
+文獻中的 a₀ 數值是各自滲流幾何下的擬合參數，<b>不是可獨立量測的物理長度，也不能跨模型搬用</b>。
+<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br>
+<b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<h2>⑤ Three testable consequences</h2>
+
+<h3>(a) ppm extrapolation: double a₀, double the distance you extrapolate</h3>
+<p>Extrapolating from t<sub>63</sub> to a failure rate F uses t<sub>F</sub> = t<sub>63</sub>·[−ln(1−F)]<sup>1/β</sup>.
+The exponent is <b>1/β</b>, and β ∝ 1/a₀, so the exponent ∝ a₀ — <b>double a₀ and you double the logarithmic distance you extrapolate</b>.</p>
+<table><thead><tr><th class="nw">a₀ assumed</th><th class="nw">β (t<sub>ox</sub> = 3 nm, m = 0.5)</th><th class="nw">t<sub>1ppm</sub> / t<sub>63</sub></th><th class="nw">Distance extrapolated</th><th>Meaning</th></tr></thead><tbody>
+<tr><td class="nw">0.4 nm</td><td class="nw">3.75</td><td class="nw">2.5 × 10<sup>−2</sup></td><td class="nw">1.6 decades</td><td>1 ppm lifetime is about 2.5% of median lifetime — workable</td></tr>
+<tr><td class="nw">1.0 nm</td><td class="nw">1.50</td><td class="nw">1.0 × 10<sup>−4</sup></td><td class="nw">4.0 decades</td><td>Another 2.4 orders of magnitude worse</td></tr>
+<tr><td class="nw">3.0 nm</td><td class="nw">0.50</td><td class="nw">1.0 × 10<sup>−12</sup></td><td class="nw">12.0 decades</td><td><b>Twelve orders of magnitude.</b> A 100-year median still can't guarantee 1 ppm for ten years</td></tr>
+</tbody></table>
+<p class="note">Same measured data, same t<sub>63</sub> — and purely because you cited a different paper's a₀, the spec verdict can swing from "passes" to "ten orders of magnitude short."
+This is the least-discussed yet highest-leverage single assumption in TDDB extrapolation.</p>
+
+<h3>(b) Area scaling: same exponent, same penalty</h3>
+<p>The area-scaling law t<sub>63</sub>(A₂) = t<sub>63</sub>(A₁)·(A₁/A₂)<sup>1/β</sup> uses 1/β as well.
+So the a₀ disagreement amplifies <b>both</b> extrapolations: once from 63% down to ppm, and again from test capacitor up to full chip.
+It's the product of the two that sets your final guarantee.</p>
+
+<h3>(c) t<sub>ox</sub> &lt; a₀: the percolation picture collapses on itself</h3>
+<p>This is Stathis's most interesting 1999 prediction, in his own words:
+<i>“The model predicts a singular behavior when the oxide thickness becomes less than the defect size,
+because in this limit a single defect near the center of the oxide is sufficient to create a continuous path across the sample.”</i></p>
+<div class="key"><div class="t">N can never go below 1</div>
+Once t<sub>ox</sub> &lt; a₀, <b>a single defect bridges both electrodes</b>, the notion of "path length" disappears, and β stops falling with thickness — it parks at m.
+So β's thickness scaling <b>has a floor</b>: thin the dielectric further and the Weibull slope doesn't shrink without limit, it gets taken over by trap-generation kinetics.
+Nicollian et al.'s SiON measurements are consistent with this — the thickness dependence weakens markedly below 2.2 nm EOT yet still hasn't vanished at 1.0 nm,
+which they explain by the path still needing at least two traps (one bulk, one interface).</div>
+
+<h2>⑥ High-k stacks: two layers, two different a₀ and m</h2>
+<p>A real high-k/metal-gate stack is exactly that — a <b>stack</b>: an SiO₂-like interfacial layer (IL) on the silicon side, with HfO₂ above it.
+The two layers host different trap species → different capture cross sections → <b>different a₀</b>; and different defect-generation mechanisms → <b>different m</b>.
+Feed both into β = m·t/a₀ and you get two different slopes. The reported consequence is that breakdown proceeds in two phases
+(percolation paths form in the IL first, then propagate into the high-k), and the Weibull plot can show <b>a transition from a shallow to a steep slope</b>,
+most visibly on large-area devices.</p>
+<p class="note"><b>Verification status:</b> the "IL-controlled, two-phase breakdown, dual slope" passage is a secondary summary cited here;
+<b>this coursework has not obtained those papers' full text for verbatim checking</b> (see the source table below). The traceable primary references are
+Degraeve et al., IEDM 2005, p. 408 (0.9 nm EOT SiO₂/ALD HfO₂ stacks) and
+Kerber et al., IRPS 2009, p. 505 (TDDB failure distributions of metal gate/high-k devices).
+The only high-k content verbatim-verified on this page is O'Connor et al., IRPS 2010 (the capture-cross-section argument and β = 1.54 / 1.82).</p>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>A process measures β = 1.2 at t<sub>ox</sub> = 4 nm. Does that necessarily mean extrinsic failures got mixed in?</summary><div class="a">Not necessarily — this is the corrected version of that question from Stage 2. With a₀ = 1 nm and m = 1, β should be 4, so 1.2 does look anomalously low and extrinsic failure is the easy explanation. <b>But put m back at a measured 0.3 and β = 0.3 × 4 = 1.2 — exactly the measured value.</b> So the same number can mean "intrinsic TDDB with low m" or "intrinsic TDDB plus an extrinsic tail." Telling them apart requires looking at the <b>distribution shape</b> (extrinsic failures throw an upturned tail at the lower left that a single Weibull can't fit), not just the fitted β.</div></details>
+<details><summary>Why can't measuring the β-vs-t<sub>ox</sub> slope pin down the trap size a₀?</summary><div class="a">Because in β = m·t<sub>ox</sub>/a₀, m and 1/a₀ are <b>multiplied together</b>. The β-vs-t<sub>ox</sub> slope gives you only the combination m/a₀, which is one number, not two. Separating them requires measuring m independently — for example, fitting the power law of SILC (stress-induced leakage current) over time to get m, then back-calculating a₀. That's exactly what Nicollian et al. did (taking m = 0.26 is what yields a bulk trap diameter ≈ 0.4 nm), and it's why a₀ values from different papers can't be swapped around.</div></details>
+<details><summary>Swap SiO₂ for a high-k — should β go up or down, in theory?</summary><div class="a">On the trap-size factor alone: high-k has a lower barrier and a larger defect capture cross section → larger a₀ → fewer traps N needed per path → <b>β should go down</b>. But β = m·N also carries m, and high-k defect generation rates can be markedly higher, pushing β back up. O'Connor et al. measured β = 1.54–1.82 on 8 Å EOT HfO₂ (above the 0.8–1 commonly seen at that thickness) and concluded that <b>a high m overwhelmed the small N</b>. So the answer is: <b>the two factors pull in opposite directions — you can't guess from the material, you have to measure them separately.</b></div></details>
+<details><summary>If you keep scaling t<sub>ox</sub> down, does β fall all the way to 0?</summary><div class="a">No. N = t<sub>ox</sub>/a₀ has a floor of 1: once the thickness is below the trap size, <b>a single defect suffices to bridge</b> and the question "how many defects" stops meaning anything (Stathis's 1999 singular-behavior prediction). β then parks at m, set by trap-generation kinetics alone. Practically, that means the Weibull-slope floor for ultra-thin dielectrics is not a geometry problem but a <b>defect-generation-rate problem</b> — which also moves the fix from "make it thicker" to "lower the generation rate."</div></details>
+</div>
+
+<h2>Sources and verification status</h2>
+<p class="note">Following the principle that "a presented data fact must match its source," each item's verification status is labeled below.
+<b>Every a₀ value on this page is a fit parameter from a paper, not an independently measured physical length</b> — quote it together with the percolation geometry and the m it came with.</p>
+<table><thead><tr><th class="nw">Status</th><th>Content and source</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (abstract)</span></td>
+  <td><a href="https://doi.org/10.1063/1.371590">J. H. Stathis, “Percolation models for gate oxide breakdown,” <i>J. Appl. Phys.</i> <b>86</b>(10), 5757–5766 (1999)</a>.
+  The full official abstract was checked verbatim and contains:
+  <i>“The effective defect ‘size’ of about 3 nm is obtained from the thickness dependence of the breakdown distributions.”</i>;
+  <i>“The model predicts a singular behavior when the oxide thickness becomes less than the defect size, because in this limit a single defect near the center of the oxide is sufficient to create a continuous path across the sample.”</i>;
+  <i>“The critical defect density for breakdown shows a strong decrease with thickness below about 5 nm, then becomes constant below 3 nm.”</i>;
+  plus the treatment of a non-uniform density of sites (gradient percolation). <b>Full text not obtained</b>; gradient-percolation details (e.g. "uniform generation gives maximum β above 2–3 nm") are taken from Nicollian's summary of this paper.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (abstract)</span></td>
+  <td><a href="https://doi.org/10.1109/55.924847">J. Suñé, “New physics-based analytic approach to the thin-oxide breakdown statistics,” <i>IEEE Electron Device Lett.</i> <b>22</b>(6), 296–298 (2001)</a>.
+  Full abstract checked verbatim: <i>“A new analytic cell-based approach to the modeling of the oxide breakdown statistics is presented.
+  The new model has the same predictive power as the standard percolation approach and the advantage of providing simple analytic results.
+  The scaling with oxide thickness of the Weibull slope and the mean critical density of defects at breakdown are accounted for correctly.”</i>
+  <b>Full text not obtained</b>; the explicit form β = m·t<sub>ox</sub>/a₀ and the note about an interfacial-layer offset (because β shouldn't vanish as t<sub>ox</sub>→0)
+  are taken from §4.8.1 (Eq. 4.48) of P. E. Nicollian's PhD thesis summarizing this paper.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (full text)</span></td>
+  <td><a href="https://ris.utwente.nl/ws/files/6040695/thesis_P_Nicollian.pdf">P. E. Nicollian, <i>Physics of Trap Generation and Electrical Breakdown in Ultra-thin SiO₂ and SiON Gate Dielectrics</i> (PhD thesis, University of Twente)</a>, §4.8.
+  Full text obtained and checked verbatim: Eq. (4.48) <i>β = m·t<sub>OX</sub>/a₀</i>;
+  <i>“In the cell based approach, the trap size a0 is determined by the slope of β vs. tOX … a single defect size will not be extracted from the slope.
+  Instead, we find the instantaneous value of a0 for each β. When plotted against thickness, a0 asymptotically approaches its bulk value as tOX increases.”</i>;
+  <i>“Using m = 0.26 …, the bulk trap diameter is about 4Å, resulting in the Weibull slope remaining thickness dependent and &gt; 1 down to 10Å EOT.”</i>;
+  and <i>“Our experimental values of the trap generation power law exponent ‘m’ are about 0.3 …. This is smaller than the 0.5 to 1.0 values that are often reported in the literature.”</i>
+  This page's "m measures ≈ 0.26–1.0" and "SiON measures β ≈ 0.9–2.0 over EOT 1.0–3.3 nm" come from here (the latter read off the axis ranges of Fig. 4.53 — <b>a reading from the figure, not a tabulated number</b>).</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (full text)</span></td>
+  <td><a href="https://doras.dcu.ie/15578/1/hughes1.pdf">R. O'Connor, G. Hughes, T. Kauerauf, L.-Å. Ragnarsson, “Time Dependent Dielectric Breakdown and Stress Induced Leakage Current Characteristics of 8Å EOT HfO₂ N-MOSFETS,” <i>IRPS</i> 2010, pp. 799–803</a>.
+  Full text obtained and every quotation on this page checked verbatim, including the definition β = m·β<sub>ot</sub>,
+  <i>“a high Weibull slope is caused either by more traps being required to trigger the breakdown or a higher trap generation rate”</i>,
+  the capture-cross-section/percolation-distance argument, and the measured values "β = 1.54 for the 7.8 Å layer and 1.82 for the 8.1 Å case, in excess of the ~0.8–1 commonly reported at similar thickness" and "a 3-trap path backs out a generation rate of 0.61, much higher than the 0.35–0.4 commonly seen."</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Checked (abstract)</span></td>
+  <td>J. Suñé, E. Y. Wu, S. Tous, “A physics-based deconstruction of the percolation model of oxide breakdown,” <i>Microelectron. Eng.</i> <b>84</b>(9–10), 1917–1920 (2007).
+  The quotation <i>“this simple geometric picture reaches its limit when the oxide thickness is scaled down and becomes comparable to the ‘size’ of the involved defects”</i>
+  is from the public abstract. <b>Full text not obtained</b>; the I<sub>BD</sub>-dependence detail rests on the abstract's own statement and was <b>not checked clause by clause</b>.</td></tr>
+<tr><td class="nw"><span class="badge warn">! Bibliography only</span></td>
+  <td><b>For the three papers below, only the bibliographic data (authors, title, venue, volume/pages, year) were checked — neither full text nor content was obtained</b>;
+  this page's description of their content is relayed from the citing passages of the verified references above:<br>
+  · R. Degraeve, G. Groeseneken, R. Bellens, M. Depas, H. E. Maes, “A Consistent Model for the Thickness Dependence of Intrinsic Breakdown in Ultra-thin Oxides,” <i>IEDM</i> 1995, p. 863<br>
+  · R. Degraeve, G. Groeseneken, R. Bellens, J. L. Ogier, M. Depas, P. J. Roussel, H. E. Maes, “New insights in the relation between electron trap generation and the statistical properties of oxide breakdown,” <i>IEEE Trans. Electron Devices</i> <b>45</b>, 904–911 (1998)<br>
+  · A. T. Krishnan, P. E. Nicollian, “Analytic Extension of the Cell-Based Oxide Breakdown Model to Full Percolation and its Implications,” <i>IRPS</i> 2007, p. 232</td></tr>
+<tr><td class="nw"><span class="badge warn">! Full text not obtained</span></td>
+  <td><b>The dual-slope / two-phase breakdown account in §⑥ is not verbatim-verified.</b>
+  The traceable primary references are R. Degraeve et al., “Degradation and breakdown of 0.9 nm EOT SiO₂ ALD HfO₂ metal gate stacks under positive constant voltage stress,” <i>IEDM</i> 2005, pp. 408–411,
+  and A. Kerber, E. Cartier, B. P. Linder, S. A. Krishnan, T. Nigam, “TDDB failure distribution of metal gate/high-k CMOS devices on SOI substrates,” <i>IRPS</i> 2009, pp. 505–509.
+  <b>Neither full text was obtained</b>; the bibliographic data come from the reference list of O'Connor et al. (IRPS 2010). Cite the originals, not this page.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Model output</span></td>
+  <td>The two interactive plots in §④ and the table in §⑤(a) are <b>entirely model output</b>, computed directly from β = m·t<sub>ox</sub>/a₀ and the Weibull distribution,
+  with <b>no measured data</b>. β and the extrapolation distance are rounded to one or two decimals, t<sub>1ppm</sub>/t<sub>63</sub> to two significant figures.</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="prev" href="tddb-2-percolation.html"><div class="d">← Previous · Stage 2</div><div class="t">Percolation Model</div></a><a class="next" href="tddb-4-model.html"><div class="d">Next · Stage 4 →</div><div class="t">Statistics &amp; Extrapolation</div></a></div>
+<div class="foot"><b>Model scope</b>: every β on this page is computed directly from the cell-based relation β = m·t<sub>ox</sub>/a₀ with a₀ and m supplied by you.
+The a₀ values from the literature are fit parameters of their respective percolation geometries — <b>not independently measurable physical lengths, and not transferable between models</b>.
+<b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br>
+<b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){"use strict";
+const S={tox:3.0,a0:1.00,m:0.50};
+const REF=[{a0:0.4,c:'--nit'},{a0:1.0,c:'--e'},{a0:3.0,c:'--h'}];
+const LN10=Math.LN10;
+/* Weibit：y = ln(-ln(1-F))，Weibull 機率圖的縱軸 */
+const weibit=F=>Math.log(-Math.log(1-F));
+/* 本頁用 beta_raw（不夾 1.05 下限）：t_ox < a0 時 beta 本來就該退化到 m */
+const bet=(tox,a0,m)=>beta_raw(tox,a0,m);
+/* 失效率 F 對應的壽命，表示成相對 t63 的十進位對數距離 */
+const decOf=(F,b)=>weibit(F)/(b*LN10);
+
+const FT=[{F:0.632,s:'63.2%'},{F:0.1,s:'10%'},{F:1e-2,s:'1%'},{F:1e-3,s:'0.1%'},
+          {F:1e-4,s:'100 ppm'},{F:1e-6,s:'1 ppm'},{F:1e-8,s:'10 ppb'}];
+
+function drawWeibull(){
+  const svg=$('svgW'); while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const W=560,H=400,M={l:88,r:18,t:28,b:48},iw=W-M.l-M.r,ih=H-M.t-M.b;
+  const x0=-13,x1=1.4,y0=weibit(1e-8),y1=weibit(0.9);
+  const X=v=>M.l+(v-x0)/(x1-x0)*iw, Y=v=>M.t+ih-(v-y0)/(y1-y0)*ih;
+
+  for(let d=Math.ceil(x0);d<=x1;d++){
+    svg.appendChild(el('line',{x1:X(d),x2:X(d),y1:M.t,y2:M.t+ih,
+      stroke:css('--grid'),'stroke-width':d===0?1.4:0.6}));
+    if(d===0||d%2===0) svg.appendChild(txt(X(d),M.t+ih+17,d===0?'t~63~':'10'+supN(d),{ta:'middle',fs:11}));
+  }
+  FT.forEach(function(f){
+    const y=Y(weibit(f.F)); if(y<M.t-1||y>M.t+ih+1)return;
+    const hot=(f.F===1e-6);
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,stroke:hot?css('--h'):css('--grid'),
+      'stroke-width':hot?1.2:0.6,'stroke-dasharray':hot?'5 4':''}));
+    svg.appendChild(txt(M.l-9,y+4,f.s,{ta:'end',fs:11,fill:hot?css('--h'):css('--muted'),fw:hot?700:400}));
+  });
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-9,L('壽命 t / t~63~（每條格線一個十進位）','Lifetime t / t~63~ (one decade per gridline)'),{ta:'middle',fs:12}));
+  svg.appendChild(txt(15,M.t+ih/2,L('累積失效率 F','Cumulative failure rate F'),{ta:'middle',fs:12,rot:-90}));
+
+  /* 所有線都通過 (x=0, F=63.2%)，差別只在斜率 */
+  function line(a0,color,wid,dash){
+    const b=bet(S.tox,a0,S.m); if(!(b>0))return null;
+    const p=el('line',{x1:X(y1/(b*LN10)),y1:Y(y1),x2:X(y0/(b*LN10)),y2:Y(y0),
+      stroke:color,'stroke-width':wid,'stroke-linecap':'round'});
+    if(dash)p.setAttribute('stroke-dasharray',dash);
+    svg.appendChild(p); return b;
+  }
+  REF.forEach(function(r){
+    const b=line(r.a0,css(r.c),2.4,null);
+    if(b===null)return;
+    const yl=weibit(1e-6), xp=X(yl/(b*LN10));
+    if(xp>M.l+14) svg.appendChild(txt(xp,Y(yl)-8,'β='+b.toFixed(2),{ta:'middle',fs:11,fill:css(r.c),fw:700}));
+  });
+  line(S.a0,css('--ink'),1.5,'3 3');
+  svg.appendChild(el('circle',{cx:X(0),cy:Y(0),r:4,fill:css('--ink')}));
+  svg.appendChild(txt(X(0)-8,Y(0)-11,L('三條線共用的 t~63~','shared t~63~'),{ta:'end',fs:11,fill:css('--ink2')}));
+}
+
+function drawBeta(){
+  const svg=$('svgB'); while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const W=560,H=400,M={l:52,r:18,t:28,b:48},iw=W-M.l-M.r,ih=H-M.t-M.b;
+  const x0=0,x1=8,y0=0,y1=8;
+  const X=v=>M.l+(v-x0)/(x1-x0)*iw, Y=v=>M.t+ih-(v-y0)/(y1-y0)*ih;
+
+  svg.appendChild(el('rect',{x:M.l,y:Y(1),width:iw,height:M.t+ih-Y(1),fill:css('--h'),opacity:0.07}));
+  svg.appendChild(txt(M.l+9,Y(1)-8,L('β < 1：ppm 外推極殘酷','β < 1: brutal ppm extrapolation'),{fs:11,fill:css('--h'),fw:650}));
+
+  ticks(x0,x1,8).forEach(function(v){
+    svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:M.t,y2:M.t+ih,stroke:css('--grid'),'stroke-width':0.6}));
+    svg.appendChild(txt(X(v),M.t+ih+17,v,{ta:'middle',fs:11}));});
+  ticks(y0,y1,8).forEach(function(v){
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':0.6}));
+    svg.appendChild(txt(M.l-9,Y(v)+4,v,{ta:'end',fs:11}));});
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-9,L('氧化層厚度 t~ox~ (nm)','Oxide thickness t~ox~ (nm)'),{ta:'middle',fs:12}));
+  svg.appendChild(txt(15,M.t+ih/2,L('Weibull 斜率 β','Weibull slope β'),{ta:'middle',fs:12,rot:-90}));
+
+  function curve(a0,color,wid,dash){
+    let d='',pen='M';
+    for(let i=0;i<=200;i++){
+      const t=x0+(x1-x0)*i/200, b=bet(t,a0,S.m);
+      if(b>y1){pen='M';continue;}          /* 超出上限就斷線，不壓平成假的飽和 */
+      d+=pen+X(t).toFixed(1)+' '+Y(b).toFixed(1)+' '; pen='L';
+    }
+    if(!d)return;
+    const p=el('path',{d:d,fill:'none',stroke:color,'stroke-width':wid,'stroke-linejoin':'round'});
+    if(dash)p.setAttribute('stroke-dasharray',dash);
+    svg.appendChild(p);
+  }
+  REF.forEach(r=>curve(r.a0,css(r.c),2.4,null));
+  curve(S.a0,css('--ink'),1.5,'3 3');
+  /* 每條線的轉折點：t_ox = a0，此處 β = m */
+  REF.forEach(function(r){
+    if(r.a0<x0||r.a0>x1)return;
+    svg.appendChild(el('circle',{cx:X(r.a0),cy:Y(Math.min(y1,S.m)),r:2.8,fill:css(r.c)}));
+  });
+  const bNow=bet(S.tox,S.a0,S.m);
+  if(bNow<=y1) svg.appendChild(el('circle',{cx:X(S.tox),cy:Y(bNow),r:4.5,
+    fill:css('--surface'),stroke:css('--ink'),'stroke-width':2}));
+  else svg.appendChild(txt(X(S.tox),M.t+13,'β='+bNow.toFixed(1)+L('（超出圖外）',' (off scale)'),{ta:'middle',fs:11,fill:css('--ink'),fw:700}));
+  svg.appendChild(txt(M.l+iw,M.t-9,L('轉折點：t~ox~ = a₀，此處 β = m','kink at t~ox~ = a₀, where β = m'),{ta:'end',fs:11,fill:css('--muted')}));
+}
+
+function upd(){
+  S.tox=parseFloat($('sTox').value); S.a0=parseFloat($('sA0').value); S.m=parseFloat($('sM').value);
+  $('vTox').textContent=S.tox.toFixed(1)+' nm';
+  $('vA0').textContent=S.a0.toFixed(2)+' nm';
+  $('vM').textContent=S.m.toFixed(2);
+
+  const N=nPath(S.tox,S.a0), b=bet(S.tox,S.a0,S.m), thin=(S.tox<S.a0);
+  $('tN').textContent=N.toFixed(2);
+  $('tBeta').innerHTML=b.toFixed(2)+(thin?' <span class="u">(= m)</span>':'');
+  $('tPpm').innerHTML=expH(Math.pow(10,decOf(1e-6,b)));
+  $('tArea').innerHTML=expH(Math.pow(10,-4/b));
+
+  const dec=-decOf(1e-6,b);
+  $('capOut').innerHTML=L(
+    '目前設定：t<sub>ox</sub> = '+S.tox.toFixed(1)+' nm、a₀ = '+S.a0.toFixed(2)+' nm、m = '+S.m.toFixed(2)+
+    ' → 一條路徑需要 '+N.toFixed(2)+' 顆缺陷，β = '+b.toFixed(2)+'。'+
+    '要從 t<sub>63</sub> 外推到 1 ppm，必須往左走 <b>'+dec.toFixed(1)+' 個十進位</b>。'+
+    (thin?' <b>注意：t<sub>ox</sub> 已經小於 a₀，單一缺陷就能貫穿，β 停在 m 不再下降。</b>':''),
+    'Current setting: t<sub>ox</sub> = '+S.tox.toFixed(1)+' nm, a₀ = '+S.a0.toFixed(2)+' nm, m = '+S.m.toFixed(2)+
+    ' → a path needs '+N.toFixed(2)+' defects, β = '+b.toFixed(2)+'. '+
+    'Extrapolating from t<sub>63</sub> down to 1 ppm means walking <b>'+dec.toFixed(1)+' decades</b> to the left.'+
+    (thin?' <b>Note: t<sub>ox</sub> is now below a₀ — a single defect bridges the layer, so β parks at m and stops falling.</b>':''));
+
+  drawWeibull(); drawBeta();
+}
+['sTox','sA0','sM'].forEach(id=>$(id).addEventListener('input',upd));
+window.__rebuild=upd;
+upd();
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

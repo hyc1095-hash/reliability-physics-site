@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 6：如何防治 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 6：如何防治 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html" aria-current="page"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:86%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 6 / 7 · 如何防治</p>
+<h1>怎麼把 HCI 壓下去</h1>
+<p class="lede">前面五頁在解釋「為什麼會壞」。這一頁講「怎麼不讓它壞」——
+分成<b>製程、元件、電路</b>三個層級，每一項都附上代價。
+<b>所有 HCI 對策都是取捨，沒有免費的。</b></p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<ul>
+<li>所有對策最終都在做同一件事：<b>把 E<sub>m</sub> = (V<sub>D</sub>−V<sub>dsat</sub>)/l 壓下去</b>，
+不是把分子變小，就是把分母變大。</li>
+<li>製程端最有效的是 <b>LDD（n⁻ 延伸）</b> —— 拉長 l，本模型下改善約 700 倍，Idsat 只損失幾 %。</li>
+<li><b>pocket / halo 會惡化 HCI</b>（縮短 l、抬高 E<sub>m</sub>），但它是治短通道效應必要的手段 —— 這是最典型的兩難。</li>
+<li>電路端最有效的是<b>降低汲極擺幅</b>（指數效益）與 <b>cascode 分壓</b>。</li>
+<li>界面本身也能改：<b>氮化</b>用 Si–N 取代 Si–H、<b>氘退火</b>用 D 取代 H，都是直接提高 φ<sub>it</sub>。</li>
+</ul></div>
+
+<h2>先看全貌：每個對策動的是哪一項</h2>
+<div class="eq" style="font-size:21px">
+E<sub>m</sub> <span style="color:var(--ink2)">≈</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 10px;color:var(--h)">V<sub>D</sub> − V<sub>dsat</sub></span>
+<span style="display:block;padding:0 10px;color:var(--e)">l</span></span>
+&nbsp;&nbsp;<span style="color:var(--ink2)">，</span>&nbsp;&nbsp;
+損傷率 ∝ (I<sub>D</sub>/W) · e<sup>−φ<sub>it</sub> / (qλE<sub>m</sub>)</sup>
+<span class="say">只有四個地方可以下手：<b style="color:var(--h)">壓低分子</b>（降 V<sub>D</sub>、抬 V<sub>dsat</sub>）、
+<b style="color:var(--e)">拉大分母</b>（增大 l）、<b>提高 φ<sub>it</sub></b>（換更強的鍵）、
+或<b>縮短暴露時間</b>（duty、轉態時間）。下面每一個對策都可以歸到這四類之一。</span></div>
+
+<h2>動手比較：LDD 與 halo 各做了什麼</h2>
+<p>這是本頁的核心互動。開關兩個 implant，看結構、電場與壽命同時變化。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 6 / 7 · Mitigation</p>
+<h1>Pushing HCI down</h1>
+<p class="lede">The last five pages explained "why it breaks." This page covers "how to stop it from breaking" —
+split into three levels, <b>process, device, and circuit</b>, each countermeasure with its cost attached.
+<b>Every HCI countermeasure is a trade-off; none of them are free.</b></p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<ul>
+<li>Every countermeasure ultimately does the same thing: <b>push down E<sub>m</sub> = (V<sub>D</sub>−V<sub>dsat</sub>)/l</b>,
+either by shrinking the numerator or growing the denominator.</li>
+<li>The most effective process-side lever is <b>LDD (n⁻ extension)</b> — it lengthens l; in this model it's roughly a 700× improvement, at a cost of just a few percent of I<sub>dsat</sub>.</li>
+<li><b>Pocket / halo implants make HCI worse</b> (they shorten l and raise E<sub>m</sub>), yet they're necessary to control short-channel effects — the textbook dilemma.</li>
+<li>The most effective circuit-side levers are <b>lowering the drain swing</b> (exponential payoff) and <b>cascode voltage division</b>.</li>
+<li>The interface itself can also be engineered: <b>nitridation</b> replaces Si–H with Si–N, <b>deuterium anneal</b> replaces H with D — both directly raise φ<sub>it</sub>.</li>
+</ul></div>
+
+<h2>The big picture first: which term does each fix move?</h2>
+<div class="eq" style="font-size:21px">
+E<sub>m</sub> <span style="color:var(--ink2)">≈</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 10px;color:var(--h)">V<sub>D</sub> − V<sub>dsat</sub></span>
+<span style="display:block;padding:0 10px;color:var(--e)">l</span></span>
+&nbsp;&nbsp;<span style="color:var(--ink2)">,</span>&nbsp;&nbsp;
+damage rate ∝ (I<sub>D</sub>/W) · e<sup>−φ<sub>it</sub> / (qλE<sub>m</sub>)</sup>
+<span class="say">There are only four places to intervene: <b style="color:var(--h)">shrink the numerator</b> (lower V<sub>D</sub>, raise V<sub>dsat</sub>),
+<b style="color:var(--e)">grow the denominator</b> (increase l), <b>raise φ<sub>it</sub></b> (swap in a stronger bond),
+or <b>shorten the exposure time</b> (duty cycle, transition time). Every fix below falls into one of these four categories.</span></div>
+
+<h2>Try it: what LDD and halo each actually do</h2>
+<p>This is the page's core interactive. Toggle the two implants and watch the structure, field, and lifetime change together.</p>
+</div>
+
+<!-- 互動元件：中英共用同一組 DOM／JS，文字用 span[lang] 內嵌雙語 -->
+<div class="card" style="padding:14px 16px">
+  <div class="tools" style="margin-bottom:10px">
+    <button class="tg" id="bLDD"><span lang="zh-Hant">LDD n⁻ 延伸</span><span lang="en">LDD n⁻ extension</span></button>
+    <button class="tg" id="bHALO"><span lang="zh-Hant">pocket / halo</span><span lang="en">pocket / halo</span></button>
+    <button class="tg" id="bLBL" aria-pressed="true"><span lang="zh-Hant">顯示標註</span><span lang="en">Show labels</span></button>
+    <button class="tg" id="playBtn" aria-pressed="true">⏸ <span lang="zh-Hant">暫停動畫</span><span lang="en">Pause animation</span></button>
+    <button class="tg" id="resetBtn"><span lang="zh-Hant">清除累積缺陷</span><span lang="en">Clear accumulated defects</span></button>
+  </div>
+  <div class="tools" style="margin-bottom:10px">
+    <span class="note" style="margin:0 6px 0 0"><span lang="zh-Hant">implant 劑量：</span><span lang="en">Implant dose:</span></span>
+    <button class="tg" id="dLo"><span lang="zh-Hant">淡</span><span lang="en">Light</span></button>
+    <button class="tg" id="dMi" aria-pressed="true"><span lang="zh-Hant">中（預設）</span><span lang="en">Medium (default)</span></button>
+    <button class="tg" id="dHi"><span lang="zh-Hant">濃</span><span lang="en">Heavy</span></button>
+    <span class="note" id="dTxt" style="margin:0 0 0 8px"></span>
+  </div>
+  <div class="ctrls" style="margin-bottom:10px">
+    <div class="ctrl"><label for="rVD6"><span lang="zh-Hant">汲極電壓 V<sub>D</sub></span><span lang="en">Drain voltage V<sub>D</sub></span></label>
+      <div class="row"><input type="range" id="rVD6" min="1.5" max="10" step="0.05" value="5">
+      <span class="val" id="vVD6">—</span></div></div>
+  </div>
+  <p class="note" style="margin:0 0 10px"><span lang="zh-Hant">這一頁只給三檔劑量，重點是看<b>取捨的方向</b>。
+  要逐一細調 N<sub>LDD</sub> / L<sub>ext</sub> / N<sub>halo</sub>（可以直接輸入量級），
+  以及換元件結構與閘極材料，請到<a href="hci-7-playground.html">階段 7 的可調模型工作台</a>。</span><span lang="en">This page only offers three dose levels — the point is to see the <b>direction of the trade-off</b>.
+  To fine-tune N<sub>LDD</sub> / L<sub>ext</sub> / N<sub>halo</sub> individually (you can type in exact orders of magnitude directly),
+  or to switch device structure and gate material, go to <a href="hci-7-playground.html">Stage 7's tunable model workbench</a>.</span></p>
+  <div class="legend" id="legV"></div>
+  <div id="viz"></div>
+  <div class="tiles" id="tiles6" style="margin-top:14px"></div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0"><span lang="zh-Hant">四種組合的壽命與代價</span><span lang="en">Lifetime and cost of the four combinations</span></h3>
+<p class="cap"><span lang="zh-Hant">以無 implant 的裸元件為 1。壽命 ∝ 1 / 損傷率。</span><span lang="en">The bare device with no implants is set to 1. Lifetime ∝ 1 / damage rate.</span></p>
+<div class="legend" id="legB6"></div>
+<div id="cB6"></div>
+<p class="note" id="note6" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>製程層級</h2>
+
+<div class="fixcard proc"><div class="lv">製程 · 動分母 l</div>
+<h4>1. LDD / n⁻ 延伸（Lightly Doped Drain）</h4>
+<p>在側壁間隔物底下做一段<b>輕摻雜的 n⁻ 延伸區</b>，把重摻雜的 n⁺ 推遠。
+汲極電壓的一部分改由這段延伸區的空乏區承擔，<b>高場區被拉長、峰值電場被攤平</b>。
+數學上就是 l → l + W<sub>dep,LDD</sub>。</p>
+<div class="tradeoff"><b>代價：</b>n⁻ 區電阻率高 → 串聯電阻 R<sub>ext</sub> 上升 → I<sub>dsat</sub> 與 R<sub>on</sub> 都變差。
+摻雜越輕、延伸越長，HCI 越好但電阻越大。<b>這就是 LDD 劑量調校的全部內容。</b>
+另外側壁間隔物寬度直接決定 L<sub>ext</sub>，所以 spacer 製程的變異會直接反映到 HCI 上。</div></div>
+
+<div class="fixcard proc"><div class="lv">製程 · 動分母 l（反向）</div>
+<h4>2. pocket / halo implant —— 治短通道，但惡化 HCI</h4>
+<p>在源汲接面周圍打入<b>局部的 p 型摻雜</b>（傾角佈植），用來抑制 punchthrough、減少 V<sub>t</sub> roll-off 與 DIBL。
+但高摻雜讓空乏區縮短，<b>電力線更快被終結 → 有效 l 變小 → E<sub>m</sub> 上升 → HCI 惡化</b>。</p>
+<div class="tradeoff"><b>取捨：</b>短通道效應與 HCI 直接對打，沒有兩全解。實務上的折衷：
+<b>降低 halo 劑量</b>（犧牲一點 SCE）、<b>只在源極側做 halo</b>（非對稱 halo，汲極側維持低摻雜）、
+或<b>調整傾角讓 halo 遠離汲極端的高場點</b>。<br>
+用上面的互動可以直接看到這個兩難：打開 halo，V<sub>t</sub> 上升（SCE 改善的代價）但損傷率跳好幾十倍。</div></div>
+
+<div class="fixcard proc"><div class="lv">製程 · 動 φ<sub>it</sub></div>
+<h4>3. 界面工程：氮化與氘退火</h4>
+<p>階段 1 講過，HCI 的永久損傷來自<b>打斷 Si–H 鍵</b>。既然如此，把鍵換強一點就好：</p>
+<ul style="margin:0 0 8px;padding-left:20px;font-size:16px">
+<li><b>氮化（nitridation）</b>：在界面引入氮，形成鍵能更高的 <b>Si–N</b> 取代部分 Si–H。
+同時氮化層也能阻擋硼穿透、提高介電常數。</li>
+<li><b>氘退火（deuterium anneal）</b>：用氘（D）取代氫（H）封懸鍵。D 質量是 H 的兩倍，
+振動模式與矽晶格的耦合不同，<b>多聲子激發的解離機率大幅降低</b>。文獻報告可有一個數量級以上的改善。</li>
+<li><b>降低製程誘發損傷</b>：電漿製程的天線效應（antenna）會在閘極累積電荷、先行破壞界面。
+遵守 antenna rule、加保護二極體，是「不要在出廠前就先傷一次」。</li>
+</ul>
+<div class="tradeoff"><b>代價：</b>氮化過量會降低遷移率、增加 NBTI（氮與硼、與 PMOS 的交互作用）。
+氘退火需要製程整合與氣體成本，且效果依製程整合方式差異很大。</div></div>
+
+<div class="fixcard proc"><div class="lv">製程 · 動分子</div>
+<h4>4. 接面工程：漸變接面與 DDD</h4>
+<p>比 LDD 更早的做法是 <b>DDD（Double-Diffused Drain）</b>：用兩次不同深度與濃度的佈植做出漸變接面，
+讓摻雜濃度從通道到 n⁺ 平滑上升，避免陡峭的接面造成場的尖峰。
+現代製程多半以 LDD + spacer 取代，但概念是一樣的：<b>不要讓摻雜濃度突然跳變</b>。</p>
+<div class="tradeoff"><b>代價：</b>橫向擴散大 → 有效通道長度縮短 → 短通道效應變嚴重、面積效率變差。</div></div>
+
+<div class="fixcard proc"><div class="lv">製程 · 注意副作用</div>
+<h4>5. 小心：有些「效能優化」會反過來惡化 HCI</h4>
+<p><b>應變矽（strained Si）</b>提高遷移率 µ。但 E<sub>sat</sub> = 2v<sub>sat</sub>/µ，µ 上升代表 E<sub>sat</sub> 下降、
+V<sub>dsat</sub> 下降 → <b>V<sub>D</sub> − V<sub>dsat</sub> 變大 → E<sub>m</sub> 上升</b>。
+同樣地，<b>減薄 t<sub>ox</sub></b> 提高驅動能力，但 l = √(3t<sub>ox</sub>x<sub>j</sub>) 跟著變小，HCI 惡化。</p>
+<div class="tradeoff"><b>心法：</b>任何讓元件「更快」的手段，幾乎都會讓 HCI 更差。
+<b>效能與 HCI 幾乎總是對立的</b> —— 這不是巧合，兩者都由同一個電場決定。</div></div>
+
+<h2>元件層級</h2>
+
+<div class="fixcard dev"><div class="lv">元件 · 動分子與分母</div>
+<h4>6. 加長通道 L（最直接，但不是最有效）</h4>
+<p>加長 L 會抬高 V<sub>dsat</sub>（因為 E<sub>sat</sub>L 變大），把分子壓小。
+但要記得階段 3 的重點：<b>l 的式子裡沒有 L</b>，所以加長 L 的效果<b>比一般人以為的弱</b>。</p>
+<div class="tradeoff"><b>代價：</b>面積、電容、速度全部變差，而且 I<sub>D</sub> ∝ 1/L 直接掉。
+實務做法是<b>只對 reliability simulator 標出來的那幾顆熱點元件</b>放大 L，不要全域加長。</div></div>
+
+<div class="fixcard dev"><div class="lv">元件 · 換一種元件</div>
+<h4>7. 高壓節點改用厚氧元件</h4>
+<p>大部分製程都提供 <b>I/O device（厚氧、長通道、高 V<sub>t</sub>）</b>。
+厚 t<sub>ox</sub> 讓 l 變大、長 L 讓 V<sub>dsat</sub> 變大，兩邊都往好的方向走。
+凡是要承受接近或超過核心電壓的節點，直接換元件比在核心元件上想辦法有效得多。</p>
+<div class="tradeoff"><b>代價：</b>速度慢、面積大、V<sub>t</sub> 高（低壓下驅動力不足）。</div></div>
+
+<div class="fixcard dev"><div class="lv">元件 · 高壓專用結構</div>
+<h4>8. 汲極延伸元件、RESURF、場板</h4>
+<p>高壓應用（LDMOS、DEMOS）用更徹底的手段把電場攤開：
+<b>汲極延伸區（drift region）</b>把高場區拉到很長、
+<b>RESURF</b>（降低表面電場）用縱向空乏抵銷橫向電場、
+<b>場板（field plate）</b>用金屬或多晶矽電極在表面上方重新塑形電場分布。</p>
+<div class="tradeoff"><b>代價：</b>面積大幅增加、R<sub>on</sub>·A 變差。
+高壓元件的設計核心就是 <b>R<sub>on</sub> 與崩潰電壓 / HCI 的三角取捨</b>。</div></div>
+
+<div class="fixcard dev"><div class="lv">元件 · 佈局</div>
+<h4>9. 非對稱設計與版圖手法</h4>
+<p><b>非對稱 LDD</b>：只在汲極側做輕摻雜延伸，源極側維持 n⁺ —— 拿到 HCI 的好處，
+又不用付源極串聯電阻（R<sub>s</sub> 直接吃 g<sub>m</sub>）的代價。適用於電流方向固定的元件。<br>
+<b>多指佈局</b>：把大 W 拆成多指，降低單指電流密度與自熱。</p>
+<div class="tradeoff"><b>限制：</b>非對稱元件<b>不能雙向使用</b>，也不能用在源汲會對調的類比開關上。
+而且 PDK 未必提供，可能要走客製元件流程。</div></div>
+
+<h2>電路與系統層級</h2>
+
+<div class="fixcard ckt"><div class="lv">電路 · 動分子（效益最大）</div>
+<h4>10. 降低汲極擺幅 —— 指數級的效益</h4>
+<p>損傷率對 E<sub>m</sub> 是指數敏感，而 E<sub>m</sub> 直接正比於 V<sub>D</sub> − V<sub>dsat</sub>。
+<b>降 10% 的 V<sub>D</sub>，損傷率往往掉一個數量級。</b>這是所有手段裡投報率最高的，前提是規格允許。</p>
+<div class="tradeoff"><b>代價：</b>擺幅小 → 訊噪比、動態範圍、驅動能力都變差。
+通常是系統架構層級的決定，不是後期能改的。</div></div>
+
+<div class="fixcard ckt"><div class="lv">電路 · 分壓</div>
+<h4>11. Cascode 疊接</h4>
+<p>把一顆要承受全電壓的元件，換成兩顆疊接。每顆只承受一半左右的 V<sub>DS</sub>。
+因為損傷率是指數函數，<b>電壓減半的效果遠大於「元件數加倍」的懲罰</b>。
+這是類比與 I/O 電路裡最常用的 HCI（與 TDDB）對策。</p>
+<div class="tradeoff"><b>代價：</b>voltage headroom 少一個 V<sub>dsat</sub>、面積增加、需要額外的偏壓電路，
+且上下管的偏壓分配要在所有製程角落與暫態下都成立（上電瞬間最容易出事）。</div></div>
+
+<div class="fixcard ckt"><div class="lv">電路 · 動暴露時間</div>
+<h4>12. 控制轉態時間與避免中間偏壓</h4>
+<p>階段 5 的工具算過：<b>90% 的損傷集中在週期的 1% 以內</b>，而那個窗口的寬度由 t<sub>r</sub>/t<sub>f</sub> 決定。
+所以：</p>
+<ul style="margin:0 0 8px;padding-left:20px;font-size:16px">
+<li><b>邊緣越慢，每次轉態的損傷越多</b>（窗口變寬）。避免不必要的慢 slew。</li>
+<li><b>避免節點長時間停在中間電位</b>：浮接節點、緩慢的上電時序、類比訊號緩慢掃過中間值 ——
+這些都會讓元件長時間停在「高 V<sub>D</sub> + 有電流」的最糟組合。</li>
+<li><b>Power gating</b>：不用的區塊直接斷電，等效 duty 直接歸零。</li>
+</ul>
+<div class="tradeoff"><b>代價：</b>快邊緣意味著更大的瞬時電流、更差的 EMI 與 supply bounce。
+這是 HCI 與電源完整性之間的取捨。</div></div>
+
+<div class="fixcard ckt"><div class="lv">方法論</div>
+<h4>13. Reliability-aware 設計流程</h4>
+<p>與其猜哪顆元件危險，不如讓工具告訴你。用 foundry PDK 提供的老化模型
+（RelXpert / MOSRA / TMI 之類）跑 aging simulation，
+沿真實波形積分出每顆元件十年後的退化量，<b>只針對熱點元件補強</b>。</p>
+<div class="tradeoff"><b>前提：</b>模型要對。foundry 提供的參數有適用範圍，
+超出範圍（例如遠低於應力電壓、或極端溫度）的外推，誤差可以是數量級的。
+<b>模擬給的是排序，不是保證。</b></div></div>
+
+<h2>對策速查表</h2>
+<table>
+<thead><tr><th class="nw">層級</th><th class="nw">手段</th><th class="nw">動哪一項</th><th class="nw">改善幅度</th><th>主要代價</th></tr></thead>
+<tbody>
+<tr><td class="nw">製程</td><td class="nw"><b>LDD / n⁻ 延伸</b></td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge ok">很大</span></td><td>R<sub>ext</sub> ↑、I<sub>dsat</sub> ↓</td></tr>
+<tr><td class="nw">製程</td><td class="nw">降低 halo 劑量 / 非對稱 halo</td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge ok">大</span></td><td>短通道效應、DIBL 變差</td></tr>
+<tr><td class="nw">製程</td><td class="nw">氮化 / 氘退火</td><td class="nw">φ<sub>it</sub> ↑</td>
+  <td class="nw"><span class="badge warn">中等</span></td><td>遷移率下降、NBTI 可能變差、製程成本</td></tr>
+<tr><td class="nw">製程</td><td class="nw">漸變接面 / DDD</td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge warn">中等</span></td><td>橫向擴散、有效 L 縮短</td></tr>
+<tr><td class="nw">元件</td><td class="nw">加長 L</td><td class="nw">V<sub>dsat</sub> ↑</td>
+  <td class="nw"><span class="badge warn">中等偏弱</span></td><td>面積、速度、I<sub>D</sub> ∝ 1/L</td></tr>
+<tr><td class="nw">元件</td><td class="nw"><b>改用厚氧 I/O 元件</b></td><td class="nw">l ↑, V<sub>dsat</sub> ↑</td>
+  <td class="nw"><span class="badge ok">很大</span></td><td>速度、面積、V<sub>t</sub> 高</td></tr>
+<tr><td class="nw">元件</td><td class="nw">汲極延伸 / RESURF / 場板</td><td class="nw">l ↑↑</td>
+  <td class="nw"><span class="badge ok">極大</span></td><td>面積、R<sub>on</sub>·A</td></tr>
+<tr><td class="nw">電路</td><td class="nw"><b>降低汲極擺幅</b></td><td class="nw">分子 ↓</td>
+  <td class="nw"><span class="badge ok">極大（指數）</span></td><td>動態範圍、驅動能力</td></tr>
+<tr><td class="nw">電路</td><td class="nw"><b>Cascode 分壓</b></td><td class="nw">分子 ↓</td>
+  <td class="nw"><span class="badge ok">極大</span></td><td>headroom、面積、偏壓電路</td></tr>
+<tr><td class="nw">電路</td><td class="nw">加快轉態 / 避免中間偏壓</td><td class="nw">暴露時間 ↓</td>
+  <td class="nw"><span class="badge warn">中等</span></td><td>EMI、瞬時電流、supply bounce</td></tr>
+<tr><td class="nw">電路</td><td class="nw">Power gating / 降 duty</td><td class="nw">暴露時間 ↓</td>
+  <td class="nw"><span class="badge warn">依應用</span></td><td>喚醒延遲、漏電開關面積</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">選擇的順序</div>
+<p style="margin:0">如果只能做一件事，順序是：
+<b>① 降電壓</b>（指數效益，但通常規格綁死）→
+<b>② 換厚氧元件或 cascode</b>（架構層級，早期決定成本最低）→
+<b>③ LDD 劑量調校</b>（製程層級，影響全廠所有產品）→
+<b>④ 針對熱點元件加長 L</b>（後期補救，代價可控）。
+<br><br><b>越早做，代價越小。</b>等到 qual 才發現 HCI 過不了，能動的只剩最後一項。</p></div>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼 LDD 對 HCI 這麼有效，卻要付串聯電阻的代價？兩者是同一件事嗎？</summary><div class="a"><b>是同一件事的兩面。</b>LDD 有效是因為 n⁻ 區摻雜低 → 容易被空乏 → 能承擔一部分電壓 → 高場區被拉長。但摻雜低同時代表<b>載子少、電阻率高</b> —— 這正是串聯電阻的來源。<br><br>所以 N<sub>LDD</sub> 這一個參數同時控制了兩件事，你不可能只要好處。用上面的三檔劑量切切看：往「淡」走，HCI 變好但 I<sub>dsat</sub> 掉；往「濃」走，反之。<b>LDD 劑量的最佳點就是這條取捨曲線上的一個工程決定。</b></div></details><details><summary>halo 明明惡化 HCI，為什麼還是每個先進製程都在用？</summary><div class="a">因為它解決的是<b>更致命的問題</b>。沒有 halo，短通道元件會有嚴重的 punchthrough、V<sub>t</sub> roll-off 與 DIBL —— 元件根本關不掉、關態漏電失控、V<sub>t</sub> 隨 L 變異劇烈。<br><br>相較之下 HCI 是「十年後慢慢退化」，SCE 是「現在就不能用」。<b>可靠度永遠要跟功能競爭，而功能通常贏。</b>可靠度工程師的工作不是消滅 halo，是在 SCE 可接受的前提下把劑量壓到最低、或改用非對稱 halo。</div></details><details><summary>為什麼「加快轉態」可以減少 HCI？直覺上不是電壓變化快比較傷嗎？</summary><div class="a">因為損傷是<b>對時間積分</b>的。傷害發生在「V<sub>D</sub> 還很高、通道卻已經開始導通」的那個窗口裡，而窗口的寬度正比於轉態時間 t<sub>r</sub>。<b>邊緣越慢，元件待在那個窗口裡越久，累積的損傷越多。</b><br><br>電壓變化率本身（dV/dt）不會直接造成傷害 —— HCI 是準靜態的，只看瞬時的 (V<sub>G</sub>, V<sub>D</sub>) 組合。<br><br>不過要注意：快邊緣會帶來更大的瞬時電流與 EMI，這是另一個層面的代價。</div></details><details><summary>同樣是降低電場，為什麼「降 V<sub>D</sub>」比「加長 L」有效這麼多？</summary><div class="a">因為兩者作用在式子的不同位置。降 V<sub>D</sub> 是<b>直接</b>減少分子 V<sub>D</sub>−V<sub>dsat</sub>；加長 L 只是透過 V<sub>dsat</sub> = V<sub>gt</sub>E<sub>sat</sub>L/(V<sub>gt</sub>+E<sub>sat</sub>L) <b>間接</b>抬高 V<sub>dsat</sub>，而且這個抬升會飽和（L 很長時 V<sub>dsat</sub> → V<sub>gt</sub>，再長也沒用）。<br><br>更關鍵的是：<b>l 的式子裡沒有 L</b>（階段 3 的重點）。加長 L 完全沒有動到分母。</div></details><details><summary>氘退火為什麼有效？氘和氫化學性質不是幾乎一樣嗎？</summary><div class="a">化學上幾乎一樣，但<b>質量差兩倍</b>，而 Si–H 的解離走的是<b>多聲子激發</b>路徑 —— 熱載子一次次撞擊，把能量一階一階泵進鍵的振動模式，直到累積超過解離能。<br><br>Si–D 的彎曲振動模式頻率與矽晶格的聲子模式接近，<b>激發的能量很快就漏回晶格</b>，不容易一路往上爬。所以同樣的撞擊次數下，D 被打斷的機率低得多。<b>這是一個「動力學」而非「熱力學」的效應</b> —— 鍵能幾乎一樣，但爬梯子的難度差很多。</div></details><details><summary>身為 foundry，客戶抱怨 HCI 過不了，你的處理順序應該是什麼？</summary><div class="a"><b>先確認是不是真的問題，再談對策。</b>順序建議：<br>① <b>確認判定參數對不對</b>：元件工作在飽和區還是線性區？如果是飽和區用法卻在卡 I<sub>DLIN</sub>，那是 criterion 選錯，不是元件問題（階段 5）。<br>② <b>確認應力條件與使用條件的落差</b>：mission profile 是什麼？外推假設站不站得住？<br>③ <b>檢查 halo 劑量</b>：這是 foundry 端最可能有調整空間、又不用改光罩的旋鈕。<br>④ <b>建議客戶換元件或改架構</b>：厚氧元件、cascode —— 這通常比改製程快也便宜。<br>⑤ 最後才是改 LDD / spacer 製程 —— 影響全廠所有產品，代價最高。</div></details></div>
+<div class="pager"><a class="prev" href="hci-5-spec.html"><div class="d">← 上一課 · 階段 5</div><div class="t">HCI 規格</div></a><a class="next" href="hci-7-playground.html"><div class="d">下一課 · 階段 7 →</div><div class="t">可調模型</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<h2>Process level</h2>
+
+<div class="fixcard proc"><div class="lv">Process · moves the denominator l</div>
+<h4>1. LDD / n⁻ extension (Lightly Doped Drain)</h4>
+<p>A <b>lightly-doped n⁻ extension</b> is placed under the sidewall spacer, pushing the heavily-doped n⁺ farther away.
+Part of the drain voltage is now carried by this extension's depletion region, so <b>the high-field region gets stretched out and the peak field gets flattened</b>.
+Mathematically it's l → l + W<sub>dep,LDD</sub>.</p>
+<div class="tradeoff"><b>Cost:</b> the n⁻ region's higher resistivity raises the series resistance R<sub>ext</sub>, hurting both I<sub>dsat</sub> and R<sub>on</sub>.
+Lighter doping and a longer extension help HCI more but cost more resistance. <b>That trade-off is the entirety of LDD dose tuning.</b>
+Also, the sidewall spacer width directly sets L<sub>ext</sub>, so variation in the spacer process shows up directly in HCI.</div></div>
+
+<div class="fixcard proc"><div class="lv">Process · moves the denominator l (in reverse)</div>
+<h4>2. Pocket / halo implants — fixes short-channel effects, but worsens HCI</h4>
+<p>A <b>localized p-type implant</b> (angled implantation) around the source/drain junctions suppresses punchthrough and reduces V<sub>t</sub> roll-off and DIBL.
+But the heavier doping shortens the depletion region, so <b>field lines terminate faster → effective l shrinks → E<sub>m</sub> rises → HCI worsens</b>.</p>
+<div class="tradeoff"><b>The trade-off:</b> short-channel effects and HCI pull directly against each other, with no clean solution. Practical compromises:
+<b>lower the halo dose</b> (sacrificing a bit of SCE control), <b>halo only on the source side</b> (asymmetric halo, keeping the drain side lightly doped),
+or <b>angle the implant so the halo stays away from the drain's high-field point</b>.<br>
+Try the interactive above to see this dilemma directly: turn halo on, and V<sub>t</sub> rises (the price of better SCE) while the damage rate jumps by tens of times.</div></div>
+
+<div class="fixcard proc"><div class="lv">Process · moves φ<sub>it</sub></div>
+<h4>3. Interface engineering: nitridation and deuterium anneal</h4>
+<p>Stage 1 covered how HCI's permanent damage comes from <b>breaking Si–H bonds</b>. So one fix is simply a stronger bond:</p>
+<ul style="margin:0 0 8px;padding-left:20px;font-size:16px">
+<li><b>Nitridation</b>: introduces nitrogen at the interface, forming higher-bond-energy <b>Si–N</b> in place of some Si–H.
+Nitridation also blocks boron penetration and raises the dielectric constant.</li>
+<li><b>Deuterium anneal</b>: uses deuterium (D) instead of hydrogen (H) to cap dangling bonds. D is twice the mass of H,
+so its vibrational coupling to the silicon lattice is different, and <b>the probability of multi-phonon dissociation drops sharply</b>. The literature reports improvements of an order of magnitude or more.</li>
+<li><b>Reducing process-induced damage</b>: the antenna effect in plasma processing can accumulate charge on the gate and damage the interface before the device ever ships.
+Following antenna rules and adding protection diodes means "don't damage it once before it even leaves the fab."</li>
+</ul>
+<div class="tradeoff"><b>Cost:</b> over-nitridation lowers mobility and worsens NBTI (nitrogen interacts with boron and with PMOS).
+Deuterium anneal needs process integration and gas costs, and its effectiveness varies a lot depending on how it's integrated.</div></div>
+
+<div class="fixcard proc"><div class="lv">Process · moves the numerator</div>
+<h4>4. Junction engineering: graded junctions and DDD</h4>
+<p>Predating LDD is <b>DDD (Double-Diffused Drain)</b>: two implants at different depths and concentrations create a graded junction,
+letting doping concentration rise smoothly from channel to n⁺ instead of a sharp junction that spikes the field.
+Modern processes mostly use LDD + spacer instead, but the concept is the same: <b>don't let doping concentration jump abruptly</b>.</p>
+<div class="tradeoff"><b>Cost:</b> more lateral diffusion shortens the effective channel length, worsening short-channel effects and area efficiency.</div></div>
+
+<div class="fixcard proc"><div class="lv">Process · watch for side effects</div>
+<h4>5. Careful: some "performance optimizations" backfire on HCI</h4>
+<p><b>Strained silicon</b> raises mobility µ. But since E<sub>sat</sub> = 2v<sub>sat</sub>/µ, a higher µ means a lower E<sub>sat</sub>, and a lower
+V<sub>dsat</sub> → <b>V<sub>D</sub> − V<sub>dsat</sub> grows → E<sub>m</sub> rises</b>.
+Likewise, <b>thinning t<sub>ox</sub></b> raises drive strength, but l = √(3t<sub>ox</sub>x<sub>j</sub>) shrinks along with it, worsening HCI.</p>
+<div class="tradeoff"><b>The mental model:</b> almost any change that makes a device "faster" tends to make HCI worse.
+<b>Performance and HCI are nearly always in tension</b> — that's not a coincidence, since both are governed by the same field.</div></div>
+
+<h2>Device level</h2>
+
+<div class="fixcard dev"><div class="lv">Device · moves both numerator and denominator</div>
+<h4>6. Lengthen the channel L (most direct, but not the most effective)</h4>
+<p>Lengthening L raises V<sub>dsat</sub> (since E<sub>sat</sub>L grows), shrinking the numerator.
+But remember Stage 3's key point: <b>there's no L in the equation for l</b>, so lengthening L helps <b>less than most people assume</b>.</p>
+<div class="tradeoff"><b>Cost:</b> area, capacitance, and speed all get worse, and I<sub>D</sub> ∝ 1/L falls directly.
+In practice, only lengthen L on <b>the specific hotspot devices flagged by a reliability simulator</b> — not globally.</div></div>
+
+<div class="fixcard dev"><div class="lv">Device · switch device types</div>
+<h4>7. Use thick-oxide devices at high-voltage nodes</h4>
+<p>Most processes offer an <b>I/O device (thick oxide, long channel, high V<sub>t</sub>)</b>.
+Thick t<sub>ox</sub> grows l, and a long L grows V<sub>dsat</sub> — both move in the right direction.
+For any node that has to withstand near or above core voltage, swapping devices is far more effective than trying to fix a core device.</p>
+<div class="tradeoff"><b>Cost:</b> slower, larger, and higher V<sub>t</sub> (weaker drive at low voltage).</div></div>
+
+<div class="fixcard dev"><div class="lv">Device · dedicated high-voltage structures</div>
+<h4>8. Drain-extended devices, RESURF, field plates</h4>
+<p>High-voltage applications (LDMOS, DEMOS) go further to spread out the field:
+a <b>drain extension (drift region)</b> stretches the high-field region out over a long distance,
+<b>RESURF</b> (reduced surface field) uses vertical depletion to offset the lateral field,
+and <b>field plates</b> use a metal or polysilicon electrode above the surface to reshape the field distribution.</p>
+<div class="tradeoff"><b>Cost:</b> much larger area and worse R<sub>on</sub>·A.
+The core design problem for high-voltage devices is exactly this three-way trade-off between <b>R<sub>on</sub>, breakdown voltage, and HCI</b>.</div></div>
+
+<div class="fixcard dev"><div class="lv">Device · layout</div>
+<h4>9. Asymmetric design and layout techniques</h4>
+<p><b>Asymmetric LDD</b>: a light-doped extension only on the drain side, keeping n⁺ on the source side — gets HCI's benefit
+without paying the source-side series-resistance cost (R<sub>s</sub> directly eats into g<sub>m</sub>). Works for devices whose current direction is fixed.<br>
+<b>Multi-finger layout</b>: splitting a large W into multiple fingers lowers per-finger current density and self-heating.</p>
+<div class="tradeoff"><b>Limitation:</b> asymmetric devices <b>can't be used bidirectionally</b>, and can't be used in analog switches where source and drain swap.
+And a PDK may not offer them, requiring a custom device flow.</div></div>
+
+<h2>Circuit and system level</h2>
+
+<div class="fixcard ckt"><div class="lv">Circuit · moves the numerator (biggest payoff)</div>
+<h4>10. Lower the drain swing — an exponential payoff</h4>
+<p>The damage rate is exponentially sensitive to E<sub>m</sub>, and E<sub>m</sub> is directly proportional to V<sub>D</sub> − V<sub>dsat</sub>.
+<b>A 10% cut in V<sub>D</sub> often drops the damage rate by an order of magnitude.</b> This has the best ROI of any option, as long as the spec allows it.</p>
+<div class="tradeoff"><b>Cost:</b> a smaller swing hurts SNR, dynamic range, and drive strength.
+It's usually a system-architecture-level decision, not something you can fix late.</div></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit · voltage division</div>
+<h4>11. Cascode stacking</h4>
+<p>Replace one device that has to withstand the full voltage with two stacked devices, each carrying roughly half the V<sub>DS</sub>.
+Because the damage rate is exponential, <b>halving the voltage helps far more than the penalty of doubling the device count</b>.
+This is the most common HCI (and TDDB) countermeasure in analog and I/O circuits.</p>
+<div class="tradeoff"><b>Cost:</b> one V<sub>dsat</sub> less of voltage headroom, more area, extra bias circuitry needed,
+and the bias split between the top and bottom devices has to hold across every process corner and transient (power-up is where it's most likely to go wrong).</div></div>
+
+<div class="fixcard ckt"><div class="lv">Circuit · moves the exposure time</div>
+<h4>12. Control transition time and avoid mid-rail bias</h4>
+<p>Stage 5's tool showed it: <b>90% of the damage is packed into 1% of the cycle</b>, and the width of that window is set by t<sub>r</sub>/t<sub>f</sub>.
+So:</p>
+<ul style="margin:0 0 8px;padding-left:20px;font-size:16px">
+<li><b>The slower the edge, the more damage per transition</b> (the window widens). Avoid unnecessarily slow slew.</li>
+<li><b>Avoid leaving a node sitting at mid-rail for a long time</b>: a floating node, a slow power-up sequence, an analog signal that crawls slowly through mid-swing —
+all of these leave the device sitting in the worst combination, "high V<sub>D</sub> plus current flowing," for a long time.</li>
+<li><b>Power gating</b>: cutting power to unused blocks sends the effective duty cycle straight to zero.</li>
+</ul>
+<div class="tradeoff"><b>Cost:</b> faster edges mean larger instantaneous currents, worse EMI, and more supply bounce.
+This is a trade-off between HCI and power integrity.</div></div>
+
+<div class="fixcard ckt"><div class="lv">Methodology</div>
+<h4>13. Reliability-aware design flow</h4>
+<p>Instead of guessing which device is at risk, let a tool tell you. Use the foundry PDK's aging models
+(things like RelXpert / MOSRA / TMI) to run an aging simulation,
+integrating each device's ten-year degradation along its real waveform, and <b>reinforce only the hotspot devices</b>.</p>
+<div class="tradeoff"><b>Precondition:</b> the model has to be right. Foundry-supplied parameters have a valid range,
+and extrapolating outside it (e.g. far below the stress voltage, or extreme temperatures) can introduce order-of-magnitude errors.
+<b>Simulation gives you a ranking, not a guarantee.</b></div></div>
+
+<h2>Quick-reference table of countermeasures</h2>
+<table>
+<thead><tr><th class="nw">Level</th><th class="nw">Approach</th><th class="nw">What it moves</th><th class="nw">Improvement</th><th>Main cost</th></tr></thead>
+<tbody>
+<tr><td class="nw">Process</td><td class="nw"><b>LDD / n⁻ extension</b></td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge ok">Large</span></td><td>R<sub>ext</sub> ↑, I<sub>dsat</sub> ↓</td></tr>
+<tr><td class="nw">Process</td><td class="nw">Lower halo dose / asymmetric halo</td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge ok">Large</span></td><td>Worse short-channel effects, worse DIBL</td></tr>
+<tr><td class="nw">Process</td><td class="nw">Nitridation / deuterium anneal</td><td class="nw">φ<sub>it</sub> ↑</td>
+  <td class="nw"><span class="badge warn">Moderate</span></td><td>Lower mobility, possibly worse NBTI, process cost</td></tr>
+<tr><td class="nw">Process</td><td class="nw">Graded junction / DDD</td><td class="nw">l ↑</td>
+  <td class="nw"><span class="badge warn">Moderate</span></td><td>Lateral diffusion, shorter effective L</td></tr>
+<tr><td class="nw">Device</td><td class="nw">Lengthen L</td><td class="nw">V<sub>dsat</sub> ↑</td>
+  <td class="nw"><span class="badge warn">Moderate-to-weak</span></td><td>Area, speed, I<sub>D</sub> ∝ 1/L</td></tr>
+<tr><td class="nw">Device</td><td class="nw"><b>Switch to a thick-oxide I/O device</b></td><td class="nw">l ↑, V<sub>dsat</sub> ↑</td>
+  <td class="nw"><span class="badge ok">Large</span></td><td>Speed, area, high V<sub>t</sub></td></tr>
+<tr><td class="nw">Device</td><td class="nw">Drain extension / RESURF / field plate</td><td class="nw">l ↑↑</td>
+  <td class="nw"><span class="badge ok">Very large</span></td><td>Area, R<sub>on</sub>·A</td></tr>
+<tr><td class="nw">Circuit</td><td class="nw"><b>Lower drain swing</b></td><td class="nw">numerator ↓</td>
+  <td class="nw"><span class="badge ok">Very large (exponential)</span></td><td>Dynamic range, drive strength</td></tr>
+<tr><td class="nw">Circuit</td><td class="nw"><b>Cascode voltage division</b></td><td class="nw">numerator ↓</td>
+  <td class="nw"><span class="badge ok">Very large</span></td><td>Headroom, area, bias circuitry</td></tr>
+<tr><td class="nw">Circuit</td><td class="nw">Speed up transitions / avoid mid-rail bias</td><td class="nw">exposure time ↓</td>
+  <td class="nw"><span class="badge warn">Moderate</span></td><td>EMI, instantaneous current, supply bounce</td></tr>
+<tr><td class="nw">Circuit</td><td class="nw">Power gating / lower duty cycle</td><td class="nw">exposure time ↓</td>
+  <td class="nw"><span class="badge warn">Depends on application</span></td><td>Wake-up latency, leakage-switch area</td></tr>
+</tbody>
+</table>
+
+<div class="key"><div class="t">Priority order</div>
+<p style="margin:0">If you can only do one thing, the order is:
+<b>① Lower the voltage</b> (exponential payoff, but usually spec-locked) →
+<b>② Switch to a thick-oxide device or add cascode</b> (architecture-level, cheapest when decided early) →
+<b>③ Tune the LDD dose</b> (process-level, affects every product in the fab) →
+<b>④ Lengthen L on the hotspot devices</b> (a late-stage fix, but with controllable cost).
+<br><br><b>The earlier you act, the cheaper it is.</b> Discover an HCI failure at qual, and the only lever left is the last one.</p></div>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why is LDD so effective for HCI, yet costs series resistance? Are the two the same thing?</summary><div class="a"><b>Two sides of the same coin.</b> LDD works because the n⁻ region's low doping is easily depleted → it can absorb part of the voltage → the high-field region gets stretched out. But that same low doping also means <b>fewer carriers and higher resistivity</b> — exactly the source of series resistance.<br><br>So the single parameter N<sub>LDD</sub> controls both things at once — you can't have the benefit without the cost. Try the three dose levels above: go "light" and HCI improves but I<sub>dsat</sub> falls; go "heavy" and it's the reverse. <b>The optimal LDD dose is an engineering decision on this one trade-off curve.</b></div></details><details><summary>Halo implants clearly make HCI worse — so why does every advanced process still use them?</summary><div class="a">Because they solve a <b>more fatal problem</b>. Without halo, short-channel devices suffer severe punchthrough, V<sub>t</sub> roll-off, and DIBL — the device can't turn off properly, off-state leakage runs away, and V<sub>t</sub> varies wildly with L.<br><br>By comparison, HCI is "slow degradation over ten years," while SCE is "doesn't work right now." <b>Reliability always competes with functionality, and functionality usually wins.</b> A reliability engineer's job isn't to eliminate halo — it's to push the dose as low as SCE allows, or switch to an asymmetric halo.</div></details><details><summary>Why does "speeding up transitions" reduce HCI? Intuitively, shouldn't a faster voltage change be more damaging?</summary><div class="a">Because the damage is <b>integrated over time</b>. The damage happens in the window where "V<sub>D</sub> is still high but the channel has already started conducting," and that window's width is proportional to the transition time t<sub>r</sub>. <b>The slower the edge, the longer the device sits in that window, and the more damage accumulates.</b><br><br>The rate of voltage change itself (dV/dt) doesn't directly cause damage — HCI is quasi-static and only depends on the instantaneous (V<sub>G</sub>, V<sub>D</sub>) pair.<br><br>One caveat: fast edges bring larger instantaneous currents and worse EMI — a cost at a different level.</div></details><details><summary>Both lower the field, so why is "lowering V<sub>D</sub>" so much more effective than "lengthening L"?</summary><div class="a">Because they act on different parts of the equation. Lowering V<sub>D</sub> <b>directly</b> shrinks the numerator V<sub>D</sub>−V<sub>dsat</sub>; lengthening L only <b>indirectly</b> raises V<sub>dsat</sub>, through V<sub>dsat</sub> = V<sub>gt</sub>E<sub>sat</sub>L/(V<sub>gt</sub>+E<sub>sat</sub>L), and that rise saturates (for a long L, V<sub>dsat</sub> → V<sub>gt</sub>, and going longer stops helping).<br><br>More critically: <b>there's no L in the equation for l</b> (Stage 3's key point). Lengthening L doesn't touch the denominator at all.</div></details><details><summary>Why does deuterium anneal work? Aren't deuterium and hydrogen chemically almost identical?</summary><div class="a">Chemically, almost identical — but they differ <b>2× in mass</b>, and Si–H dissociation proceeds via <b>multi-phonon excitation</b> — repeated hits from hot carriers pump energy step by step into the bond's vibrational mode until it exceeds the dissociation energy.<br><br>Si–D's bending-mode frequency sits closer to the silicon lattice's phonon modes, so <b>the excitation energy leaks back into the lattice quickly</b>, making it hard to climb the ladder all the way up. So for the same number of hits, D is far less likely to break loose. <b>This is a "kinetic," not a "thermodynamic," effect</b> — the bond energy is almost the same, but the difficulty of climbing the ladder is very different.</div></details><details><summary>As a foundry, a customer complains HCI doesn't pass. What order should you work through this in?</summary><div class="a"><b>First confirm it's a real problem, then talk countermeasures.</b> Suggested order: <br>① <b>Confirm the criterion is the right one</b>: does the device operate in saturation or linear region? If it's used in saturation but is failing on I<sub>DLIN</sub>, that's the wrong criterion, not a device problem (Stage 5).<br>② <b>Confirm the gap between stress condition and use condition</b>: what's the mission profile? Do the extrapolation assumptions hold up?<br>③ <b>Check the halo dose</b>: this is the knob most likely to have room to adjust on the foundry side without changing the reticle.<br>④ <b>Suggest the customer switch devices or change architecture</b>: thick-oxide devices, cascode — usually faster and cheaper than a process change.<br>⑤ Only as a last resort, change the LDD / spacer process — that affects every product in the fab, and is the most expensive option.</div></details></div>
+<div class="pager"><a class="prev" href="hci-5-spec.html"><div class="d">← Previous · Stage 5</div><div class="t">HCI Specs</div></a><a class="next" href="hci-7-playground.html"><div class="d">Next · Stage 7 →</div><div class="t">Tunable Model</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+/* ================= 教科書式 MOSFET 剖面圖（含 LDD / pocket） ================= */
+const VW=1320, VH=452;
+const DZ=88, KX=0.52, KY=-0.42;
+const OX=272, OY=196;
+/* 橫向配置（px） */
+const STI_W=72, SD_W=106, SP_W=46, CHW=300;
+const xST0=-(STI_W+SD_W+SP_W), xS0=-(SD_W+SP_W), xSP0=-SP_W, xC0=0,
+      xC1=CHW, xSP1=CHW+SP_W, xD1=CHW+SP_W+SD_W, xST1=CHW+SP_W+SD_W+STI_W;
+const SIH=168;
+let parts=[], nits=[], playing=true, tPrev=0;
+let STAGE=9, SHOWLBL=true;
+
+const proj=(x,y,z)=>[OX+x+z*KX, OY+y+z*KY];
+function el2(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function poly(pts,fill,stroke,extra){
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('')+'Z';
+  return el2('path',Object.assign({d,fill:fill||'none',stroke:stroke||'none','stroke-width':1,
+    'stroke-linejoin':'round'},extra||{}));
+}
+/* 立體方塊：前面 + 頂面 + 右面 */
+function blk(x0,x1,y0,y1,fill,stroke,op,dz){
+  dz=dz===undefined?DZ:dz;
+  const g=el2('g',{});
+  const f =[[x0,y0,0],[x1,y0,0],[x1,y1,0],[x0,y1,0]].map(a=>proj(a[0],a[1],a[2]));
+  const tp=[[x0,y0,0],[x1,y0,0],[x1,y0,dz],[x0,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  const rt=[[x1,y0,0],[x1,y1,0],[x1,y1,dz],[x1,y0,dz]].map(a=>proj(a[0],a[1],a[2]));
+  g.appendChild(poly(tp,fill,stroke,{opacity:(op||1)*0.70}));
+  g.appendChild(poly(rt,fill,stroke,{opacity:(op||1)*0.50}));
+  g.appendChild(poly(f ,fill,stroke,{opacity:op||1}));
+  return g;
+}
+function fieldColor(t){
+  const st=[[0,'#fde8d6',0],[0.35,'#f7b585',0.5],[0.68,'#ec7638',0.8],[1,'#c22c1c',0.97]];
+  let a=st[0],b=st[st.length-1];
+  for(let i=0;i<st.length-1;i++) if(t>=st[i][0]&&t<=st[i+1][0]){a=st[i];b=st[i+1];break;}
+  const f=(t-a[0])/Math.max(b[0]-a[0],1e-9);
+  return {c:f<0.5?a[1]:b[1], o:a[2]+(b[2]-a[2])*f};
+}
+/* 摻雜色（教科書慣例：n 型偏藍、p 型偏暖褐） */
+const DOP={
+  nplus:{l:'#7fb3ea',d:'#20456e'}, nldd:{l:'#c2dbf4',d:'#2f5a86'},
+  pwell:{l:'#ded9cd',d:'#2a2926'}, phalo:{l:'#e5b394',d:'#5e3a26'},
+  sti:{l:'#f0eee7',d:'#3a3937'}, poly:{l:'#cfccc2',d:'#3d3b37'},
+  sil:{l:'#a9a6a0',d:'#5a5852'}, ox:{l:'#b5b2a8',d:'#514f4a'},
+  m1:{l:'#b9b6ae',d:'#6a6862'}
+};
+const dark=()=>document.documentElement.getAttribute('data-theme')==='dark'
+  || (!document.documentElement.getAttribute('data-theme') &&
+      window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches);
+const dc=k=>dark()?DOP[k].d:DOP[k].l;
+
+function drawViz(M){
+  const svg=el2('svg',{viewBox:'0 0 '+VW+' '+VH,role:'img'});
+  const P_=P;
+  const stroke=css('--axis');
+  const xjPX  = Math.min(74, 20+(M.xj/1e-7)/600*66);
+  const xlddPX= xjPX*0.52;
+  const stiPX = Math.min(SIH-24, xjPX*2.0+18);
+  const oxT   = Math.max(4,Math.min(16,M.tox/1e-7/60*16));
+  const polyH = 42, silH=9, spH=polyH+oxT;
+
+  /* ---- 基板 ---- */
+  svg.appendChild(blk(xST0,xST1,0,SIH,dc('pwell'),stroke,1));
+  /* ---- STI ---- */
+  svg.appendChild(blk(xST0,xS0,0,stiPX,dc('sti'),stroke,1));
+  svg.appendChild(blk(xD1,xST1,0,stiPX,dc('sti'),stroke,1));
+
+  /* ---- halo / pocket（畫在 n 型之前，讓 n 型疊上去） ---- */
+  if(P_.halo){
+    const hd=xjPX*1.30;
+    [[xSP0-10, xC0+34],[xC1-34, xSP1+10]].forEach(function(r){
+      const a=proj(r[0],0,0), b=proj(r[1],0,0), c=proj(r[1],hd*0.55,0), d2=proj((r[0]+r[1])/2,hd,0), e2=proj(r[0],hd*0.55,0);
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1]+'L'+c[0]+' '+c[1]+
+        'Q'+d2[0]+' '+d2[1]+' '+e2[0]+' '+e2[1]+'Z',fill:dc('phalo'),opacity:.9}));
+    });
+  }
+  /* ---- LDD n- 延伸 ---- */
+  if(P_.ldd){
+    [[xSP0,xC0+4],[xC1-4,xSP1]].forEach(function(r){
+      svg.appendChild(blk(r[0],r[1],0,xlddPX,dc('nldd'),stroke,1,DZ));
+    });
+  }
+  /* ---- n+ 深源汲 ---- */
+  svg.appendChild(blk(xS0,xSP0+(P_.ldd?0:SP_W),0,xjPX,dc('nplus'),stroke,1));
+  svg.appendChild(blk(xSP1-(P_.ldd?0:SP_W),xD1,0,xjPX,dc('nplus'),stroke,1));
+  /* ---- 矽化物 ---- */
+  svg.appendChild(blk(xS0+6,xSP0-6,-6,0,dc('sil'),stroke,1));
+  svg.appendChild(blk(xSP1+6,xD1-6,-6,0,dc('sil'),stroke,1));
+
+  /* ---- 接面輪廓 ---- */
+  const jl=(x0,x1,d)=>{const a=proj(x0,d,0),b=proj(x1,d,0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:stroke,'stroke-width':1,opacity:.9}));};
+
+  /* ---- 空乏區邊界 ---- */
+  let dd='';
+  for(let i=0;i<=80;i++){
+    const x=xS0+(xD1-xS0)*i/80;
+    let dep;
+    const bulge=26*Math.min(1,M.dV/6)+ (P_.halo?-8:0) + (P_.ldd?6:0);
+    if(x<xSP0) dep=xjPX+14+bulge*0.35;
+    else if(x>xSP1) dep=xjPX+14+bulge;
+    else {const u=(x-xSP0)/(xSP1-xSP0); dep=xjPX*0.3+8+(xjPX+14+bulge-xjPX*0.3-8)*Math.pow(u,3);}
+    const pp=proj(x,dep,0); dd+=(i?'L':'M')+pp[0].toFixed(1)+' '+pp[1].toFixed(1);
+  }
+  svg.appendChild(el2('path',{d:dd,fill:'none',stroke:stroke,'stroke-width':1.2,'stroke-dasharray':'5 4',opacity:.85}));
+
+  /* ---- 高場區熱圖 ---- */
+  const frac=Math.min(M.dLoverL,1);
+  const hi0=xC1-(xC1-xC0)*frac;
+  const hiEnd=P_.ldd?xSP1:xC1;
+  const NB=48;
+  for(let i=0;i<NB;i++){
+    const u0=i/NB,u1=(i+1)/NB;
+    const x0=hi0+(hiEnd-hi0)*u0, x1=hi0+(hiEnd-hi0)*u1;
+    const y=M.dL*(u0+u1)/2;
+    const E=M.pinch?M.Esat*Math.cosh(Math.min(y/M.l,20)):M.Esat;
+    const t=Math.min(1,Math.log10(Math.max(E,1e3)/1e4)/Math.log10(3e6/1e4));
+    const cc=fieldColor(Math.max(0,t));
+    const q=[[x0,-1,0],[x1,-1,0],[x1,Math.max(xlddPX,22),0],[x0,Math.max(xlddPX,22),0]].map(a=>proj(a[0],a[1],a[2]));
+    svg.appendChild(poly(q,cc.c,null,{opacity:cc.o*0.88}));
+  }
+  /* ---- 反轉層 ---- */
+  const c0=proj(xC0,4,0), c1=proj(xC1,4,0);
+  svg.appendChild(el2('line',{x1:c0[0],y1:c0[1],x2:c1[0],y2:c1[1],
+    stroke:css('--e'),'stroke-width':2.6,opacity:M.Vgt>0.05?0.9:0.12}));
+
+  /* ---- 閘極堆疊 ---- */
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT,0,dc('ox'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH,-oxT,dc('poly'),stroke,1));
+  svg.appendChild(blk(xC0-2,xC1+2,-oxT-polyH-silH,-oxT-polyH,dc('sil'),stroke,1));
+  /* ---- 側壁間隔物（梯形） ---- */
+  [[xC0-2,xSP0,-1],[xC1+2,xSP1,1]].forEach(function(sp){
+    const inner=sp[0], outer=sp[1];
+    const q=[[inner,-spH,0],[inner,0,0],[outer,0,0]].map(a=>proj(a[0],a[1],a[2]));
+    const cx=proj((inner+outer)/2,-spH*0.55,0);
+    const d='M'+q[0][0]+' '+q[0][1]+'Q'+cx[0]+' '+cx[1]+' '+q[2][0]+' '+q[2][1]+'L'+q[1][0]+' '+q[1][1]+'Z';
+    svg.appendChild(el2('path',{d,fill:dc('ox'),stroke:stroke,'stroke-width':1,opacity:.92}));
+  });
+  /* ---- 接觸窗 + M1 ---- */
+  const via=(xc)=>{
+    svg.appendChild(blk(xc-13,xc+13,-oxT-polyH-silH-40,-6,dc('m1'),stroke,1,DZ*0.5));
+  };
+  via((xS0+xSP0)/2); via((xSP1+xD1)/2);
+  svg.appendChild(blk(xS0-4,xD1+4,-oxT-polyH-silH-56,-oxT-polyH-silH-40,dc('m1'),stroke,.001,1));
+
+  /* ---- pinch-off 標記 ---- */
+  if(M.pinch&&frac>0.01){
+    const a=proj(hi0,-oxT-polyH-silH-8,0), b=proj(hi0,Math.max(xlddPX,26),0);
+    svg.appendChild(el2('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:css('--h'),
+      'stroke-width':1.3,'stroke-dasharray':'4 3',opacity:.95}));
+    const lp=proj((hi0+hiEnd)/2,Math.max(xlddPX,26)+18,0);
+    svg.appendChild(txt(lp[0],lp[1],L('高場區 ΔL = ','High-field ΔL = ')+fmtEng(M.dL*1e-2,'m',1).replace(' ','')+
+      L('（L 的 '+(frac*100).toFixed(0)+'%）',' ('+(frac*100).toFixed(0)+'% of L)'),{ta:'middle',fs:11.5,fw:650,fill:css('--h')}));
+  }
+
+  /* ---- 標註 ---- */
+  if(SHOWLBL){
+    const lab=(x,y,s,o)=>{const p2=proj(x,y,0);
+      svg.appendChild(txt(p2[0],p2[1],s,Object.assign({fs:11,fill:css('--ink2')},o||{})));};
+    const lead=(x,y,tx,ty,s,col)=>{
+      const a=proj(x,y,0), b=[OX+tx,OY+ty];
+      svg.appendChild(el2('path',{d:'M'+a[0]+' '+a[1]+'L'+b[0]+' '+b[1],stroke:col||css('--muted'),
+        'stroke-width':1,opacity:.8}));
+      svg.appendChild(el2('circle',{cx:a[0],cy:a[1],r:2.4,fill:col||css('--muted')}));
+      svg.appendChild(txt(b[0]+(tx<0?-6:6),b[1],s,{ta:tx<0?'end':'start',db:'middle',fs:11,
+        fw:600,fill:col||css('--ink2')}));
+    };
+    lab((xS0+xSP0)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xSP1+xD1)/2, xjPX*0.55,'n⁺',{ta:'middle',db:'middle',fw:700,fs:13,fill:css('--ink')});
+    lab((xST0+xS0)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xD1+xST1)/2, stiPX*0.5,'STI',{ta:'middle',db:'middle',fs:11});
+    lab((xC0+xC1)/2, -oxT-polyH*0.55,L('多晶矽閘極','Poly Gate'),{ta:'middle',db:'middle',fw:650,fs:12,fill:css('--ink')});
+    lab(xST0+16, SIH-16,L('p 型基板 / p-well  (N','p-substrate / p-well  (N')+'ₐ'+' = '+sci(P_.Nsub)+' cm⁻³)',{fs:11});
+    lab((xC0+xC1)/2, xjPX+40,L('通道  L = ','channel  L = ')+(P_.L<0.1?(P_.L*1000).toFixed(0)+' nm':P_.L.toFixed(3)+' µm'),
+      {ta:'middle',fs:11.5});
+    lead(xC1+2,-oxT/2, 600, -138, L('閘極氧化層  t','gate oxide  t')+'~ox~ = '+(M.tox*1e7).toFixed(1)+' nm');
+    lead((xC1+xSP1)/2,-spH*0.4, 600, -112, L('側壁間隔物','sidewall spacer'));
+    if(P_.ldd) lead((xC1+xSP1)/2, xlddPX*0.6, 600, -86,
+      L('LDD  n⁻ 延伸  (N = ','LDD  n⁻ extension  (N = ')+sci(P_.Nldd)+' cm⁻³)', css('--e'));
+    if(P_.halo) lead(xC1-12, xjPX*0.95, 600, -60,
+      L('pocket / halo  p 型  (N = ','pocket / halo  p-type  (N = ')+sci(P_.Nhalo)+' cm⁻³)', css('--h'));
+    lead((xSP1+xD1)/2,-3, 600, -34, L('矽化物','silicide'));
+  }
+  /* ---- 端點電壓 ---- */
+  const term=(x,y,name,volt,col)=>{
+    const q=proj(x,y,0);
+    svg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:4,fill:col,stroke:css('--surface'),'stroke-width':1.5}));
+    svg.appendChild(txt(q[0],q[1]-10,name+' = '+volt,{ta:'middle',fs:11.5,fw:650,fill:col}));
+  };
+  term((xC0+xC1)/2,-oxT-polyH-silH-64,'V~G~',P_.VG.toFixed(2)+' V',css('--e'));
+  term((xSP1+xD1)/2,-oxT-polyH-silH-64,'V~D~',P_.VD.toFixed(2)+' V',css('--h'));
+  term((xS0+xSP0)/2,-oxT-polyH-silH-64,'V~S~','0 V',css('--ink2'));
+  const bq=proj(xST0+16,SIH,0);
+  svg.appendChild(txt(bq[0],bq[1]+18,'V~B~ = 0 V',{fs:11,fw:650,fill:css('--ink2')}));
+
+  /* ---- 電場色標 ---- */
+  const cbx=VW-104, cby=52, cbw=16, cbh=150;
+  for(let i=0;i<40;i++){const t=1-i/39, cc=fieldColor(t);
+    svg.appendChild(el2('rect',{x:cbx,y:cby+cbh*i/40,width:cbw,height:cbh/40+0.6,fill:cc.c,opacity:cc.o}));}
+  svg.appendChild(el2('rect',{x:cbx,y:cby,width:cbw,height:cbh,fill:'none',stroke:stroke,'stroke-width':1}));
+  svg.appendChild(txt(cbx+cbw/2,cby-8,L('橫向電場','Lateral field'),{ta:'middle',fs:10.5,fill:css('--ink2')}));
+  svg.appendChild(txt(cbx+cbw+5,cby+4,'3 MV/cm',{fs:10}));
+  svg.appendChild(txt(cbx+cbw+5,cby+cbh,'10 kV/cm',{fs:10}));
+  const emT=Math.max(0,Math.min(1,Math.log10(Math.max(M.Em,1e4)/1e4)/Math.log10(3e6/1e4)));
+  svg.appendChild(el2('path',{d:'M'+(cbx-4)+' '+(cby+cbh*(1-emT))+'l-8 -5l0 10Z',fill:css('--ink')}));
+  svg.appendChild(txt(cbx-15,cby+cbh*(1-emT),'E~m~',{ta:'end',db:'middle',fs:10.5,fw:650,fill:css('--ink')}));
+
+  const pg=el2('g',{id:'pg'}); svg.appendChild(pg);
+  const ng=el2('g',{id:'ng'}); svg.appendChild(ng);
+  const host=document.getElementById('viz');
+  host.innerHTML=''; host.appendChild(svg);
+  const lv=document.getElementById('legV');
+  if(lv) lv.innerHTML=
+    '<span><i class="sw dot" style="background:'+css('--e')+'"></i>'+L('電子 e⁻','electron e⁻')+'</span>'+
+    '<span><i class="sw dot" style="background:'+css('--h')+'"></i>'+L('電洞 h⁺（→ I<sub>sub</sub>）','hole h⁺ (→ I<sub>sub</sub>)')+'</span>'+
+    '<span><span style="color:'+css('--nit')+';font-weight:700">✕</span> '+L('界面態 N<sub>it</sub>（累積）','interface trap N<sub>it</sub> (accumulated)')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:linear-gradient(90deg,#fde8d6,#c22c1c)"></i>'+L('橫向電場','lateral field')+'</span>'+
+    '<span><i class="sw" style="width:16px;background:'+dc('nplus')+'"></i>n⁺</span>'+
+    (P.ldd?'<span><i class="sw" style="width:16px;background:'+dc('nldd')+'"></i>n⁻ LDD</span>':'')+
+    (P.halo?'<span><i class="sw" style="width:16px;background:'+dc('phalo')+'"></i>p halo</span>':'');
+  return {svg,pg,ng,hi0,oxT,polyH,silH,xjPX,xlddPX,hiEnd};
+}
+
+/* ---------- 動畫 ---------- */
+let VZ=null, MM=null;
+function spawn(){ if(VZ&&MM) parts.push({x:xS0+20,y:4+(Math.random()-0.5)*4,state:'e',en:0}); }
+function step(dt){
+  if(!VZ||!MM) return;
+  const M=MM, hi0=VZ.hi0, hiEnd=VZ.hiEnd, out=[];
+  for(const p of parts){
+    if(p.state==='e'){
+      let E=M.Esat*0.25, inPinch=false;
+      if(p.x>hi0&&p.x<=hiEnd&&M.pinch){
+        const u=(p.x-hi0)/Math.max(hiEnd-hi0,1e-6);
+        E=M.Esat*Math.cosh(Math.min(u*M.dL/M.l,20)); inPinch=true;
+      } else if(p.x<=hi0) E=M.Esat*(0.15+0.85*Math.max(p.x-xC0,0)/Math.max(hi0-xC0,1));
+      const v=(1.0+2.2*Math.min(1,Math.log10(Math.max(E,1e3)/1e3)/3))*(M.Vgt>0.05?1:0.25);
+      p.x+=v*dt*0.10;
+      if(inPinch&&STAGE>=3){
+        const dy=(v*dt*0.10)/Math.max(hiEnd-hi0,1)*M.dL;
+        const al=AI*Math.exp(-M.Bi/Math.max(E,1));
+        if(Math.random()<Math.min(0.6,al*dy*40)){
+          out.push({x:p.x,y:p.y,vy:1.6,state:'h'});
+          out.push({x:p.x,y:p.y+1,state:'e',en:0});
+          out.push({x:p.x,y:p.y,state:'flash',life:1});
+        }
+        const fox=1/(1+Math.exp(-(P.VG-P.VD+0.5)/0.35));
+        if(STAGE>=4&&Math.random()<Math.min(0.35,CG*fox*Math.exp(-M.Bg/Math.max(E,1))*6e4)){p.state='inj';p.vy=-2.2;}
+        if(STAGE>=5&&Math.random()<Math.min(0.25,Math.exp(-M.Bit/Math.max(E,1))*2.5e6)&&nits.length<170)
+          nits.push({x:p.x,a:0});
+      }
+      if(p.x>hiEnd+56) p.dead=true;
+    } else if(p.state==='inj'){ p.y+=p.vy*dt*0.10; p.x+=0.3*dt*0.10;
+      if(p.y<-VZ.oxT-VZ.polyH-10) p.dead=true;
+    } else if(p.state==='h'){ p.y+=p.vy*dt*0.10; p.x-=0.25*dt*0.10;
+      if(p.y>SIH-16) p.dead=true;
+    } else if(p.state==='flash'){ p.life-=dt*0.006; if(p.life<=0) p.dead=true; }
+  }
+  parts=parts.filter(p=>!p.dead).concat(out);
+  if(parts.length<105&&MM.Vgt>0.05) spawn();
+  if(parts.length>300) parts=parts.slice(-300);
+  nits.forEach(n=>{ if(n.a<1) n.a=Math.min(1,n.a+dt*0.004); });
+}
+function render(){
+  if(!VZ) return;
+  const pg=VZ.pg, ng=VZ.ng;
+  while(pg.firstChild) pg.removeChild(pg.firstChild);
+  while(ng.firstChild) ng.removeChild(ng.firstChild);
+  const ce=css('--e'), ch=css('--h'), cn=css('--nit'), cs=css('--surface');
+  for(const p of parts){
+    const q=proj(p.x,p.y,0);
+    if(p.state==='flash')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3+9*(1-p.life),fill:'none',stroke:ch,
+        'stroke-width':1.6,opacity:p.life*0.85}));
+    else if(p.state==='h')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ch,stroke:cs,'stroke-width':1}));
+    else if(p.state==='inj')
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:3.2,fill:ce,stroke:'#fff','stroke-width':1.4}));
+    else
+      pg.appendChild(el2('circle',{cx:q[0],cy:q[1],r:2.6,fill:ce,opacity:.9}));
+  }
+  for(const n of nits){
+    const q=proj(n.x,0.5,0), s=3.4;
+    ng.appendChild(el2('path',{d:'M'+(q[0]-s)+' '+(q[1]-s)+'L'+(q[0]+s)+' '+(q[1]+s)+
+      'M'+(q[0]+s)+' '+(q[1]-s)+'L'+(q[0]-s)+' '+(q[1]+s),
+      stroke:cn,'stroke-width':1.9,'stroke-linecap':'round',opacity:0.35+0.65*n.a}));
+  }
+  if(nits.length){
+    const q=proj(xST1,SIH,0);
+    ng.appendChild(txt(q[0],q[1]+18,L('累積 N~it~ : ','Accumulated N~it~: ')+nits.length+(nits.length>=170?L('（顯示上限）',' (display cap)'):''),
+      {ta:'end',fs:11.5,fw:650,fill:cn}));
+  }
+}
+function loop(ts){
+  const dt=Math.min(60,ts-(tPrev||ts)); tPrev=ts;
+  if(playing) step(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+
+P.L=1.0;P.tox=20;P.xj=200;P.Vt0=0.7;P.W=10;P.Tc=25;P.VG=2.5;P.VD=5.0;
+P.ldd=false;P.halo=false;P.Nldd=1e18;P.Nhalo=5e17;P.Lext=60;
+function base(o){return Object.assign({},P,{ldd:false,halo:false},o||{});}
+
+function tiles6(){
+  var M=model(P), B=model(base());
+  var rel=B.rate>0?B.rate/Math.max(M.rate,1e-300):1;
+  var idr=M.ID/B.ID;
+  $('tiles6').innerHTML=[
+    [L('有效特徵長度 l','Effective characteristic length l'),fmtEng(M.l*1e-2,'m',2),
+      P.ldd||P.halo?'<span class="badge '+(M.l>B.l?'ok':'bad')+'">'+(M.l>B.l?'+':'')+
+        ((M.l/B.l-1)*100).toFixed(0)+'%</span>':'',1],
+    [L('峰值電場 E<sub>m</sub>','Peak field E<sub>m</sub>'),fmtEng(M.Em,'V/cm',2),
+      P.ldd||P.halo?'<span class="badge '+(M.Em<B.Em?'ok':'bad')+'">'+
+        ((M.Em/B.Em-1)*100).toFixed(0)+'%</span>':''],
+    [L('壽命（相對裸元件）','Lifetime (relative to bare device)'),rel>=1?(rel<1000?rel.toFixed(1):rel.toExponential(1))+'×':rel.toFixed(3)+'×',
+      '<span class="badge '+(rel>1.5?'ok':rel<0.7?'bad':'warn')+'">'+
+        (rel>1.5?L('✓ 改善','✓ improved'):rel<0.7?L('✕ 惡化','✕ worsened'):L('≈ 持平','≈ unchanged'))+'</span>',1],
+    [L('I<sub>dsat</sub>（相對裸元件）','I<sub>dsat</sub> (relative to bare device)'),(idr*100).toFixed(1)+'<span class="u">%</span>',
+      '<span class="badge '+(idr>0.95?'ok':idr>0.85?'warn':'bad')+'">'+
+        ((idr-1)*100).toFixed(1)+'%</span>'],
+    [L('LDD 串聯電阻 R<sub>ext</sub>（單邊）','LDD series resistance R<sub>ext</sub> (one side)'),P.ldd?fmtEng(M.Rext,'Ω',1):'—',''],
+    ['V<sub>t</sub>',M.Vt.toFixed(3)+'<span class="u"> V</span>',
+      P.halo?'<span class="badge warn">halo +'+((M.Vt-B.Vt)*1000).toFixed(0)+' mV</span>':'']
+  ].map(function(t){return '<div class="tile'+(t[3]?' hl':'')+'"><div class="k">'+t[0]+'</div><div class="v">'+t[1]+'</div>'+
+    (t[2]?'<div style="margin-top:4px">'+t[2]+'</div>':'')+'</div>';}).join('');
+}
+
+function drawB6(){
+  var combos=[{n:L('裸元件','bare device'),o:{ldd:false,halo:false}},{n:'+ LDD',o:{ldd:true,halo:false}},
+              {n:'+ halo',o:{ldd:false,halo:true}},{n:'LDD + halo',o:{ldd:true,halo:true}}];
+  var B=model(base());
+  var dat=combos.map(function(c){var m=model(Object.assign({},P,c.o));
+    return {n:c.n,life:B.rate>0?B.rate/Math.max(m.rate,1e-300):1,id:m.ID/B.ID,em:m.Em};});
+  var W=1060,H=280,Mg={t:20,r:36,b:56,l:96},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var lo=Math.pow(10,Math.floor(Math.log10(Math.min.apply(null,dat.map(function(d){return d.life;})))));
+  var hi=Math.pow(10,Math.ceil(Math.log10(Math.max.apply(null,dat.map(function(d){return d.life;})))));
+  lo=Math.min(lo,1e-2); hi=Math.max(hi,1e1);
+  var Y=function(v){return Mg.t+ih*(1-Math.log10(Math.min(Math.max(v,lo),hi)/lo)/Math.log10(hi/lo));};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  decTicks(lo,hi).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),
+    stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),v>=0.01&&v<=1000?String(+v.toPrecision(3))+'×':'1e'+Math.round(Math.log10(v)),
+      {ta:'end',db:'middle'}));});
+  svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(1),y2:Y(1),stroke:css('--muted'),
+    'stroke-width':1.5,'stroke-dasharray':'5 4'}));
+  svg.appendChild(txt(Mg.l+iw+4,Y(1),L('裸元件 = 1','bare device = 1'),{db:'middle',fs:10.5}));
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(16,Mg.t+ih/2,L('相對壽命（對數）','Relative lifetime (log)'),{ta:'middle',fs:11.5,fill:css('--ink2'),db:'middle',rot:-90}));
+  var bw=iw/dat.length;
+  dat.forEach(function(d,i){
+    var cx=Mg.l+bw*(i+0.5), w=Math.min(bw*0.44,86);
+    var y0=Y(1), y1=Y(d.life);
+    var up=d.life>=1;
+    svg.appendChild(el('rect',{x:cx-w/2,y:Math.min(y0,y1),width:w,height:Math.max(Math.abs(y1-y0),2),
+      rx:4,fill:up?css('--nit'):css('--h'),opacity:.88}));
+    svg.appendChild(txt(cx,y1+(up?-10:16),(d.life>=1?(d.life<1000?d.life.toFixed(1):d.life.toExponential(1)):d.life.toFixed(3))+'×',
+      {ta:'middle',fs:13,fw:750,fill:up?css('--nit'):css('--h')}));
+    svg.appendChild(txt(cx,Mg.t+ih+20,d.n,{ta:'middle',fs:12.5,fw:650,fill:css('--ink')}));
+    svg.appendChild(txt(cx,Mg.t+ih+37,'I'+'d'+' '+(d.id*100).toFixed(1)+'% · E'+'m'+' '+fmtEng(d.em,'V/cm',1),
+      {ta:'middle',fs:10.5,fill:css('--ink2')}));
+  });
+  $('cB6').innerHTML='';$('cB6').appendChild(svg);
+  var Ld=dat[1], Hh=dat[2];
+  $('legB6').innerHTML='<span><i class="sw" style="background:'+css('--nit')+'"></i>'+L('壽命改善','lifetime improves')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('壽命惡化','lifetime worsens')+'</span>';
+  $('note6').innerHTML = L(
+    '目前參數下：<b>LDD 讓壽命變成 '+(Ld.life<1000?Ld.life.toFixed(0):Ld.life.toExponential(1))+
+      ' 倍</b>，I<sub>dsat</sub> 只剩 '+(Ld.id*100).toFixed(1)+'%；'+
+      '<b>halo 讓壽命變成 '+Hh.life.toFixed(3)+' 倍</b>（也就是惡化 '+(1/Hh.life).toFixed(0)+' 倍）。'+
+      '<br>把劑量從「濃」切到「淡」，會看到壽命上升但 I<sub>dsat</sub> 下降、短通道控制變差 —— '+
+      '<b>這條取捨曲線就是 implant 劑量調校的全部內容</b>。'+
+      '<br><span style="color:var(--muted)">數值來自本教材的簡化模型，用於呈現趨勢與取捨方向；絕對倍率不可直接引用。</span>',
+    'With the current parameters: <b>LDD takes lifetime to '+(Ld.life<1000?Ld.life.toFixed(0):Ld.life.toExponential(1))+
+      '×</b>, at a cost of I<sub>dsat</sub> dropping to '+(Ld.id*100).toFixed(1)+'%; '+
+      '<b>halo takes lifetime to '+Hh.life.toFixed(3)+'×</b> (in other words, '+(1/Hh.life).toFixed(0)+'× worse).'+
+      '<br>Switch the dose from "heavy" to "light" and you\'ll see lifetime rise while I<sub>dsat</sub> falls and short-channel control worsens — '+
+      '<b>that trade-off curve is the entirety of implant dose tuning</b>.'+
+      '<br><span style="color:var(--muted)">Values come from this course\'s simplified model, meant to show trends and the direction of the trade-off; don\'t cite the absolute ratios directly.</span>'
+  );
+}
+
+function redraw(){ var M=model(P); MM=M; VZ=drawViz(M); tiles6(); drawB6(); }
+function tog(id,key){
+  $(id).setAttribute('aria-pressed',String(P[key]));
+  $(id).addEventListener('click',function(){P[key]=!P[key];
+    $(id).setAttribute('aria-pressed',String(P[key])); nits=[]; redraw();});
+}
+tog('bLDD','ldd'); tog('bHALO','halo');
+$('bLBL').addEventListener('click',function(){SHOWLBL=!SHOWLBL;
+  $('bLBL').setAttribute('aria-pressed',String(SHOWLBL)); redraw();});
+function relabelPlayBtn6(){
+  $('playBtn').innerHTML='⏸ '+(playing?L('暫停動畫','Pause animation'):L('播放動畫','Play animation'));
+  if(!playing) $('playBtn').innerHTML='▶ '+L('播放動畫','Play animation');
+}
+$('playBtn').addEventListener('click',function(e){playing=!playing;
+  e.target.setAttribute('aria-pressed',String(playing));
+  relabelPlayBtn6();});
+$('resetBtn').addEventListener('click',function(){nits=[];});
+function bind6(id,vid,key,logv,fmt){
+  $(id).addEventListener('input',function(e){var v=parseFloat(e.target.value); if(logv)v=Math.pow(10,v);
+    P[key]=v; $(vid).textContent=fmt(v); redraw();});
+  $(vid).textContent=fmt(P[key]);
+}
+bind6('rVD6','vVD6','VD',false,function(v){return v.toFixed(2)+' V';});
+var DOSE={dLo:{Nldd:3e17,Lext:90,Nhalo:1.5e17,t:['輕 LDD + 淡 halo：HCI 最好，但串聯電阻最大、短通道控制最差','Light LDD + light halo: best HCI, but worst series resistance and short-channel control']},
+          dMi:{Nldd:1e18,Lext:60,Nhalo:5e17,t:['業界常見的折衷點','A common industry compromise point']},
+          dHi:{Nldd:5e18,Lext:30,Nhalo:2e18,t:['重 LDD + 濃 halo：驅動力與短通道控制最好，HCI 最差','Heavy LDD + heavy halo: best drive strength and short-channel control, worst HCI']}};
+function dose(id){
+  ['dLo','dMi','dHi'].forEach(function(k){$(k).setAttribute('aria-pressed',String(k===id));});
+  var d=DOSE[id]; P.Nldd=d.Nldd; P.Lext=d.Lext; P.Nhalo=d.Nhalo;
+  $('dTxt').innerHTML='N<sub>LDD</sub> = '+sci(d.Nldd)+'、L<sub>ext</sub> = '+d.Lext+
+    ' nm、N<sub>halo</sub> = '+sci(d.Nhalo)+' cm⁻³ —— '+L(d.t[0],d.t[1]);
+  nits=[]; redraw();
+}
+var curDose='dMi';
+['dLo','dMi','dHi'].forEach(function(k){$(k).addEventListener('click',function(){curDose=k;dose(k);});});
+dose('dMi');
+window.__rebuild=function(){ relabelPlayBtn6(); dose(curDose); redraw(); };
+redraw(); requestAnimationFrame(loop);
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

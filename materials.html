@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="閘極介電層與閘極電極的材料參數（k、Eg、能帶偏移、功函數）、元件結構的 HCI 差異、以及 HCI 統計外推慣例 —— 每一項都附來源與查證狀態。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="材料與結構參考表 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="全站材料數據的唯一出處，逐項附來源與查證狀態。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>材料與結構參考表 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+.tbl-sm td,.tbl-sm th{font-size:14.5px;padding:7px 10px}
+.tbl-sm td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+.src{font-size:13px;color:var(--muted);white-space:nowrap}
+.srclist{font-size:14.5px;line-height:1.9}
+.srclist li{margin-bottom:3px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">參考資料</span><div class="steps"><a href="hci.html"><span class="n">01</span>HCI</a><a href="tddb.html"><span class="n">02</span>TDDB</a><a href="nbti.html"><span class="n">03</span>NBTI</a><a href="em.html"><span class="n">04</span>EM</a><a href="hci-7-playground.html"><span class="n">←</span>回可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:100%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">參考資料 · 全站唯一出處</p>
+<h1>材料與結構參考表</h1>
+<p class="lede">可調模型裡的每一個下拉選項背後都是這一頁的數字。
+規則只有一條：<b>照抄來源，不平均、不調和</b>。來源之間有分歧就兩個都列，查不到就寫「未查證」。</p>
+
+<div class="tldr"><div class="t">先講三件容易踩的事</div><ul>
+<li><b>「Ti 的功函數」不是「TiN 的功函數」，更不是「TiN 在 HfO₂ 上的有效功函數」。</b>
+    這三個數字差很多，而且只有第三個能拿來設計。</li>
+<li><b>同一個金屬放在不同介電層上，有效功函數可以差 0.76 eV。</b>
+    ALD Pt 在 SiO₂ 上 5.52 eV、在 ZrO₂ 上 4.76 eV —— 這就是費米能階釘扎。</li>
+<li><b>能帶偏移的文獻分歧比你想像的大。</b>SiO₂ 的 ΔE<sub>c</sub> 有 3.2 / 3.3 / 3.5 三種說法，
+    HfO₂ 有 1.4 / 1.48 / 1.5 / 1.9。用在穿隧位障計算時，這 0.5 eV 會放大成數量級。</li>
+</ul></div>
+
+<h2>0　矽的基本常數</h2>
+<table class="tbl-sm"><thead><tr><th class="nw">量</th><th class="nw">值</th><th>用途與來源</th></tr></thead><tbody>
+<tr><td class="nw">能隙 E<sub>g</sub>（300 K）</td><td class="n">1.12 eV</td>
+  <td>能帶對齊圖的 E<sub>v</sub> 位置。<span class="src">Ioffe NSM Archive；Robertson &amp; Falabretti 2006 Table I 同值</span></td></tr>
+<tr><td class="nw">電子親和力 χ</td><td class="n">4.05 eV</td>
+  <td>真空能階到導帶邊。<span class="src">Ioffe NSM Archive</span></td></tr>
+<tr><td class="nw">導帶邊 E<sub>c</sub>（真空尺度）</td><td class="n">4.05 eV</td><td>= χ</td></tr>
+<tr><td class="nw">價帶邊 E<sub>v</sub>（真空尺度）</td><td class="n">5.17 eV</td><td>= χ + E<sub>g</sub>（推導）</td></tr>
+<tr><td class="nw">中能隙（真空尺度）</td><td class="n">4.61 eV</td><td>= χ + E<sub>g</sub>/2（推導）—— 未摻雜通道元件的金屬功函數目標附近</td></tr>
+<tr><td class="nw">介電常數</td><td class="n">11.7</td><td>pseudo-2D 特徵長度裡的 ε<sub>Si</sub>/ε<sub>ox</sub> = 3。<span class="src">Ioffe</span></td></tr>
+<tr><td class="nw">本質載子濃度 n<sub>i</sub>（300 K）</td><td class="n">1×10¹⁰ cm⁻³</td>
+  <td><b>摻雜輸入的下限</b>。<span class="src">Ioffe NSM Archive（band structure 頁）</span></td></tr>
+<tr><td class="nw">原子密度</td><td class="n">5×10²² cm⁻³</td>
+  <td><b>摻雜輸入的上限</b> —— 每立方公分的矽原子數，摻雜不可能超過它。<span class="src">Ioffe（basic parameters 頁：「Number of atoms in 1 cm³: 5·10²²」）</span></td></tr>
+<tr><td class="nw">導帶等效態密度 N<sub>c</sub></td><td class="n">3.2×10¹⁹ cm⁻³</td><td><span class="src">Ioffe</span></td></tr>
+<tr><td class="nw">價帶等效態密度 N<sub>v</sub></td><td class="n">1.8×10¹⁹ cm⁻³</td><td><span class="src">Ioffe</span></td></tr>
+</tbody></table>
+<p class="note">固溶度上限（砷約 10²¹ cm⁻³ 量級）<b>未逐字查證</b>，模型裡只當作警示帶，不當作硬邊界。
+硬邊界只有兩個：n<sub>i</sub> 與原子密度，兩者都出自 Ioffe。</p>
+
+<h2>1　閘極介電層</h2>
+<p>主表採 <b>Robertson, Eur. Phys. J. Appl. Phys. 28, 265 (2004) Table 2</b> —— 這是最常被引用、
+且內部自洽的一組（每一列都滿足 ΔE<sub>c</sub> + ΔE<sub>v</sub> + 1.1 = E<sub>g</sub>）。
+其他來源的值放在「分歧」欄。</p>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Reference · Single source of truth site-wide</p>
+<h1>Material & Structure Reference Table</h1>
+<p class="lede">Every dropdown option in the tunable models on this site traces back to a number on this page.
+There's only one rule: <b>copy the source exactly — no averaging, no reconciling.</b> Where sources disagree, list both; where nothing could be found, mark it "unverified."</p>
+
+<div class="tldr"><div class="t">Three easy traps, up front</div><ul>
+<li><b>"Ti's work function" is not "TiN's work function," and it's definitely not "TiN's effective work function on HfO₂."</b>
+    These three numbers differ substantially, and only the third one is usable for actual design.</li>
+<li><b>The same metal on different dielectrics can have an effective work function that differs by 0.76 eV.</b>
+    ALD Pt measures 5.52 eV on SiO₂ and 4.76 eV on ZrO₂ — this is Fermi-level pinning.</li>
+<li><b>Literature disagreement on band offsets is bigger than you'd expect.</b> SiO₂'s ΔE<sub>c</sub> has three reported values — 3.2 / 3.3 / 3.5 —
+    and HfO₂ has four: 1.4 / 1.48 / 1.5 / 1.9. When used in a tunneling-barrier calculation, that 0.5 eV spread gets amplified by orders of magnitude.</li>
+</ul></div>
+
+<h2>0　Basic constants of silicon</h2>
+<table class="tbl-sm"><thead><tr><th class="nw">Quantity</th><th class="nw">Value</th><th>Use & source</th></tr></thead><tbody>
+<tr><td class="nw">Bandgap E<sub>g</sub> (300 K)</td><td class="n">1.12 eV</td>
+  <td>Sets the E<sub>v</sub> position on band-alignment diagrams. <span class="src">Ioffe NSM Archive; matches Robertson & Falabretti 2006 Table I</span></td></tr>
+<tr><td class="nw">Electron affinity χ</td><td class="n">4.05 eV</td>
+  <td>Vacuum level to conduction-band edge. <span class="src">Ioffe NSM Archive</span></td></tr>
+<tr><td class="nw">Conduction-band edge E<sub>c</sub> (vacuum scale)</td><td class="n">4.05 eV</td><td>= χ</td></tr>
+<tr><td class="nw">Valence-band edge E<sub>v</sub> (vacuum scale)</td><td class="n">5.17 eV</td><td>= χ + E<sub>g</sub> (derived)</td></tr>
+<tr><td class="nw">Midgap (vacuum scale)</td><td class="n">4.61 eV</td><td>= χ + E<sub>g</sub>/2 (derived) — near the metal work-function target for undoped-channel devices</td></tr>
+<tr><td class="nw">Dielectric constant</td><td class="n">11.7</td><td>The ε<sub>Si</sub>/ε<sub>ox</sub> = 3 inside the pseudo-2D characteristic length. <span class="src">Ioffe</span></td></tr>
+<tr><td class="nw">Intrinsic carrier concentration n<sub>i</sub> (300 K)</td><td class="n">1×10¹⁰ cm⁻³</td>
+  <td><b>Lower bound for doping inputs.</b> <span class="src">Ioffe NSM Archive (band structure page)</span></td></tr>
+<tr><td class="nw">Atomic density</td><td class="n">5×10²² cm⁻³</td>
+  <td><b>Upper bound for doping inputs</b> — silicon atoms per cubic centimeter; doping can never exceed it. <span class="src">Ioffe (basic parameters page: "Number of atoms in 1 cm³: 5·10²²")</span></td></tr>
+<tr><td class="nw">Conduction-band effective DOS N<sub>c</sub></td><td class="n">3.2×10¹⁹ cm⁻³</td><td><span class="src">Ioffe</span></td></tr>
+<tr><td class="nw">Valence-band effective DOS N<sub>v</sub></td><td class="n">1.8×10¹⁹ cm⁻³</td><td><span class="src">Ioffe</span></td></tr>
+</tbody></table>
+<p class="note">The solid-solubility ceiling (roughly 10²¹ cm⁻³ for arsenic) is <b>not verified word-for-word</b>; the model treats it only as a warning band, not a hard boundary.
+There are only two hard boundaries: n<sub>i</sub> and atomic density, both sourced from Ioffe.</p>
+
+<h2>1　Gate dielectric</h2>
+<p>The main table uses <b>Robertson, Eur. Phys. J. Appl. Phys. 28, 265 (2004), Table 2</b> — the most commonly cited set, and internally self-consistent
+(every row satisfies ΔE<sub>c</sub> + ΔE<sub>v</sub> + 1.1 = E<sub>g</sub>). Values from other sources go in the "other sources & discrepancies" column.</p>
+</div>
+
+<table class="tbl-sm"><thead><tr>
+<th class="nw"><span lang="zh-Hant">材料</span><span lang="en">Material</span></th><th class="n">k</th><th class="n">E<sub>g</sub>(eV)</th>
+<th class="n">ΔE<sub>c</sub> <span lang="zh-Hant">對 Si</span><span lang="en">vs. Si</span></th><th class="n">ΔE<sub>v</sub> <span lang="zh-Hant">對 Si</span><span lang="en">vs. Si</span></th><th><span lang="zh-Hant">其他來源與分歧</span><span lang="en">Other sources & discrepancies</span></th>
+</tr></thead><tbody>
+<tr><td class="nw"><b>SiO₂</b>（<span lang="zh-Hant">熱氧化</span><span lang="en">thermal oxide</span>）</td><td class="n">3.9</td><td class="n">9.0</td><td class="n"><b>3.2</b></td><td class="n">4.4</td>
+ <td><span lang="zh-Hant">E<sub>g</sub> 8.9（Wilk 2001；Bersch 2008 實測）。ΔE<sub>c</sub> 3.5（Robertson 型計算表 / Stanford EE311）、
+ 3.3（Bersch IPES 實測）。<b>常見的「3.1 eV」在本次查證的來源中找不到出處</b>，請勿當成標準值</span>
+ <span lang="en">E<sub>g</sub> 8.9 (Wilk 2001; Bersch 2008 measured). ΔE<sub>c</sub> 3.5 (Robertson-type calculated table / Stanford EE311),
+ 3.3 (Bersch IPES measured). <b>The commonly cited "3.1 eV" could not be traced to any source in this verification pass</b> — don't treat it as a standard value.</span></td></tr>
+<tr><td class="nw">Si₃N₄</td><td class="n">7</td><td class="n">5.3</td><td class="n">2.4</td><td class="n">1.8</td>
+ <td><span lang="zh-Hant">Wilk：E<sub>g</sub> 5.1、ΔE<sub>c</sub> 2.0。Robertson &amp; Falabretti 後續計算 ΔE<sub>c</sub> 1.7</span>
+ <span lang="en">Wilk: E<sub>g</sub> 5.1, ΔE<sub>c</sub> 2.0. Robertson & Falabretti's later calculation gives ΔE<sub>c</sub> 1.7.</span></td></tr>
+<tr><td class="nw"><b>SiON</b>（<span lang="zh-Hant">氮化氧化</span><span lang="en">nitrided oxide</span>）</td><td class="n">3.9 → 7</td><td class="n">9.0 → 5.3</td><td class="n">3.2 → 2.4</td><td class="n">4.4 → 1.8</td>
+ <td><span lang="zh-Hant"><span class="badge warn">內插</span>沒有單一文獻值。TU Wien（Hollauer）：
+ 「dielectric constant increases <b>linearly</b> with the percentage of nitrogen from ε<sub>SiO₂</sub> = 3.8 to ε<sub>Si₃N₄</sub> = 7.8」
+ —— 注意這組端點（3.8 / 7.8）與 Robertson 的（3.9 / 7）不同。E<sub>g</sub>(x) 的關係<b>未查證</b></span>
+ <span lang="en"><span class="badge warn">Interpolated</span>No single literature value exists. TU Wien (Hollauer):
+ "dielectric constant increases <b>linearly</b> with the percentage of nitrogen from ε<sub>SiO₂</sub> = 3.8 to ε<sub>Si₃N₄</sub> = 7.8"
+ — note these endpoints (3.8 / 7.8) differ from Robertson's (3.9 / 7). The E<sub>g</sub>(x) relationship is <b>unverified</b>.</span></td></tr>
+<tr><td class="nw">Al₂O₃</td><td class="n">9</td><td class="n">8.8</td><td class="n">2.8</td><td class="n">4.9</td>
+ <td><span lang="zh-Hant">Robertson 原表註「2.8（not ALD）」。<b>Bersch 實測 ALD 薄膜 E<sub>g</sub> 只有 7.0、ΔE<sub>c</sub> 2.7</b> ——
+ 這是真實的 ALD vs 塊材差異，做可靠度要用 ALD 值</span>
+ <span lang="en">Robertson's original table notes "2.8 (not ALD)." <b>Bersch measured an ALD film with E<sub>g</sub> of only 7.0, ΔE<sub>c</sub> 2.7</b> —
+ a genuine ALD-vs-bulk difference; use the ALD value for reliability work.</span></td></tr>
+<tr><td class="nw">HfSiO₄</td><td class="n">11</td><td class="n">6.5</td><td class="n">1.8</td><td class="n">—</td>
+ <td><span lang="zh-Hant">Bersch 實測 Hf₀.₇Si₀.₃O₂：E<sub>g</sub> 6.0、ΔE<sub>c</sub> 2.1、ΔE<sub>v</sub> 2.8</span>
+ <span lang="en">Bersch measured Hf₀.₇Si₀.₃O₂: E<sub>g</sub> 6.0, ΔE<sub>c</sub> 2.1, ΔE<sub>v</sub> 2.8.</span></td></tr>
+<tr><td class="nw">HfSiON</td><td class="n"><span class="badge warn"><span lang="zh-Hant">未查證</span><span lang="en">Unverified</span></span></td><td class="n">4.70 ± 0.05</td>
+ <td class="n">≈ 1.47<sup>†</sup></td><td class="n">—</td>
+ <td><span lang="zh-Hant">Sayan APL 2005 實測 E<sub>g</sub>。<sup>†</sup>ΔE<sub>c</sub> 由 HfSiO 的 1.8 減去實測氮化降幅 0.33±0.05 <b>推得</b>，
+ 不是直接量測值。ΔE<sub>v</sub> 的氮化降幅為 1.2±0.1。k 值該文未給</span>
+ <span lang="en">E<sub>g</sub> measured by Sayan, APL 2005. <sup>†</sup>ΔE<sub>c</sub> is <b>derived</b> by subtracting the measured nitridation-induced decrease of 0.33±0.05 from HfSiO's 1.8,
+ not a direct measurement. The nitridation-induced decrease in ΔE<sub>v</sub> is 1.2±0.1. That paper doesn't give a k value.</span></td></tr>
+<tr><td class="nw"><b>HfO₂</b></td><td class="n">25</td><td class="n">5.8</td><td class="n"><b>1.4</b></td><td class="n">3.4</td>
+ <td><span lang="zh-Hant">E<sub>g</sub> 5.7（Wilk；Bersch 實測）、6.0（Robertson &amp; Falabretti）。
+ ΔE<sub>c</sub> 1.48（R&amp;F 計算）、1.5（Wilk）、<b>1.9（Bersch 實測）</b>。四種說法都在流通</span>
+ <span lang="en">E<sub>g</sub> 5.7 (Wilk; Bersch measured), 6.0 (Robertson & Falabretti).
+ ΔE<sub>c</sub> 1.48 (R&F calculated), 1.5 (Wilk), <b>1.9 (Bersch measured)</b>. All four figures circulate in the literature.</span></td></tr>
+<tr><td class="nw">ZrO₂</td><td class="n">25</td><td class="n">5.8</td><td class="n">1.5</td><td class="n">3.3</td>
+ <td><span lang="zh-Hant"><span class="badge bad">來源有出入</span>Wilk 印的 E<sub>g</sub> = 7.8 是離群值（其他三個來源都在 5.5–5.7），
+ 且與它自己的 ΔE<sub>c</sub> 不自洽。Bersch 實測 5.5 / ΔE<sub>c</sub> 1.7；Sayan 實測 5.68 / ΔE<sub>c</sub> 1.16</span>
+ <span lang="en"><span class="badge bad">Sources disagree</span>Wilk's printed E<sub>g</sub> = 7.8 is an outlier (the other three sources all sit at 5.5–5.7)
+ and isn't self-consistent with its own ΔE<sub>c</sub>. Bersch measured 5.5 / ΔE<sub>c</sub> 1.7; Sayan measured 5.68 / ΔE<sub>c</sub> 1.16.</span></td></tr>
+<tr><td class="nw">La₂O₃</td><td class="n">30</td><td class="n">6.0</td><td class="n">2.3</td><td class="n">2.6</td>
+ <td><span lang="zh-Hant"><span class="badge bad">來源有出入</span>Wilk 印 E<sub>g</sub> = 4.3，與 Robertson 差 1.7 eV，未解決</span>
+ <span lang="en"><span class="badge bad">Sources disagree</span>Wilk's printed E<sub>g</sub> = 4.3 differs from Robertson's by 1.7 eV, unresolved.</span></td></tr>
+<tr><td class="nw">Ta₂O₅</td><td class="n">22</td><td class="n">4.4</td><td class="n">0.35</td><td class="n">3.0</td>
+ <td><span lang="zh-Hant"><span class="badge bad">來源有出入</span>Wilk：k = 26、ΔE<sub>c</sub> = 1～1.5。ΔE<sub>c</sub> 差 3～4 倍</span>
+ <span lang="en"><span class="badge bad">Sources disagree</span>Wilk: k = 26, ΔE<sub>c</sub> = 1–1.5. ΔE<sub>c</sub> differs by 3–4×.</span></td></tr>
+<tr><td class="nw">TiO₂</td><td class="n">80</td><td class="n">3.5</td><td class="n">0.0</td><td class="n">2.4</td>
+ <td><span lang="zh-Hant"><span class="badge bad">來源有出入</span>Robertson 給 0（幾乎沒有電子位障，這是他反對 TiO₂ 的主要論點，
+ 且與他自己的 0 + 2.4 + 1.1 = 3.5 自洽）；Wilk 給 1.2。兩者直接矛盾</span>
+ <span lang="en"><span class="badge bad">Sources disagree</span>Robertson gives 0 (almost no electron barrier — his main argument against TiO₂,
+ and self-consistent with his own 0 + 2.4 + 1.1 = 3.5); Wilk gives 1.2. The two directly contradict each other.</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<div class="key"><b>一個很有用的自查法：</b>對每一組來源，ΔE<sub>c</sub> + ΔE<sub>v</sub> + E<sub>g,Si</sub> 應該等於介電層的 E<sub>g</sub>。
+任何一列對不起來，就是抄錯了。這條恆等式救過很多份報告。</div>
+
+<h2>2　閘極電極</h2>
+<p><b>真空功函數</b>取 Michaelson, J. Appl. Phys. 48, 4729 (1977) 的<u>多晶推薦值</u>（Table III）。
+<b>有效功函數（EWF）</b>取 <i>Atomic Layer Deposition (ALD) of Metal Gates for CMOS</i>, Appl. Sci. 9, 2388 (2019)
+與 J. Semicond. 的 TiN/TaN 疊層研究。</p>
+</div>
+<div lang="en">
+<div class="key"><b>A very useful self-check:</b> for each source, ΔE<sub>c</sub> + ΔE<sub>v</sub> + E<sub>g,Si</sub> should equal the dielectric's E<sub>g</sub>.
+Any row that doesn't add up means something was copied wrong. This one identity has caught errors in plenty of reports.</div>
+
+<h2>2　Gate electrode</h2>
+<p><b>Vacuum work function</b> uses the <u>polycrystalline recommended values</u> (Table III) from Michaelson, J. Appl. Phys. 48, 4729 (1977).
+<b>Effective work function (EWF)</b> uses <i>Atomic Layer Deposition (ALD) of Metal Gates for CMOS</i>, Appl. Sci. 9, 2388 (2019),
+and a J. Semicond. study of TiN/TaN stacks.</p>
+</div>
+
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">材料</span><span lang="en">Material</span></th><th class="n"><span lang="zh-Hant">真空</span><span lang="en">Vacuum</span> Φ<sub>m</sub></th>
+<th class="n"><span lang="zh-Hant">高k 上的 EWF</span><span lang="en">EWF on high-k</span></th><th><span lang="zh-Hant">說明</span><span lang="en">Notes</span></th></tr></thead><tbody>
+<tr><td class="nw"><b>n⁺ poly-Si</b></td><td class="n">≈ 4.05</td><td class="n">—</td>
+ <td><span class="badge warn"><span lang="zh-Hant">推導</span><span lang="en">Derived</span></span> <span lang="zh-Hant">簡併 n 型，費米能階在導帶邊 → Φ ≈ χ<sub>Si</sub>。
+ 由 Ioffe 的 χ 推得，<b>不是直接量測值</b></span>
+ <span lang="en">Degenerate n-type, Fermi level at the conduction-band edge → Φ ≈ χ<sub>Si</sub>. Derived from Ioffe's χ, <b>not a direct measurement</b>.</span></td></tr>
+<tr><td class="nw"><b>p⁺ poly-Si</b></td><td class="n">≈ 5.17</td><td class="n">—</td>
+ <td><span class="badge warn"><span lang="zh-Hant">推導</span><span lang="en">Derived</span></span> <span lang="zh-Hant">費米能階在價帶邊 → Φ ≈ χ + E<sub>g</sub></span>
+ <span lang="en">Fermi level at the valence-band edge → Φ ≈ χ + E<sub>g</sub>.</span></td></tr>
+<tr><td class="nw"><b>TiN</b></td><td class="n">Ti: 4.33</td><td class="n"><b>4.4 – 4.9</b></td>
+ <td><span lang="zh-Hant">PVD TiN 在 HfO₂ 上 4.4–4.9 eV，<b>厚度相依</b>（&lt; 2 nm 時 V<sub>fb</sub> 強烈隨厚度變，&gt; 2 nm 後趨於定值）。
+ ALD TiCl₄/NH₃ 約 5.3（p 型）、TDMAT/NH₃ 約 4.2（n 型）。
+ <b>4.33 是「Ti 元素」的真空值，不是 TiN 的</b></span>
+ <span lang="en">PVD TiN on HfO₂: 4.4–4.9 eV, <b>thickness-dependent</b> (V<sub>fb</sub> varies strongly with thickness below 2 nm, then flattens out above 2 nm).
+ ALD TiCl₄/NH₃ ≈ 5.3 (p-type); TDMAT/NH₃ ≈ 4.2 (n-type). <b>4.33 is the vacuum value for elemental Ti, not for TiN.</b></span></td></tr>
+<tr><td class="nw">TaN</td><td class="n">Ta: 4.25</td><td class="n">4.22 – 4.56</td>
+ <td><span lang="zh-Hant">TiN/TaN 雙層量測範圍。越薄越靠近 Si 導帶；越厚越接近中能隙。機制是 Ta–O 偶極</span>
+ <span lang="en">Measured range for a TiN/TaN bilayer. Thinner sits closer to the Si conduction band; thicker moves toward midgap. The mechanism is a Ta–O dipole.</span></td></tr>
+<tr><td class="nw">TiAl</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td><td class="n">≈ 4.1</td><td><span lang="zh-Hant">PVD，nMOS 用</span><span lang="en">PVD, used for nMOS</span></td></tr>
+<tr><td class="nw">TiAlC</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td><td class="n">4.24 – 4.79</td>
+ <td><span lang="zh-Hant">TMA 前驅物 4.49–4.79（厚度相依）；TEA 前驅物 4.46 → 4.24（250–375 °C）</span>
+ <span lang="en">TMA precursor 4.49–4.79 (thickness-dependent); TEA precursor 4.46 → 4.24 (250–375 °C).</span></td></tr>
+<tr><td class="nw">TaAlC</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td><td class="n">4.26 – 4.65</td><td><span lang="zh-Hant">TEA 前驅物，厚度相依</span><span lang="en">TEA precursor, thickness-dependent</span></td></tr>
+<tr><td class="nw">W</td><td class="n">4.55</td><td class="n">≈ 4.6</td><td><span lang="zh-Hant">文獻描述為「near midgap work function」</span><span lang="en">Described in the literature as a "near midgap work function."</span></td></tr>
+<tr><td class="nw">Mo</td><td class="n">4.6</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td><td>—</td></tr>
+<tr><td class="nw">Ru</td><td class="n">4.71</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td><td>—</td></tr>
+<tr><td class="nw">Al</td><td class="n">4.28</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td>
+ <td><span lang="zh-Hant">Al 與 HfO₂ 之間的位障約 <b>1.58 eV</b>，接近熱載子臨界能量 —— 這是 28 nm HKMG 的 m 值塌到 1.1 的解釋</span>
+ <span lang="en">The barrier between Al and HfO₂ is about <b>1.58 eV</b>, close to the hot-carrier threshold energy — this is the explanation for why the m value on 28 nm HKMG collapses to 1.1.</span></td></tr>
+<tr><td class="nw">Ni</td><td class="n">5.15</td><td class="n"><span class="src"><span lang="zh-Hant">未查證</span><span lang="en">unverified</span></span></td>
+ <td><span lang="zh-Hant"><b>5.15 是「Ni 元素」的值。NiSi 全矽化閘極（FUSI）的 EWF 未查證，不可用此值代替</b></span>
+ <span lang="en"><b>5.15 is the value for elemental Ni. The EWF of a fully-silicided (FUSI) NiSi gate is unverified — this value cannot substitute for it.</b></span></td></tr>
+<tr><td class="nw">Pt</td><td class="n">5.65</td><td class="n">Al₂O₃ 5.22<br>ZrO₂ 4.76<br>SiO₂ 5.52</td>
+ <td><span lang="zh-Hant"><b>同一個 ALD Pt，換介電層差 0.76 eV。</b>這一列就是費米能階釘扎最乾淨的證據</span>
+ <span lang="en"><b>The same ALD Pt differs by 0.76 eV depending on the dielectric underneath it.</b> This row is the cleanest piece of evidence for Fermi-level pinning.</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<h3>設計目標</h3>
+</div>
+<div lang="en">
+<h3>Design targets</h3>
+</div>
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">元件型態</span><span lang="en">Device type</span></th><th class="n">nMOS EWF</th><th class="n">pMOS EWF</th>
+<th class="n"><span lang="zh-Hant">離中能隙</span><span lang="en">Off midgap</span></th><th><span lang="zh-Hant">為什麼</span><span lang="en">Why</span></th></tr></thead><tbody>
+<tr><td class="nw"><span lang="zh-Hant">平面 CMOS（有通道摻雜）</span><span lang="en">Planar CMOS (doped channel)</span></td><td class="n">≈ 4.2</td><td class="n">≈ 5.0</td><td class="n">0.4 eV</td>
+ <td><span lang="zh-Hant">通道摻雜提供一部分 V<sub>t</sub> 調整，但仍需要接近能帶邊的金屬</span>
+ <span lang="en">Channel doping supplies part of the V<sub>t</sub> adjustment, but a metal near the band edge is still needed.</span></td></tr>
+<tr><td class="nw"><b><span lang="zh-Hant">FinFET / GAA（未摻雜通道）</span><span lang="en">FinFET / GAA (undoped channel)</span></b></td><td class="n">≈ 4.4</td><td class="n">≈ 4.85</td><td class="n">0.2 eV</td>
+ <td><span lang="zh-Hant">通道不能摻雜（會破壞靜電控制與造成隨機摻雜漲落），<b>V<sub>t</sub> 幾乎全部由金屬功函數決定</b>，
+ 反而只需要接近中能隙的金屬。文獻：「a metal with a work function of 4.6 eV in the midgap of Si
+ can meet the requirement for both n-type and p-type devices」（低功耗 FinFET）</span>
+ <span lang="en">The channel can't be doped (it would ruin electrostatic control and cause random dopant fluctuation), so <b>V<sub>t</sub> is set almost entirely by the metal work function</b> —
+ which actually only needs to sit near midgap. Literature: "a metal with a work function of 4.6 eV in the midgap of Si
+ can meet the requirement for both n-type and p-type devices" (low-power FinFET).</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<div class="key"><b>為什麼真空功函數不能拿來設計？</b>
+金屬與高k 界面會形成偶極、並被介電層中的缺陷（HfO₂ 的氧空缺）釘住費米能階，
+把有效功函數往中能隙拉。Pt 那一列已經示範：同一個金屬換介電層差 0.76 eV。
+<b>真空功函數只能當排序參考；設計必須用該疊構、該厚度、該退火條件下的實測 EWF。</b></div>
+
+<h2>3　元件結構的 HCI 差異</h2>
+</div>
+<div lang="en">
+<div class="key"><b>Why can't the vacuum work function be used for design?</b>
+A dipole forms at the metal/high-k interface, and defects in the dielectric (oxygen vacancies in HfO₂) pin the Fermi level,
+pulling the effective work function toward midgap. The Pt row already demonstrates this: the same metal differs by 0.76 eV depending on the dielectric.
+<b>The vacuum work function is only useful as a rough ranking reference; design must use the measured EWF for that specific stack, thickness, and anneal condition.</b></div>
+
+<h2>3　How HCI differs across device structures</h2>
+</div>
+
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">結構</span><span lang="en">Structure</span></th><th><span lang="zh-Hant">損傷位置</span><span lang="en">Damage location</span></th><th class="nw"><span lang="zh-Hant">最糟偏壓</span><span lang="en">Worst-case bias</span></th>
+<th class="nw">m</th><th class="nw"><span lang="zh-Hant">時間指數 n</span><span lang="en">Time exponent n</span></th><th><span lang="zh-Hant">自我發熱</span><span lang="en">Self-heating</span></th></tr></thead><tbody>
+<tr><td class="nw"><b>Planar bulk</b></td><td><span lang="zh-Hant">汲極端局部（pinch-off 區）</span><span lang="en">Localized at the drain (pinch-off region)</span></td>
+ <td class="nw">V<sub>G</sub> ≈ V<sub>D</sub>/2</td><td class="n"><span lang="zh-Hant">2.85 理論<br>2.9–3.3 實測</span><span lang="en">2.85 theory<br>2.9–3.3 measured</span></td><td class="n"><span lang="zh-Hant">0.55–0.78 室溫</span><span lang="en">0.55–0.78 at room temp</span></td>
+ <td><span lang="zh-Hant">基板散熱良好，基本可忽略</span><span lang="en">Good substrate heat sinking, essentially negligible</span></td></tr>
+<tr><td class="nw"><b>Planar HKMG</b></td><td><span lang="zh-Hant">汲極端，但界面層 SiO₂ 是弱點</span><span lang="en">At the drain, but the interfacial SiO₂ layer is the weak point</span></td>
+ <td class="nw"><span lang="zh-Hant">V<sub>G</sub> ≈ V<sub>D</sub>/2，開始右移</span><span lang="en">V<sub>G</sub> ≈ V<sub>D</sub>/2, already starting to shift right</span></td><td class="n"><b>≈ 1.1</b>（<span lang="zh-Hant">28 nm 實測</span><span lang="en">28 nm measured</span>）</td><td class="n">—</td>
+ <td><span lang="zh-Hant">28 nm 平面 HKMG：ΔI<sub>d,lin</sub>(T) 在 150–300 K 是溫度的<b>遞減</b>函數</span>
+ <span lang="en">28 nm planar HKMG: ΔI<sub>d,lin</sub>(T) is a <b>decreasing</b> function of temperature over 150–300 K.</span></td></tr>
+<tr><td class="nw"><b>FinFET</b></td><td><span lang="zh-Hant"><b>整個通道長度</b>都有缺陷注入，不只汲極端</span><span lang="en">Defect injection across <b>the entire channel length</b>, not just the drain</span></td>
+ <td class="nw"><b>V<sub>G</sub> = V<sub>D</sub></b>（<span lang="zh-Hant">短通道</span><span lang="en">short channel</span>）</td><td class="n">≈ 1.1</td><td class="n"><b>0.19–0.20</b></td>
+ <td><span lang="zh-Hant">14 nm bulk：nominal &lt; 3 °C、極端應力 &lt; 18 °C；對 HC 的調變只在 logic PFET 高加速 DC 條件下顯著</span>
+ <span lang="en">14 nm bulk: nominal &lt; 3 °C, extreme stress &lt; 18 °C; the modulation of HC is only significant under highly-accelerated DC conditions on logic PFETs.</span></td></tr>
+<tr><td class="nw"><b>GAA nanosheet</b></td><td><span lang="zh-Hant">汲極端 + <b>薄片轉角／曲率處</b>（該處氧化層電場更高、界面態密度更高）</span><span lang="en">Drain end + <b>sheet corners / curved regions</b> (where the oxide field and interface-trap density are higher)</span></td>
+ <td class="nw"><span lang="zh-Hant">高 V<sub>DS</sub>、低 V<sub>GS</sub></span><span lang="en">High V<sub>DS</sub>, low V<sub>GS</sub></span></td><td class="n">≈ 1.1</td><td class="n">≈ 0.2</td>
+ <td><span lang="zh-Hant"><b>sub-10 nm 可達 100 K 以上</b>；EOL ΔI<sub>dsat</sub>% 的修正量 10%–35%；
+ <b>修正後 VAF 與 E<sub>A</sub> 都變小</b></span>
+ <span lang="en"><b>Can exceed 100 K at sub-10 nm</b>; the correction to EOL ΔI<sub>dsat</sub>% amounts to 10%–35%;
+ <b>after correction, both VAF and E<sub>A</sub> shrink</b>.</span></td></tr>
+<tr><td class="nw"><b>LDMOS</b></td><td><span lang="zh-Hant"><b>三個 N<sub>it</sub> 峰</b>：汲極區（單／多載子飽和）、bird's beak（單載子 Si–H 斷鍵）、通道（多載子）</span>
+ <span lang="en"><b>Three N<sub>it</sub> peaks</b>: the drain region (single/multi-carrier saturation), the bird's beak (single-carrier Si–H bond breaking), and the channel (multi-carrier)</span></td>
+ <td class="nw"><span lang="zh-Hant"><b>非單調</b>；某 N-EDMOS 為 V<sub>GSmax</sub></span><span lang="en"><b>Non-monotonic</b>; for one N-EDMOS study, V<sub>GSmax</sub></span></td><td class="n">—</td><td class="n">—</td>
+ <td><span lang="zh-Hant">bird’s beak 電子溫度可達 <b>4300 K</b>；主要監控參數是 <b>R<sub>dson</sub></b>，不是 V<sub>t</sub></span>
+ <span lang="en">Electron temperature at the bird's beak can reach <b>4300 K</b>; the primary monitor is <b>R<sub>dson</sub></b>, not V<sub>t</sub>.</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<p class="note"><b>時間指數 n 的文獻範圍很寬</b>：0.1（純電荷注入既有缺陷）到 0.6（純界面態生成）。
+室溫平面元件實測常在 0.55–0.78；77 K 約 0.32–0.49；4.2 K 約 0.30。
+<b>n 小代表主宰機制是既有介電缺陷的電荷捕捉，不是新界面態生成。</b></p>
+<div class="key"><b>自我發熱的方向要說清楚。</b>
+溫度升高的<b>直接</b>效果是讓熱載子散射變多、跑不遠 —— <b>損傷率下降</b>（這就是 HCI 的負活化能，
+SEMATECH 與 NASA/JPL 都給 E<sub>a</sub> ≈ −0.1 ~ −0.2 eV）。
+文獻裡說自我發熱「讓 HCD 變糟」，講的其實是<b>量測與外推的假象</b>：
+應力時被自我發熱壓低的資料，擬合出來的電壓加速因子與活化能都偏高，外推到使用條件就偏樂觀。
+GAA 論文的實測結論正是「做完自我發熱修正後，VAF 與 E<sub>A</sub> 都下降」。</div>
+
+<h2>4　HCI 的統計與外推慣例</h2>
+</div>
+<div lang="en">
+<p class="note"><b>The literature range for the time exponent n is wide</b>: 0.1 (pure charge trapping at existing defects) to 0.6 (pure interface-trap generation).
+Room-temperature planar devices are commonly measured at 0.55–0.78; about 0.32–0.49 at 77 K; about 0.30 at 4.2 K.
+<b>A small n means the dominant mechanism is charge trapping at pre-existing dielectric defects, not new interface-trap generation.</b></p>
+<div class="key"><b>Self-heating's direction needs to be stated carefully.</b>
+The <b>direct</b> effect of a higher temperature is more scattering of hot carriers, so they travel less far — <b>the damage rate drops</b> (this is HCI's negative activation energy;
+both SEMATECH and NASA/JPL give E<sub>a</sub> ≈ −0.1 to −0.2 eV).
+When the literature says self-heating "makes HCD worse," what it's actually describing is an <b>artifact of measurement and extrapolation</b>:
+data suppressed by self-heating during stress produces a fitted voltage-acceleration factor and activation energy that both run high, making the extrapolation to use conditions look overly optimistic.
+The GAA paper's measured conclusion is exactly that "after the self-heating correction, both VAF and E<sub>A</sub> decrease."</div>
+
+<h2>4　HCI's statistical and extrapolation conventions</h2>
+</div>
+
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">項目</span><span lang="en">Item</span></th><th><span lang="zh-Hant">內容</span><span lang="en">Content</span></th><th class="nw"><span lang="zh-Hant">來源</span><span lang="en">Source</span></th></tr></thead><tbody>
+<tr><td class="nw"><span lang="zh-Hant">失效判準</span><span lang="en">Failure criterion</span></td>
+ <td>「target device lifetime is defined as a <b>10% parameter change</b> or, in the case of V<sub>TH</sub>,
+ a change of <b>50 mV</b> from its unstressed value」；<span lang="zh-Hant">監控參數 V<sub>T</sub>、I<sub>DLIN</sub>、I<sub>DSAT</sub></span><span lang="en">monitored parameters V<sub>T</sub>, I<sub>DLIN</sub>, I<sub>DSAT</sub></span></td>
+ <td class="nw">Keithley AN 2197<br><span class="src">（<span lang="zh-Hant">其依據為</span><span lang="en">based on</span> JESD28）</span></td></tr>
+<tr><td class="nw"><span lang="zh-Hant">量測標準</span><span lang="en">Measurement standard</span></td><td>JESD28-A《Procedure for Measuring N-Channel MOSFET Hot-Carrier-Induced
+ Degradation Under DC Stress》，2001<span lang="zh-Hant">年</span><span lang="en"></span> 12<span lang="zh-Hant">月</span><span lang="en"></span>，JC-14.2</td><td class="nw">JEDEC <span lang="zh-Hant">官網</span><span lang="en">official site</span></td></tr>
+<tr><td class="nw"><span lang="zh-Hant">壽命模型</span><span lang="en">Lifetime model</span></td><td>τ · I<sub>D</sub> ∝ (I<sub>sub</sub>/I<sub>D</sub>)<sup>−m</sup>，m = φ<sub>it</sub>/φ<sub>i</sub>；
+ φ<sub>it</sub> ≈ 3.7 eV、φ<sub>i</sub> ≈ 1.3 eV → m ≈ 2.85</td>
+ <td class="nw">Hu et al., IEEE TED<br>32(2), 375 (1985)</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">m 的實測值</span><span lang="en">Measured values of m</span></td><td>SiO₂ 2.9–3.3；<span lang="zh-Hant">某次微米 NMOSFET 約 2；</span><span lang="en">≈2 for one submicron NMOSFET; </span><b>28 nm <span lang="zh-Hant">疊層 high-k 只有約</span><span lang="en">stacked high-k, only about</span> 1.1</b></td>
+ <td class="nw">MDPI Electronics 9(12) 2095</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">產業用的替代式</span><span lang="en">Industry-used alternative form</span></td><td><span lang="zh-Hant">n 通道</span><span lang="en">n-channel</span>：TF = B·(I<sub>sub</sub>)<sup>−N</sup>·exp(E<sub>a</sub>/kT)，
+ 「N = 2 to 4, typically 3」、「E<sub>a</sub> = −0.1 eV to −0.2 eV（note Ea is negative）」</td>
+ <td class="nw">SEMATECH；NASA/JPL</td></tr>
+<tr><td class="nw"><b><span lang="zh-Hant">壽命分布</span><span lang="en">Lifetime distribution</span></b></td><td>「<b>lognormal is the preferred distribution for most failure mechanisms</b>
+ (except solder fatigue, use Weibull instead)」；「<b>The lognormal distribution is generally used to model
+ hot carrier degradation</b>」</td><td class="nw">SEMATECH；NASA/JPL</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">σ 的典型值</span><span lang="en">Typical values of σ</span></td><td>σ ≈ <b><span lang="zh-Hant">0.5 磨耗型</span><span lang="en">0.5, wear-out type</span></b>、σ ≈ <b><span lang="zh-Hant">1.5 缺陷型</span><span lang="en">1.5, defect type</span></b>；<span lang="zh-Hant">估計式</span><span lang="en">estimator</span> σ = ln(t<sub>50</sub>/t<sub>16</sub>)</td>
+ <td class="nw">SEMATECH</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">為什麼不是 Weibull</span><span lang="en">Why not Weibull</span></td><td><span lang="zh-Hant">Weibull 是<b>極值分布</b>（最弱環節）；對數常態來自<b>乘性退化</b>
+ ——「a degradation process undergoes a small increase … proportional to the current total amount of degradation」。
+ 單顆元件的連續參數漂移屬後者；TDDB 的多區塊取最小值屬前者</span>
+ <span lang="en">Weibull is an <b>extreme-value distribution</b> (weakest link); lognormal comes from <b>multiplicative degradation</b>
+ — "a degradation process undergoes a small increase … proportional to the current total amount of degradation."
+ A single device's continuous parameter drift is the latter category; TDDB's minimum-over-many-blocks is the former.</span></td>
+ <td class="nw">NIST/SEMATECH e-Handbook；<br>Lloyd, NASA NEPP 2018</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">外推公式</span><span lang="en">Extrapolation formula</span></td><td>F(t) = Φ((ln t − ln T₅₀)/σ) → <b>t(F) = t₅₀ · exp(σ · z(F))</b>
+ <span class="badge warn"><span lang="zh-Hant">代數反推</span><span lang="en">algebraically derived</span></span> <span lang="zh-Hant">不是原文照引，但與 SEMATECH 的算例一致（σ = 0.7、−3σ → t₅₀/8）</span>
+ <span lang="en">not quoted verbatim from a source, but matches SEMATECH's worked example (σ = 0.7, −3σ → t₅₀/8).</span></td>
+ <td class="nw">NIST/SEMATECH e-Handbook</td></tr>
+<tr><td class="nw"><span lang="zh-Hant">分布選錯的代價</span><span lang="en">The cost of choosing the wrong distribution</span></td><td><span lang="zh-Hant">同一組資料、相同相關係數下，對數常態與 Weibull 外推到 <b>1 ppm 可以差 130 倍</b>。</span>
+ <span lang="en">For the same dataset at the same correlation coefficient, lognormal and Weibull extrapolated to <b>1 ppm can differ by 130×</b>. </span>
+ 「choose based on the <b>physics</b> and not just how it looks」</td>
+ <td class="nw">Lloyd, NASA NEPP 2018</td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<h2>來源清單</h2>
+<h3>材料</h3>
+</div>
+<div lang="en">
+<h2>Source list</h2>
+<h3>Materials</h3>
+</div>
+<ul class="srclist">
+<li>Robertson, J. “High dielectric constant oxides.” <i>Eur. Phys. J. Appl. Phys.</i> <b>28</b>, 265–291 (2004) —
+  <a href="https://www.epjap.org/articles/epjap/pdf/2004/10/ap04128.pdf">PDF</a>（<span lang="zh-Hant">主表</span><span lang="en">main table</span> Table 2）</li>
+<li>Robertson &amp; Falabretti, “Band offsets of high K gate oxides on III-V semiconductors.”
+  <i>J. Appl. Phys.</i> <b>100</b>, 014111 (2006)</li>
+<li>Wilk, Wallace &amp; Anthony, “High-κ gate dielectrics: Current status and materials properties considerations.”
+  <i>J. Appl. Phys.</i> <b>89</b>, 5243 (2001) —
+  <a href="https://web.stanford.edu/class/ee311/NOTES/Wilk_HighK.pdf">PDF</a></li>
+<li>Bersch et al., “Band offsets of ultrathin high-κ oxide films with Si.” <i>Phys. Rev. B</i> <b>78</b>, 085114 (2008) —
+  <a href="https://rutchem.rutgers.edu/images/PDFs/faculty/garfunkel-pubs/collection/CleanHighkPRB.pdf">PDF</a>（IPES <span lang="zh-Hant">實測</span><span lang="en">measured</span>）</li>
+<li>Sayan et al., “Effect of nitrogen on band alignment in HfSiON gate dielectrics.”
+  <i>Appl. Phys. Lett.</i> <b>87</b>, 212905 (2005) — <a href="https://www.osti.gov/biblio/913674">OSTI</a></li>
+<li>Sayan et al., “Valence and conduction band offsets of a ZrO₂/SiOxNy/n-Si CMOS gate stack.”
+  <i>Phys. Status Solidi B</i> <b>241</b>, 2246 (2004) —
+  <a href="https://www.physics.rutgers.edu/~dhv/pubs/local_copy/ss_zrstack.pdf">PDF</a></li>
+<li>Saraswat, K. “Thin Dielectrics for MOS Gate,” Stanford EE 311 Handout #3 —
+  <a href="https://web.stanford.edu/class/ee311/NOTES/GateDielectric.pdf">PDF</a>
+  <span class="src">（<span lang="zh-Hant">該表未標示出處，本站依內部自洽性判斷為 Robertson 型計算表，<b>不可直接標成「Robertson 2000」</b></span>
+  <span lang="en">this table doesn't cite its source; this site judges it, by internal self-consistency, to be a Robertson-type calculated table — <b>it cannot be cited directly as "Robertson 2000."</b></span>）</span></li>
+<li>Hollauer, Ch. “Modeling of Thermal Oxidation and Stress Effects,” §2.5 Nitrided Oxide Films, TU Wien —
+  <a href="https://www.iue.tuwien.ac.at/phd/hollauer/node15.html"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>Michaelson, H. B. “The work function of the elements and its periodicity.”
+  <i>J. Appl. Phys.</i> <b>48</b>, 4729 (1977) —
+  <a href="https://pasta.place/Physik/Experimentalphysik/ModEx_1/Uebungen/SS_24/1977-Michaelson_The-work-function.pdf">PDF</a>
+  <span class="src">（<span lang="zh-Hant">本站採 Table III 多晶推薦值</span><span lang="en">this site uses the Table III polycrystalline recommended values</span>）</span></li>
+<li>“Atomic Layer Deposition (ALD) of Metal Gates for CMOS,” <i>Appl. Sci.</i> <b>9</b>, 2388 (2019) —
+  <a href="https://www.mdpi.com/2076-3417/9/11/2388"><span lang="zh-Hant">連結</span><span lang="en">link</span></a>（EWF <span lang="zh-Hant">與設計目標</span><span lang="en">and design targets</span>）</li>
+<li>“An effective work-function tuning method of nMOSCAP with high-k/metal gate by TiN/TaN double-layer stack thickness,”
+  <i>J. Semicond.</i> — <a href="https://www.jos.ac.cn/article/id/2933cf7f-db0a-4f51-873e-e1d8d955e2bc"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>Ioffe Institute NSM Archive, Silicon —
+  <a href="http://www.ioffe.ru/SVA/NSM/Semicond/Si/basic.html">basic parameters</a> ·
+  <a href="http://www.ioffe.ru/SVA/NSM/Semicond/Si/bandstr.html">band structure</a></li>
+</ul>
+<div lang="zh-Hant"><h3>HCI 物理、結構與統計</h3></div>
+<div lang="en"><h3>HCI physics, structure & statistics</h3></div>
+<ul class="srclist">
+<li>Hu, Tam, Hsu, Ko, Chan &amp; Terrill, “Hot-electron-induced MOSFET degradation — Model, monitor, and improvement.”
+  <i>IEEE TED</i> <b>32</b>(2), 375–385 (1985) — <a href="https://ieeexplore.ieee.org/document/1484699/">IEEE</a></li>
+<li>Keithley/Tektronix AN 2197, <i>Evaluating Hot Carrier Induced Degradation of MOSFET Devices</i> —
+  <a href="https://download.tek.com/document/Hot_Carrier_MOSFET_AN.pdf">PDF</a></li>
+<li>JEDEC <a href="https://www.jedec.org/standards-documents/docs/jesd-28">JESD28-A</a>（2001-12，JC-14.2）</li>
+<li>International SEMATECH, <i>Semiconductor Device Reliability Failure Models</i> —
+  <a href="https://www.thierry-lequeu.fr/data/3955AXFR.pdf">PDF</a></li>
+<li>NASA/JPL, <i>Scaled CMOS Technology Reliability Users Guide</i> —
+  <a href="https://nepp.nasa.gov/files/20273/09_102_5_JPL_White_Scaled%20CMOS%20Technology%20Reliability%20Users%20Guide%201_10.pdf">PDF</a></li>
+<li>Lloyd, J. R. <i>Statistics and Physics in Reliability. You Can’t Have One Without the Other</i>, NASA NEPP ETW 2018 —
+  <a href="https://nepp.nasa.gov/docs/etw/2018/19JUNE18/1330b%20-%20LLoyd%20-%20Statistics%20and%20Physics%20in%20Reliability%20(2).pdf">PDF</a></li>
+<li>NIST/SEMATECH e-Handbook of Statistical Methods, lognormal model —
+  <a href="https://itl.nist.gov/div898/handbook/apr/section1/apr164.htm"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>“Hot Carrier Stress Sensing Bulk Current for 28 nm Stacked High-k nMOSFETs,” <i>Electronics</i> <b>9</b>(12), 2095 —
+  <a href="https://www.mdpi.com/2079-9292/9/12/2095"><span lang="zh-Hant">連結</span><span lang="en">link</span></a>（m ≈ 1.1）</li>
+<li>“An Overview of Hot Carrier Degradation on Gate-All-Around Nanosheet Transistors,”
+  <i>Micromachines</i> <b>16</b>(3), 311 (2025) — <a href="https://www.mdpi.com/2072-666X/16/3/311"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>“Channel Hot Carrier Degradation and Self-Heating Effects in FinFETs,” Springer —
+  <a href="https://link.springer.com/chapter/10.1007/978-3-319-08994-2_10"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>“Self-Heating Effect Coupled Compact Model to Predict HCI Degradation in Nanoscale Bulk FinFETs,”
+  <i>Appl. Sci.</i> <b>15</b>(5), 2351 — <a href="https://www.mdpi.com/2076-3417/15/5/2351"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+<li>TU Wien IUE — <a href="https://www.iue.tuwien.ac.at/phd/entner/node21.html"><span lang="zh-Hant">注入機制分類</span><span lang="en">injection-mode classification</span></a> ·
+  <a href="https://www.iue.tuwien.ac.at/pdf/ib_2015/hashed_links/5d4PCkr.HGJMGrCY_us.pdf">LDMOS <span lang="zh-Hant">的 HCD 建模</span><span lang="en">HCD modeling</span></a></li>
+<li>“Hot-Carrier Damage in N-Channel EDMOS … through Quasi-Static Modeling,” PMC —
+  <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10891766/"><span lang="zh-Hant">連結</span><span lang="en">link</span></a></li>
+</ul>
+
+<div lang="zh-Hant">
+<h2>6　電遷移材料活化能（晶界擴散 vs 介面擴散）</h2>
+<p>與可調模型的材料表同一規則：逐項附來源，分歧處兩個都列。詳細解說與互動計算見
+<a href="em-2-model.html">EM 課程地圖 · 階段 2</a>。</p>
+</div>
+<div lang="en">
+<h2>6　Electromigration material activation energy (grain-boundary vs. interface diffusion)</h2>
+<p>Same convention as the tunable models' material tables: cite sources item by item, and list both values where they disagree. For a full explanation and interactive calculation, see
+<a href="em-2-model.html">the EM course map, Stage 2</a>.</p>
+</div>
+
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">材料系統</span><span lang="en">Material system</span></th><th class="nw"><span lang="zh-Hant">主導擴散路徑</span><span lang="en">Dominant diffusion path</span></th>
+<th class="n">E<sub>a</sub>（eV）</th><th><span lang="zh-Hant">備註與來源</span><span lang="en">Notes & sources</span></th></tr></thead><tbody>
+<tr><td class="nw"><b><span lang="zh-Hant">純 Al</span><span lang="en">Pure Al</span></b></td><td class="nw"><span lang="zh-Hant">晶界擴散</span><span lang="en">Grain-boundary diffusion</span></td><td class="n">0.4–0.5</td>
+ <td><span lang="zh-Hant">精密量測法（陽極位移法）給 0.43–0.47；各式量測技術報告範圍可達 0.3–1.2，多數方法本身有系統誤差</span>
+ <span lang="en">Precision methods (anode-displacement) give 0.43–0.47; various measurement techniques report a range up to 0.3–1.2, most carrying their own systematic error.</span>
+ <span class="src">ScienceDirect：Al 晶界電遷移活化能回顧（0.4–0.5±0.04 eV）；同系列精密量測法論文（0.43–0.47 eV）</span></td></tr>
+<tr><td class="nw"><span lang="zh-Hant">Al–Cu 合金</span><span lang="en">Al–Cu alloy</span>（0.5–4 wt% Cu）</td><td class="nw"><span lang="zh-Hant">晶界擴散（Cu 偏析釘扎晶界）</span><span lang="en">Grain-boundary diffusion (Cu segregation pins boundaries)</span></td>
+ <td class="n"><span class="badge warn"><span lang="zh-Hant">分歧</span><span lang="en">Disputed</span></span> 0.6 / 0.7 / 0.95</td>
+ <td><span lang="zh-Hant">IBM 早期量測：E<sub>a</sub> 與純 Al 相同（0.6），但遷移速率降低達 100 倍。另一批文獻報告 E<sub>a</sub> 提升到 0.7。
+ 第一原理計算給 Cu 在晶界擴散 E<sub>a</sub>≈0.95，解釋 Cu 優先擴散、暫時抑制 Al 晶界路徑。<b>機制近年仍有文獻互相挑戰</b></span>
+ <span lang="en">Early IBM measurements: E<sub>a</sub> same as pure Al (0.6), but migration rate cut by up to 100×. Other literature reports E<sub>a</sub> rising to 0.7.
+ First-principles calculations give Cu grain-boundary diffusion E<sub>a</sub>≈0.95, explaining why Cu diffuses preferentially and temporarily suppresses the Al grain-boundary path. <b>The mechanism is still actively contested in recent literature.</b></span>
+ <span class="src">IBM J. Res. Dev. 15,378 (1971)；ScienceDirect 第一原理計算論文</span></td></tr>
+<tr><td class="nw">Cu（damascene，<span lang="zh-Hant">多晶／晶界主導，線寬&gt;1μm</span><span lang="en">polycrystalline/grain-boundary dominated, width&gt;1μm</span>）</td><td class="nw"><span lang="zh-Hant">晶界擴散</span><span lang="en">Grain-boundary diffusion</span></td>
+ <td class="n">0.65–0.80</td>
+ <td><span lang="zh-Hant">較舊文獻曾報告約 1.2，可能未分離介面路徑</span><span lang="en">Older literature once reported around 1.2, likely without separating out the interface path.</span>
+ <span class="src">J. Appl. Phys. 93,192 (2003)；MRS OPL 427,121 (1996)</span></td></tr>
+<tr><td class="nw">Cu（damascene，<span lang="zh-Hant">介電質覆蓋層</span><span lang="en">dielectric capping layer</span> SiN／SiCN）</td><td class="nw"><span lang="zh-Hant">Cu／cap 介面擴散</span><span lang="en">Cu/cap interface diffusion</span></td>
+ <td class="n">0.80–1.06</td>
+ <td><span lang="zh-Hant">多組獨立文獻收斂同量級，傳統 Cu 製程最弱環節</span><span lang="en">Multiple independent studies converge on the same scale — the weakest link in a conventional Cu process.</span>
+ <span class="src">J. Appl. Phys. 93,192 (2003)</span></td></tr>
+<tr><td class="nw">Cu（<span lang="zh-Hant">金屬覆蓋層</span><span lang="en">metal capping layer</span> CoWP／CoSnP／Pd）</td><td class="nw"><span lang="zh-Hant">介面擴散被抑制，晶界／體擴散主導</span><span lang="en">Interface diffusion suppressed; grain-boundary/bulk diffusion dominates</span></td>
+ <td class="n"><span class="badge ok">0.72–2.2</span></td>
+ <td><span lang="zh-Hant">強烈依賴晶粒結構：同批 CoWP 樣品近竹狀 2.2、竹狀-多晶混合 1.7、多晶為主 1.5、<b>純多晶僅 0.72</b>。
+ 另一批竹狀線樣品報告 CoWP 約 1.9–2.4，PVD Ta／Ta-TaN／Pd cap 約 1.4</span>
+ <span lang="en">Strongly dependent on grain structure: within one batch of CoWP samples, near-bamboo grain gave 2.2, mixed bamboo-polycrystalline 1.7, mostly-polycrystalline 1.5, and <b>pure polycrystalline only 0.72</b>.
+ A separate batch of bamboo-grain lines reports CoWP around 1.9–2.4, PVD Ta/Ta-TaN/Pd cap around 1.4.</span>
+ <span class="src">AIP Conf. Proc. 1601,67 (2014)；J. Appl. Phys. 系列 CoWP/Ta cap 比較論文</span></td></tr>
+<tr><td class="nw">W（<span lang="zh-Hant">鎢，via／contact</span><span lang="en">tungsten, via/contact</span>）</td><td class="nw">—</td><td class="n"><span class="badge warn"><span lang="zh-Hant">未查證</span><span lang="en">Unverified</span></span></td>
+ <td><span lang="zh-Hant">業界普遍認知鎢因熔點高、體擴散為主而 EM 抗性遠優於 Al／Cu，但本次查證<b>未取得具體活化能數字</b>，
+ 不要把「業界共識」誤植為精確 eV 數值</span>
+ <span lang="en">It's commonly understood that tungsten's high melting point and bulk-diffusion-dominated behavior give it far better EM resistance than Al/Cu, but this verification pass <b>could not find a specific activation-energy number</b> —
+ don't mistake "industry consensus" for a precise eV value.</span></td></tr>
+</tbody></table>
+<div lang="zh-Hant"><p class="note">Black 方程式的電流密度指數 n 典型 1（空洞成核主導）～2（經典空洞成長主導，設計常保守取 2）
+<span class="src">Cadence 技術文件（一般性引用，非逐字查證原始論文）</span>。</p></div>
+<div lang="en"><p class="note">The Black equation's current-density exponent n is typically 1 (void-nucleation-dominated) to 2 (classic void-growth-dominated; design work often conservatively uses 2).
+<span class="src">Cadence technical documentation (general citation, not a word-for-word verified original paper)</span>.</p></div>
+
+<div lang="zh-Hant"><h2>沒查到的東西（明確列出來）</h2></div>
+<div lang="en"><h2>What wasn't found (listed explicitly)</h2></div>
+<table class="tbl-sm"><thead><tr><th class="nw"><span lang="zh-Hant">項目</span><span lang="en">Item</span></th><th><span lang="zh-Hant">狀況</span><span lang="en">Status</span></th></tr></thead><tbody>
+<tr><td class="nw">Robertson JVST B 18, 1785 (2000)</td>
+ <td><span lang="zh-Hant">原文未取得（付費牆）。本站標為「Robertson」的值來自他 2004 / 2006 的後續回顧，
+ <b>不要標成「Robertson 2000」</b></span>
+ <span lang="en">The original was not obtained (paywalled). Values this site labels "Robertson" come from his later 2004/2006 reviews — <b>do not cite them as "Robertson 2000."</b></span></td></tr>
+<tr><td class="nw">SiO₂ ΔE<sub>c</sub> = 3.1 eV</td><td><span lang="zh-Hant">流通極廣，但本次查證的來源都沒有這個值。請勿當標準值引用</span>
+ <span lang="en">Extremely widely circulated, but none of the sources checked in this verification pass carry this value. Don't cite it as a standard value.</span></td></tr>
+<tr><td class="nw">HfSiON <span lang="zh-Hant">的 k 與絕對能帶偏移</span><span lang="en">k and absolute band offsets</span></td><td><span lang="zh-Hant">Sayan 2005 只給了絕對能隙與氮化造成的<b>變化量</b>，沒給 k 與絕對偏移</span>
+ <span lang="en">Sayan 2005 only gives the absolute bandgap and the <b>change</b> caused by nitridation — no k value or absolute offset.</span></td></tr>
+<tr><td class="nw">TiAl / TiAlC / TaAlC <span lang="zh-Hant">的真空功函數</span><span lang="en">vacuum work functions</span></td><td><span lang="zh-Hant">只找到疊構上的 EWF，沒有元素／化合物的真空值</span><span lang="en">Only stack-level EWF values were found — no vacuum value for the element or compound.</span></td></tr>
+<tr><td class="nw">NiSi（FUSI）<span lang="zh-Hant">的 EWF</span><span lang="en">EWF</span></td><td><span lang="zh-Hant">未查證。表中 5.15 是 Ni 元素的真空值，<b>兩者不可混用</b></span><span lang="en">Unverified. The 5.15 in the table is the vacuum value for elemental Ni — <b>the two must not be conflated.</b></span></td></tr>
+<tr><td class="nw">Mo / Ru / Al <span lang="zh-Hant">在高k 上的 EWF</span><span lang="en">EWF on high-k</span></td><td><span lang="zh-Hant">未查證</span><span lang="en">Unverified</span></td></tr>
+<tr><td class="nw">JESD28-A <span lang="zh-Hant">條文本身</span><span lang="en">the clauses themselves</span></td><td><span lang="zh-Hant">只讀到 JEDEC 公開的 scope 頁。10% / 50 mV 的判準來自 Keithley AN 2197（該文引用 JESD28），
+ <b>不可寫成「JESD28-A 規定 10% 與 50 mV」</b></span>
+ <span lang="en">Only JEDEC's public scope page was read. The 10% / 50 mV criteria come from Keithley AN 2197 (which cites JESD28) —
+ <b>this cannot be written as "JESD28-A specifies 10% and 50 mV."</b></span></td></tr>
+<tr><td class="nw">JEP122 <span lang="zh-Hant">條文本身</span><span lang="en">the clauses themselves</span></td><td><span lang="zh-Hant">未取得。本站標為「JEDEC 式」的 HCI 模型全部來自 SEMATECH 與 NASA/JPL，不是 JEP122</span>
+ <span lang="en">Not obtained. Every "JEDEC-style" HCI model on this site comes from SEMATECH and NASA/JPL, not from JEP122.</span></td></tr>
+<tr><td class="nw"><span lang="zh-Hant">「對數常態」是否為 JEDEC 明訂</span><span lang="en">Whether "lognormal" is explicitly mandated by JEDEC</span></td><td><span lang="zh-Hant">未查到任何 JEDEC 文件明訂此慣例。
+ 本站的依據是 SEMATECH 與 NASA/JPL，<b>不要歸給 JEP122 / JESD85 / JESD91</b></span>
+ <span lang="en">No JEDEC document was found that explicitly mandates this convention. This site's basis is SEMATECH and NASA/JPL — <b>do not attribute it to JEP122 / JESD85 / JESD91.</b></span></td></tr>
+<tr><td class="nw">HCI <span lang="zh-Hant">專屬的典型 σ</span><span lang="en">-specific typical σ</span></td><td><span lang="zh-Hant">未查到。SEMATECH 的 0.5 是一般磨耗值，Lloyd 的 0.70 是電遷移實例</span>
+ <span lang="en">Not found. SEMATECH's 0.5 is a general wear-out value; Lloyd's 0.70 is an electromigration example.</span></td></tr>
+<tr><td class="nw"><span lang="zh-Hant">矽的固溶度上限</span><span lang="en">Silicon's solid-solubility ceiling</span></td><td><span lang="zh-Hant">未逐字查證。模型中只當警示帶，硬邊界只用 n<sub>i</sub> 與原子密度</span>
+ <span lang="en">Not verified word-for-word. The model treats it only as a warning band; the only hard boundaries used are n<sub>i</sub> and atomic density.</span></td></tr>
+</tbody></table>
+
+<div lang="zh-Hant">
+<div class="pager"><a class="prev" href="hci-7-playground.html">
+<div class="d">← 回到</div><div class="t">HCI 可調模型</div></a>
+<a class="next" href="index.html"><div class="d">回到 →</div><div class="t">所有可靠度機制</div></a></div>
+
+<div class="foot"><b>這一頁是全站材料數據的唯一出處。</b>每一列都標明來源；來源之間有分歧的地方一律<b>兩個都列</b>，不做平均、不做調和。標「未查證」的欄位就是真的沒查到 —— 請不要拿去用。<br><b>隱私</b>：純靜態頁面，無後端、無 cookie、無追蹤。</div>
+</div>
+<div lang="en">
+<div class="pager"><a class="prev" href="hci-7-playground.html">
+<div class="d">← Back to</div><div class="t">HCI Tunable Model</div></a>
+<a class="next" href="index.html"><div class="d">Back to →</div><div class="t">All reliability mechanisms</div></a></div>
+
+<div class="foot"><b>This page is the single source of truth for material data across the entire site.</b> Every row cites its source; where sources disagree, <b>both values are always listed</b> — never averaged, never reconciled. A field marked "unverified" genuinely wasn't found — please don't use it.<br><b>Privacy</b>: a purely static page, no backend, no cookies, no tracking.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="numin_core.js"></script>
+</body>
+</html>

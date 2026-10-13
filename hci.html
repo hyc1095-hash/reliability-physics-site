@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="課程地圖 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>課程地圖 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html" aria-current="page"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:0%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">互動教材 · 不需要先修過半導體元件物理</p>
+<h1>MOSFET 熱載子注入（HCI）<br>可靠度物理，從零開始</h1>
+<p class="lede">手機用個兩三年、GPU 全速跑久了，電晶體會悄悄「變鈍」——這就是熱載子注入（Hot Carrier Injection）在做的事，也是晶片可靠度裡最常見的漸進式老化機制之一。
+這份教材把它拆成七個階段：先靠一根滑桿建立直覺，再看實際發生在元件裡的機制，然後才是可以動手推的模型與公式，
+接著是業界怎麼把物理量化成規格，最後給你一個可以隨便調的元件模型玩到懂為止。<b>每一頁都短，一次只講一件事，卡住了隨時可以往回翻。</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">30 秒版本</h3>
+<p>MOSFET 導通時，電子從源極流向汲極。當汲極電壓夠高，電子在快要抵達汲極的那一小段路裡，
+會被電場加速到遠超過室溫下該有的能量——這種電子稱為「熱」載子，「熱」指的是能量高，不是溫度高。</p>
+<p style="margin-bottom:0">一部分熱電子會撞出新的電子電洞對、一部分會直接衝進閘極氧化層、
+還有一部分會打斷矽與氫之間的鍵結。三件事都在通道靠近汲極的那一小塊區域發生，
+留下的缺陷是永久性的——這就是為什麼 HCI 造成的是「回不去」的漂移，不是暫時的偏移。</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 222" role="img" aria-label="HCI 因果鏈：高汲極電壓、汲極端強電場、熱載子、三種並行後果、元件退化">
+<defs><marker id="ar-zh" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="72" width="132" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="72.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">高汲極電壓</text><text x="72.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">V_D &gt; V_dsat</text><circle cx="23" cy="72" r="11" fill="var(--muted)"/><text x="23" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="142" y1="102" x2="176" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-zh)"/>
+<rect x="182" y="72" width="132" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="248.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">汲極端強電場</text><text x="248.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--h)">E_m ~ 10⁵ V/cm</text><circle cx="199" cy="72" r="11" fill="var(--h)"/><text x="199" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="318" y1="102" x2="352" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-zh)"/>
+<rect x="358" y="72" width="132" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="424.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">熱載子</text><text x="424.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">能量 ≫ 熱平衡</text><circle cx="375" cy="72" r="11" fill="var(--muted)"/><text x="375" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="494" y1="102" x2="528" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-zh)"/>
+<rect x="534" y="28" width="150" height="48" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="609.0" y="57.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">撞擊游離 → I_sub</text><circle cx="551" cy="28" r="11" fill="var(--muted)"/><text x="551" y="32" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="534" y="84" width="150" height="48" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="609.0" y="113.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">越過位障 → I_G</text>
+<rect x="534" y="140" width="150" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="609.0" y="169.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">打斷 Si–H → N_it</text>
+<line x1="688" y1="164" x2="722" y2="164" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-zh)"/>
+<rect x="728" y="132" width="166" height="60" rx="12" fill="color-mix(in srgb,var(--e) 13%,var(--surface))" stroke="var(--e)" stroke-width="1.6"/><text x="811.0" y="160.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">元件退化</text><text x="811.0" y="179.0" text-anchor="middle" font-size="11.5" fill="var(--e)">ΔV_t、ΔI_d、Δg_m</text><circle cx="745" cy="132" r="11" fill="var(--e)"/><text x="745" y="136" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">5</text>
+<text x="609" y="16" text-anchor="middle" font-size="11.5" fill="var(--muted)">三件事同時發生</text>
+</g>
+</svg>
+</div>
+
+</div>
+
+<div class="map">
+<a class="mapcard" href="hci-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">直覺：為什麼叫「熱」載子？</div>
+  <div class="d">不用任何公式。一根滑桿，看電子在電場中累積的能量如何越過三道門檻。</div>
+  <div class="g">學完你會知道：<b>能量 ≈ qλE 這個簡單估算，就決定了一切</b></div>
+  <div class="meta">約 5 分鐘 · 1 個互動</div></div>
+</a>
+<a class="mapcard" href="hci-2-mechanism.html">
+  <div class="no">2</div>
+  <div><div class="t">物理機制：五個步驟</div>
+  <div class="d">用立體剖面圖一步一步走：通道形成 → pinch-off → 撞擊游離 → 閘極注入 → 界面態累積。</div>
+  <div class="g">學完你會知道：<b>損傷為什麼只發生在汲極端那一小塊</b></div>
+  <div class="meta">約 8 分鐘 · 分步驟動畫</div></div>
+</a>
+<a class="mapcard" href="hci-3-model.html">
+  <div class="no">3</div>
+  <div><div class="t">物理模型：把「電場很強」變成可以算的</div>
+  <div class="d">為什麼不能用平均電場？特徵長度 l 是什麼？E(y) 的形狀怎麼來的？溫度從哪裡進來？</div>
+  <div class="g">學完你會知道：<b>l = √(3·t<sub>ox</sub>·x<sub>j</sub>) 才是縮放的主角，不是 L</b></div>
+  <div class="meta">約 10 分鐘 · 4 個聚焦互動</div></div>
+</a>
+<a class="mapcard" href="hci-4-formula.html">
+  <div class="no">4</div>
+  <div><div class="t">公式階梯：從 I = qnvA 開始</div>
+  <div class="d">刻意從最基礎的電流公式起步，分 L0→L3 四級：電流是什麼 → MOSFET 的 I–V →
+  汲極端電場 → 損傷模型。每條式子都有符號表、白話解釋與代入示範。</div>
+  <div class="g">學完你會知道：<b>m 不是經驗常數，是兩個能量門檻的比值</b></div>
+  <div class="meta">約 15 分鐘 · 4 級難度 · 2 個互動</div></div>
+</a>
+<a class="mapcard" href="hci-5-spec.html">
+  <div class="no">5</div>
+  <div><div class="t">HCI 的可靠度規格</div>
+  <div class="d">HCI 專屬的量測標準（JESD28）、判定準則（10% / 50 mV）、應力條件怎麼定，
+  以及 AEC-Q100 溫度等級對 HCI 的意義。</div>
+  <div class="g">學完你會知道：<b>HCI 的 worst corner 在低溫端，產品級高溫 HTOL 抓不到它</b></div>
+  <div class="meta">約 10 分鐘 · 含來源查證狀態</div></div>
+</a>
+<a class="mapcard" href="hci-6-fix.html">
+  <div class="no">6</div>
+  <div><div class="t">如何防治：把 HCI 壓下去</div>
+  <div class="d">製程（LDD、halo、氮化、氘退火）、元件（厚氧、加長 L、汲極延伸）、
+  電路（降擺幅、cascode、控制轉態）三個層級的對策，每一項都附代價。含 LDD / pocket 的互動比較。</div>
+  <div class="g">學完你會知道：<b>所有對策都在動同一條式子的四個位置之一</b></div>
+  <div class="meta">約 12 分鐘 · 結構互動 + 取捨圖</div></div>
+</a>
+<a class="mapcard" href="hci-7-playground.html">
+  <div class="no">7</div>
+  <div><div class="t">可調模型：放手玩</div>
+  <div class="d">立體結構動畫 + 全部參數滑桿 + I<sub>sub</sub>–V<sub>G</sub> 鐘形曲線、長度縮放、Arrhenius、注入模式圖。</div>
+  <div class="g">學完你會知道：<b>經典結論（V<sub>G</sub>≈V<sub>D</sub>/2、E<sub>a</sub>&lt;0）是怎麼「長」出來的</b></div>
+  <div class="meta">開放探索 · 11 根滑桿</div></div>
+</a>
+</div>
+
+<h2>先備知識</h2>
+<p>只要知道這三件事就能開始，不需要半導體物理的正式訓練：</p>
+<table>
+<thead><tr><th class="nw">需要知道</th><th>大概到什麼程度</th></tr></thead>
+<tbody>
+<tr><td class="nw">MOSFET 怎麼導通</td><td>閘極電壓超過 V<sub>t</sub> 就在表面形成通道，電子從源極流到汲極</td></tr>
+<tr><td class="nw">線性區 vs 飽和區</td><td>V<sub>D</sub> 小 → 通道完整（線性區）；V<sub>D</sub> 大 → 汲極端夾止（飽和區）</td></tr>
+<tr><td class="nw">電場與電位</td><td>電場 = 電位的斜率。同樣的電壓擠在越短的距離，電場越強</td></tr>
+</tbody>
+</table>
+<p class="note">這三件事完全不熟也沒關係——階段 1 和 2 會把需要的部分順帶講清楚，你不需要先回去補課。</p>
+
+<div class="pager"><a class="next" href="hci-1-intuition.html"><div class="d">下一課 · 階段 1 →</div><div class="t">直覺</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Interactive coursework · no prior semiconductor device physics required</p>
+<h1>MOSFET Hot Carrier Injection (HCI)<br>reliability physics, from zero</h1>
+<p class="lede">After a couple of years of daily use, or a GPU run flat-out for long stretches, transistors quietly get "duller." That's hot carrier injection at work — one of the most common gradual aging mechanisms in chip reliability.
+This course breaks it into seven stages: build intuition with a single slider, watch the mechanism actually happen inside the device, then move to a model and formula you can derive by hand,
+then see how industry turns that physics into a spec, and finish with a fully tunable device model to play with until it clicks. <b>Every page is short and covers exactly one idea — you can always flip back.</b></p>
+
+<div class="card">
+<h3 style="margin-top:0">The 30-second version</h3>
+<p>When a MOSFET is on, electrons flow from source to drain. If the drain voltage is high enough, electrons picking up speed in the last short stretch before the drain
+get accelerated by the field to far more energy than room temperature would give them — these are "hot" carriers. "Hot" means high-energy, not high-temperature.</p>
+<p style="margin-bottom:0">Some of these hot electrons knock loose new electron-hole pairs, some plow straight into the gate oxide,
+and some break Si–H bonds at the interface. All three happen in the same small region near the drain,
+and the damage they leave behind is permanent — which is why HCI causes drift that never recovers, unlike a temporary shift.</p>
+
+<div style="max-width:900px;margin:8px auto 4px">
+<svg viewBox="0 0 900 222" role="img" aria-label="HCI causal chain: high drain voltage, strong field at the drain, hot carriers, three parallel consequences, device degradation">
+<defs><marker id="ar-en" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--axis)"/></marker></defs>
+<g font-family="inherit">
+<rect x="6" y="72" width="132" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="72.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">High V<tspan baseline-shift="sub" font-size="9">D</tspan></text><text x="72.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">V_D &gt; V_dsat</text><circle cx="23" cy="72" r="11" fill="var(--muted)"/><text x="23" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">1</text>
+<line x1="142" y1="102" x2="176" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-en)"/>
+<rect x="182" y="72" width="132" height="60" rx="12" fill="color-mix(in srgb,var(--h) 13%,var(--surface))" stroke="var(--h)" stroke-width="1.6"/><text x="248.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Strong field at drain</text><text x="248.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--h)">E_m ~ 10⁵ V/cm</text><circle cx="199" cy="72" r="11" fill="var(--h)"/><text x="199" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">2</text>
+<line x1="318" y1="102" x2="352" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-en)"/>
+<rect x="358" y="72" width="132" height="60" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="424.0" y="100.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Hot carriers</text><text x="424.0" y="119.0" text-anchor="middle" font-size="11.5" fill="var(--ink2)">energy ≫ thermal eq.</text><circle cx="375" cy="72" r="11" fill="var(--muted)"/><text x="375" y="76" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">3</text>
+<line x1="494" y1="102" x2="528" y2="102" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-en)"/>
+<rect x="534" y="28" width="150" height="48" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="609.0" y="57.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">Impact ionization → I_sub</text><circle cx="551" cy="28" r="11" fill="var(--muted)"/><text x="551" y="32" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">4</text>
+<rect x="534" y="84" width="150" height="48" rx="12" fill="var(--surface)" stroke="var(--border)" stroke-width="1.3"/><text x="609.0" y="113.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">Over barrier → I_G</text>
+<rect x="534" y="140" width="150" height="48" rx="12" fill="color-mix(in srgb,var(--nit) 13%,var(--surface))" stroke="var(--nit)" stroke-width="1.6"/><text x="609.0" y="169.0" text-anchor="middle" font-weight="600" font-size="12.5" fill="var(--ink)">Breaks Si–H → N_it</text>
+<line x1="688" y1="164" x2="722" y2="164" stroke="var(--axis)" stroke-width="2" stroke-linecap="round" marker-end="url(#ar-en)"/>
+<rect x="728" y="132" width="166" height="60" rx="12" fill="color-mix(in srgb,var(--e) 13%,var(--surface))" stroke="var(--e)" stroke-width="1.6"/><text x="811.0" y="160.0" text-anchor="middle" font-weight="700" font-size="13" fill="var(--ink)">Device degrades</text><text x="811.0" y="179.0" text-anchor="middle" font-size="11.5" fill="var(--e)">ΔV_t, ΔI_d, Δg_m</text><circle cx="745" cy="132" r="11" fill="var(--e)"/><text x="745" y="136" text-anchor="middle" font-size="11" font-weight="750" fill="#fff">5</text>
+<text x="609" y="16" text-anchor="middle" font-size="11.5" fill="var(--muted)">all three happen at once</text>
+</g>
+</svg>
+</div>
+
+</div>
+
+<div class="map">
+<a class="mapcard" href="hci-1-intuition.html">
+  <div class="no">1</div>
+  <div><div class="t">Intuition: why "hot" carriers?</div>
+  <div class="d">No formulas. One slider — watch the energy an electron picks up in a field cross three thresholds.</div>
+  <div class="g">You'll walk away knowing: <b>the crude estimate energy ≈ qλE decides everything</b></div>
+  <div class="meta">~5 min · 1 interactive</div></div>
+</a>
+<a class="mapcard" href="hci-2-mechanism.html">
+  <div class="no">2</div>
+  <div><div class="t">Mechanism: five steps</div>
+  <div class="d">Walk through a 3D cross-section step by step: channel formation → pinch-off → impact ionization → gate injection → interface-trap buildup.</div>
+  <div class="g">You'll walk away knowing: <b>why the damage only happens in that one small region near the drain</b></div>
+  <div class="meta">~8 min · step-by-step animation</div></div>
+</a>
+<a class="mapcard" href="hci-3-model.html">
+  <div class="no">3</div>
+  <div><div class="t">Physical model: turning "the field is strong" into something you can compute</div>
+  <div class="d">Why can't you just use the average field? What is the characteristic length l? Where does E(y)'s shape come from? Where does temperature enter?</div>
+  <div class="g">You'll walk away knowing: <b>l = √(3·t<sub>ox</sub>·x<sub>j</sub>) is what actually drives scaling — not L</b></div>
+  <div class="meta">~10 min · 4 focused interactives</div></div>
+</a>
+<a class="mapcard" href="hci-4-formula.html">
+  <div class="no">4</div>
+  <div><div class="t">Formula ladder: starting from I = qnvA</div>
+  <div class="d">Deliberately starts from the most basic current equation, in four levels L0→L3: what current is → the MOSFET's I–V →
+  the field at the drain → the damage model. Every equation comes with a symbol table, plain-language explanation, and a worked example.</div>
+  <div class="g">You'll walk away knowing: <b>m isn't an empirical fudge factor — it's the ratio of two energy thresholds</b></div>
+  <div class="meta">~15 min · 4 difficulty levels · 2 interactives</div></div>
+</a>
+<a class="mapcard" href="hci-5-spec.html">
+  <div class="no">5</div>
+  <div><div class="t">HCI reliability specs</div>
+  <div class="d">The measurement standard specific to HCI (JESD28), pass/fail criteria (10% / 50 mV), how stress conditions are set,
+  and what AEC-Q100 temperature grades actually mean for HCI.</div>
+  <div class="g">You'll walk away knowing: <b>HCI's worst corner is at low temperature — a high-temperature production HTOL screen won't catch it</b></div>
+  <div class="meta">~10 min · sources verified inline</div></div>
+</a>
+<a class="mapcard" href="hci-6-fix.html">
+  <div class="no">6</div>
+  <div><div class="t">Mitigation: pushing HCI down</div>
+  <div class="d">Countermeasures at three levels — process (LDD, halo, nitridation, deuterium anneal), device (thicker oxide, longer L, drain extension),
+  and circuit (lower swing, cascode, slew control) — each with its cost. Includes an interactive LDD / pocket comparison.</div>
+  <div class="g">You'll walk away knowing: <b>every countermeasure moves one of the same four knobs in the same equation</b></div>
+  <div class="meta">~12 min · structural interactive + trade-off chart</div></div>
+</a>
+<a class="mapcard" href="hci-7-playground.html">
+  <div class="no">7</div>
+  <div><div class="t">Tunable model: go play</div>
+  <div class="d">3D structure animation + every parameter as a slider + I<sub>sub</sub>–V<sub>G</sub> bell curve, length scaling, Arrhenius, injection-mode map.</div>
+  <div class="g">You'll walk away knowing: <b>exactly how the classic results (V<sub>G</sub>≈V<sub>D</sub>/2, E<sub>a</sub>&lt;0) "grow" out of the model</b></div>
+  <div class="meta">open-ended · 11 sliders</div></div>
+</a>
+</div>
+
+<h2>What you need going in</h2>
+<p>Just these three things — no formal semiconductor physics background required:</p>
+<table>
+<thead><tr><th class="nw">What to know</th><th>How well</th></tr></thead>
+<tbody>
+<tr><td class="nw">How a MOSFET turns on</td><td>Gate voltage above V<sub>t</sub> forms a channel at the surface; electrons flow from source to drain</td></tr>
+<tr><td class="nw">Linear vs. saturation region</td><td>Small V<sub>D</sub> → channel intact (linear region); large V<sub>D</sub> → pinch-off at the drain (saturation region)</td></tr>
+<tr><td class="nw">Field and potential</td><td>Field = slope of potential. Squeeze the same voltage into a shorter distance and the field gets stronger</td></tr>
+</tbody>
+</table>
+<p class="note">Don't know these cold? That's fine — stages 1 and 2 fill in what you need along the way, no need to go study up first.</p>
+
+<div class="pager"><a class="next" href="hci-1-intuition.html"><div class="d">Next · Stage 1 →</div><div class="t">Intuition</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script>
+(function(){"use strict";
+
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

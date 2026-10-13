@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 4：統計與外推 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>階段 4：統計與外推 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+
+.three3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:14px 0}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html" aria-current="page"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:57%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 4 / 7</p>
+<h1>統計與外推：從量到的 100 顆，講一億顆的話</h1>
+<p class="lede">TDDB 的殘酷之處在於：你只能在<b>高電壓、小面積、幾小時</b>的條件下量到資料，
+但你必須保證<b>使用電壓、整顆晶片、十年</b>的失效率低於 ppm。
+中間隔了三次外推，每一次都會放大不確定性。這一頁把三次外推拆開講。</p>
+
+<div class="rungs">
+<div class="rung"><div class="n" style="color:var(--e)">外推 ①</div><div class="t">從 63% 到 1 ppm</div>
+  <div class="d">你量到的是中位數附近，客戶要的是最早壞的那一小撮。靠 Weibull 斜率 β。</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">外推 ②</div><div class="t">從測試電容到整顆晶片</div>
+  <div class="d">面積可能差 10³～10⁵ 倍。靠面積縮放律，一樣是 β 說了算。</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">外推 ③</div><div class="t">從應力條件到使用條件</div>
+  <div class="d">電壓降 2～3 倍、溫度降 50 °C。靠加速模型 —— <b>而模型選錯，答案差幾個數量級</b>。</div></div>
+</div>
+
+<h2>外推 ①　Weibull 分布怎麼讀</h2>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 4 / 7</p>
+<h1>Statistics & extrapolation: from 100 measured devices to a statement about a hundred million</h1>
+<p class="lede">TDDB is brutal because you can only gather data under <b>high voltage, small area, a few hours</b>,
+yet you must guarantee a failure rate below ppm at <b>use voltage, the whole chip, ten years</b>.
+Three separate extrapolations sit in between, and each one amplifies uncertainty. This page pulls the three apart.</p>
+
+<div class="rungs">
+<div class="rung"><div class="n" style="color:var(--e)">Extrapolation ①</div><div class="t">From 63% to 1 ppm</div>
+  <div class="d">What you measure is near the median; what the customer wants is the earliest-failing sliver. Governed by the Weibull slope β.</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">Extrapolation ②</div><div class="t">From test capacitor to whole chip</div>
+  <div class="d">Area can differ by 10³–10⁵×. Governed by the area-scaling law — β calls the shots again.</div></div>
+<div class="rung"><div class="n" style="color:var(--e)">Extrapolation ③</div><div class="t">From stress condition to use condition</div>
+  <div class="d">Voltage drops 2–3×, temperature drops 50 °C. Governed by the acceleration model — <b>and picking the wrong one shifts the answer by orders of magnitude</b>.</div></div>
+</div>
+
+<h2>Extrapolation ①　How to read a Weibull distribution</h2>
+</div>
+
+<div class="fx">
+<div lang="zh-Hant">
+<div class="lvl l1">分布函數</div>
+<div class="big">F(t) <span class="op">=</span> 1 <span class="op">−</span> exp[ −( t / η )<sup>β</sup> ]</div>
+<p class="why"><b>F(t)</b> 是「到時間 t 為止，累積有多少比例壞掉」。
+<b>η</b> 是特徵壽命，代入 t = η 得 F = 1 − e<sup>−1</sup> = <b>63.2%</b>，所以常寫成 t<sub>63</sub>。
+<b>β</b> 是形狀參數 —— 上一頁我們已經看到它就是 t<sub>ox</sub>/a₀。</p>
+<table class="symtab"><tr><td>β 大</td><td>（厚氧）</td><td>大家差不多時間壞，分布集中，外推溫和</td></tr>
+<tr><td>β 小</td><td>（薄氧）</td><td>壞的時間差很多，早夭嚴重，外推非常吃虧</td></tr></table>
+</div>
+<div lang="en">
+<div class="lvl l1">Distribution function</div>
+<div class="big">F(t) <span class="op">=</span> 1 <span class="op">−</span> exp[ −( t / η )<sup>β</sup> ]</div>
+<p class="why"><b>F(t)</b> is "the cumulative fraction that has failed by time t."
+<b>η</b> is the characteristic lifetime: plugging in t = η gives F = 1 − e<sup>−1</sup> = <b>63.2%</b>, which is why it's often written t<sub>63</sub>.
+<b>β</b> is the shape parameter — the previous page already showed it's just t<sub>ox</sub>/a₀.</p>
+<table class="symtab"><tr><td>Large β</td><td>(thick oxide)</td><td>Devices fail around the same time, distribution tight, extrapolation gentle</td></tr>
+<tr><td>Small β</td><td>(thin oxide)</td><td>Failure times spread widely, early deaths severe, extrapolation very costly</td></tr></table>
+</div>
+</div>
+
+<div class="fx">
+<div lang="zh-Hant">
+<div class="lvl l2">把它反過來 —— 這才是工程上真正在用的式子</div>
+<div class="big">t(F) <span class="op">=</span> η <span class="op">·</span> [ −ln(1 − F) ]<sup>1/β</sup></div>
+<p class="why">要問「1 ppm 的元件什麼時候壞」，就把 F = 10<sup>−6</sup> 代進去。
+注意 <b>[−ln(1−F)]<sup>1/β</sup></b> 這一項在 F 很小的時候是個很小的數 ——
+<b>它就是你要付的外推罰款</b>。</p>
+</div>
+<div lang="en">
+<div class="lvl l2">Turn it around — this is the form engineers actually use</div>
+<div class="big">t(F) <span class="op">=</span> η <span class="op">·</span> [ −ln(1 − F) ]<sup>1/β</sup></div>
+<p class="why">To ask "when does a 1-ppm device fail," plug in F = 10<sup>−6</sup>.
+Notice that the term <b>[−ln(1−F)]<sup>1/β</sup></b> is a very small number when F is small —
+<b>that number is the extrapolation penalty you have to pay</b>.</p>
+</div>
+<div class="plug" id="pg1"></div>
+</div>
+
+<div class="card">
+<div class="bigslider"><label><span lang="zh-Hant">Weibull 斜率 β（拉拉看罰款怎麼變）</span><span lang="en">Weibull slope β (drag to see the penalty change)</span></label>
+  <input type="range" id="rB3" min="0.8" max="8" step="0.1" value="3">
+  <div class="val" id="vB3"></div></div>
+<div class="two" style="gap:14px">
+<div><div class="cap"><span lang="zh-Hant">Weibull 機率圖（η 固定為 1）</span><span lang="en">Weibull probability plot (η fixed at 1)</span></div><div id="wb3"></div></div>
+<div>
+  <div class="tiles" style="grid-template-columns:1fr">
+  <div class="tile"><div class="k">t(50%) / t<sub>63</sub></div><div class="v" id="t50">—</div></div>
+  <div class="tile"><div class="k">t(0.1%) / t<sub>63</sub></div><div class="v" id="t1k">—</div></div>
+  <div class="tile hl"><div class="k">t(1 ppm) / t<sub>63</sub>　<span lang="zh-Hant">← 車規常用</span><span lang="en">← common for automotive grade</span></div><div class="v" id="t1p">—</div></div>
+  </div>
+  <p class="note" id="n3" style="margin-top:10px"></p>
+</div></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>看清楚這個數字。</b>β = 5（5 nm 厚氧）時，1 ppm 壽命還有 t<sub>63</sub> 的 6% 左右；
+β = 1.5（薄氧）時只剩下萬分之幾。<b>同樣的中位數壽命，薄氧化層根本交不出 ppm 級的保證</b> ——
+這就是為什麼先進製程一定要靠面積管理、電壓管理，而不是靠材料更耐一點。</div>
+
+<h2>外推 ②　面積縮放</h2>
+</div>
+<div lang="en">
+<div class="key"><b>Look closely at this number.</b> At β = 5 (a 5 nm thick oxide), the 1-ppm lifetime is still about 6% of t<sub>63</sub>;
+at β = 1.5 (thin oxide) it drops to a few parts in ten thousand. <b>For the same median lifetime, a thin oxide simply cannot deliver a ppm-level guarantee</b> —
+which is exactly why advanced processes have to rely on area management and voltage management, not just a tougher material.</div>
+
+<h2>Extrapolation ②　Area scaling</h2>
+</div>
+
+<div class="fx">
+<div lang="zh-Hant">
+<div class="lvl l2">最弱環節</div>
+<div class="big">t<sub>63</sub>(A₂) <span class="op">=</span> t<sub>63</sub>(A₁) <span class="op">·</span> ( A₁ / A₂ )<sup>1/β</sup></div>
+<p class="why">上一頁的蒙地卡羅已經直接驗證過這條式子。
+物理意義：面積放大就是同時擲更多骰子，只要<b>任何一處</b>先貫穿，整顆就死。
+數學上，Weibull 隨機變數取最小值仍是 Weibull，β 不變、η 被壓小。</p>
+</div>
+<div lang="en">
+<div class="lvl l2">Weakest link</div>
+<div class="big">t<sub>63</sub>(A₂) <span class="op">=</span> t<sub>63</sub>(A₁) <span class="op">·</span> ( A₁ / A₂ )<sup>1/β</sup></div>
+<p class="why">The previous page's Monte Carlo simulation already verified this formula directly.
+Physically: scaling up the area is the same as rolling more dice at once — the instant <b>any single spot</b> percolates through, the whole device is dead.
+Mathematically, the minimum of Weibull random variables is still Weibull — β stays the same, η just gets compressed.</p>
+</div>
+<div class="plug" id="pg2"></div>
+</div>
+
+<div lang="zh-Hant">
+<h2>外推 ③　加速模型 —— TDDB 最大的爭議</h2>
+<p>你在 3.6 V 量到壽命，要外推到 1.8 V。問題是：<b>壽命隨電壓怎麼變？</b>
+文獻上有三套主流模型，它們在應力區間<b>幾乎重疊、都能 fit 你的資料</b>，
+但外推到使用電壓時<b>會分家好幾個數量級</b>。</p>
+</div>
+<div lang="en">
+<h2>Extrapolation ③　Acceleration models — TDDB's biggest controversy</h2>
+<p>You measure a lifetime at 3.6 V and need to extrapolate to 1.8 V. The question is: <b>how does lifetime scale with voltage?</b>
+The literature has three mainstream models. Within the stress range they <b>nearly overlap and all fit your data equally well</b>,
+but once extrapolated to use voltage, <b>they part ways by orders of magnitude</b>.</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="three3">
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">E-model（熱化學）</h3>
+<div class="eq">t<sub>63</sub> ∝ exp( −γ · E<sub>ox</sub> )</div>
+<p class="note" style="margin:8px 0 0">電場直接把 Si–O 鍵拉開（極性鍵與電場耦合）。
+外推<b>最保守</b>（預測壽命最短）。γ 典型 1.5～4 cm/MV（本頁取 2.0）。</p></div>
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">1/E model（陽極電洞注入）</h3>
+<div class="eq">t<sub>63</sub> ∝ exp( G / E<sub>ox</sub> )</div>
+<p class="note" style="margin:8px 0 0">損傷來自 Fowler–Nordheim 穿隧的載子，
+所以跟穿隧電流一樣是 exp(−B/E) 的形式。外推<b>最樂觀</b>。</p></div>
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">冪次律 V<sup>−n</sup></h3>
+<div class="eq">t<sub>63</sub> ∝ V<sup>−n</sup></div>
+<p class="note" style="margin:8px 0 0">薄氧（&lt; 4 nm）的實測資料在 log t – log V 上是直線，
+且 n 很大（越薄越大，約 20～45；本頁取 30）。目前先進製程最常用。</p></div>
+</div>
+</div>
+<div lang="en">
+<div class="three3">
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">E-model (thermochemical)</h3>
+<div class="eq">t<sub>63</sub> ∝ exp( −γ · E<sub>ox</sub> )</div>
+<p class="note" style="margin:8px 0 0">The field directly pulls apart the Si–O bond (a polar bond coupling to the field).
+Its extrapolation is <b>the most conservative</b> (shortest predicted lifetime). γ is typically 1.5–4 cm/MV (this page uses 2.0).</p></div>
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">1/E model (anode hole injection)</h3>
+<div class="eq">t<sub>63</sub> ∝ exp( G / E<sub>ox</sub> )</div>
+<p class="note" style="margin:8px 0 0">Damage comes from carriers that Fowler–Nordheim tunnel through,
+so like the tunneling current itself it takes the exp(−B/E) form. Its extrapolation is <b>the most optimistic</b>.</p></div>
+<div class="card" style="margin:0"><h3 style="margin-top:0;font-size:17px">Power law V<sup>−n</sup></h3>
+<div class="eq">t<sub>63</sub> ∝ V<sup>−n</sup></div>
+<p class="note" style="margin:8px 0 0">Measured data for thin oxides (&lt; 4 nm) forms a straight line on log t – log V,
+with a large n (larger for thinner oxides, roughly 20–45; this page uses 30). The most commonly used model in advanced processes today.</p></div>
+</div>
+</div>
+
+<div class="card">
+<div class="ctrls" style="margin-bottom:12px">
+<div class="ctrl"><label><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+  <div class="row"><input type="range" id="rTx" min="1.5" max="8" step="0.1" value="3"><span class="val" id="vTx"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">應力電壓（校正點，此處量到 t<sub>63</sub> = 1 小時）</span><span lang="en">Stress voltage (calibration point, t<sub>63</sub> = 1 hr measured here)</span></label>
+  <div class="row"><input type="range" id="rVs" min="2" max="8" step="0.1" value="3.6"><span class="val" id="vVs"></span></div></div>
+<div class="ctrl"><label><span lang="zh-Hant">使用電壓</span><span lang="en">Use voltage</span></label>
+  <div class="row"><input type="range" id="rVu" min="0.6" max="4" step="0.05" value="1.8"><span class="val" id="vVu"></span></div></div>
+</div>
+<div class="cap"><span lang="zh-Hant">三個模型都通過同一個校正點，但外推到使用電壓時分家</span><span lang="en">All three models pass through the same calibration point, but part ways when extrapolated to use voltage</span></div>
+<div id="acc3"></div>
+<div class="legend" id="lg3"></div>
+<div class="tiles" style="margin-top:12px">
+  <div class="tile"><div class="k"><span lang="zh-Hant">E-model 預測（最保守）</span><span lang="en">E-model prediction (most conservative)</span></div><div class="v" id="aE">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">冪次律預測</span><span lang="en">Power-law prediction</span></div><div class="v" id="aP">—</div></div>
+  <div class="tile"><div class="k"><span lang="zh-Hant">1/E model 預測（最樂觀）</span><span lang="en">1/E model prediction (most optimistic)</span></div><div class="v" id="aI">—</div></div>
+  <div class="tile hl"><div class="k"><span lang="zh-Hant">最樂觀 ÷ 最保守</span><span lang="en">Most optimistic ÷ most conservative</span></div><div class="v" id="aR">—</div><div class="u"><span lang="zh-Hant">倍</span><span lang="en">×</span></div></div>
+</div>
+</div>
+
+<div lang="zh-Hant">
+<div class="key"><b>這個倍數就是 TDDB 最誠實的不確定度。</b>
+它不是量測誤差，是<b>物理模型的分歧</b>。所以業界的作法是：
+在盡可能<b>接近使用條件</b>的低電壓做長時間應力（縮短外推距離），
+並且在報告裡<b>明講用了哪個模型</b>。看到一份 TDDB 報告沒寫模型，那份數字沒有意義。</div>
+
+<h2>溫度：TDDB 的 E<sub>a</sub> 是正的</h2>
+</div>
+<div lang="en">
+<div class="key"><b>That multiplier is TDDB's most honest measure of uncertainty.</b>
+It isn't measurement error — it's <b>disagreement between physical models</b>. So the industry's practice is to:
+run long-duration stress at a low voltage as <b>close to the use condition</b> as practical (shortening the extrapolation distance),
+and <b>state explicitly which model was used</b> in the report. A TDDB report that never names its model is a number with no meaning.</div>
+
+<h2>Temperature: TDDB's E<sub>a</sub> is positive</h2>
+</div>
+
+<div class="fx">
+<div lang="zh-Hant">
+<div class="lvl l1">Arrhenius</div>
+<div class="big">t<sub>63</sub> <span class="op">∝</span> exp( E<sub>a</sub> / k<sub>B</sub>T )　，　E<sub>a</sub> ≈ 0.6 – 0.9 eV</div>
+<p class="why">缺陷生成是一個<b>需要越過能障的鍵斷裂反應</b>，溫度越高越容易發生 —— 所以<b>越熱越短命</b>。
+E<sub>a</sub> 為正，正負號合乎直覺。</p>
+</div>
+<div lang="en">
+<div class="lvl l1">Arrhenius</div>
+<div class="big">t<sub>63</sub> <span class="op">∝</span> exp( E<sub>a</sub> / k<sub>B</sub>T )　,　E<sub>a</sub> ≈ 0.6 – 0.9 eV</div>
+<p class="why">Defect generation is a <b>bond-breaking reaction that has to cross an energy barrier</b> — the hotter it is, the more readily it happens, so <b>hotter means shorter-lived</b>.
+E<sub>a</sub> is positive, and the sign matches intuition.</p>
+</div>
+<div class="plug" id="pg3"></div>
+</div>
+
+<div lang="zh-Hant">
+<div class="cmp">
+<div class="col bad"><div class="h">HCI：E<sub>a</sub> &lt; 0</div>
+<div style="font-size:15.5px;line-height:1.8">低溫更嚴重（聲子散射少 → 載子跑得更遠更熱）。
+<b>所以 125 °C 的 HTOL 抓不到 HCI</b>，必須另外做低溫 HCI 測試。</div></div>
+<div class="col good"><div class="h">TDDB：E<sub>a</sub> &gt; 0</div>
+<div style="font-size:15.5px;line-height:1.8">高溫更嚴重。
+<b>所以高溫 HTOL 對 TDDB 是有效的加速測試</b>，溫度與電壓可以同時加速，實驗時間才做得完。</div></div>
+</div>
+<p class="note">同一顆晶片上兩個機制的溫度方向相反 —— 這正是為什麼可靠度驗證不能只做一個溫度點。</p>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>為什麼 TDDB 規格寫「10 年 1 ppm」，而 HCI 規格寫「10 年 Idsat 退化 10%」？</summary><div class="a">因為兩者的失效型態不同。HCI 是<b>連續參數漂移</b>，每顆元件的退化曲線幾乎重疊，所以定一個參數門檻就夠。TDDB 是<b>一次性崩潰</b>，元件之間的壽命散布好幾個數量級，講「中位數壽命 10 年」等於承認有一半的產品在保固內會壞 —— 只能用失效率語言。</div></details><details><summary>同一批資料，用 1/E model 報告出來的壽命比 E-model 長 10⁵ 倍。誰對？</summary><div class="a">在應力區間內兩者都對（都 fit 得很好），差別只出現在<b>外推區</b>，那裡沒有資料可以裁決。工程上的正確作法不是選一個相信，而是：(1) 降低應力電壓、拉長測試時間，把外推距離縮短；(2) 用<b>最保守的模型</b>做規格判定；(3) 報告中明確寫出模型與參數。看到沒寫模型的 TDDB 壽命數字，等於沒有數字。</div></details><details><summary>把測試電容面積做大一點，可以讓 TDDB 資料更有代表性嗎？</summary><div class="a">可以，而且是好習慣。大面積電容一次涵蓋更多獨立區塊，(a) 縮短到產品面積的外推距離，(b) 更容易抓到外質缺陷（小電容常常剛好避開），(c) 在同樣的測試時間內就會失效，不必加那麼高的電壓。代價是每顆的壽命變短、量到的分布偏向早夭端，需要足夠樣本數才能同時定出 β 與 η。</div></details><details><summary>溫度從 125 °C 降到 105 °C，TDDB 壽命大約增加幾倍？跟降電壓比呢？</summary><div class="a">E<sub>a</sub> ≈ 0.75 eV 時大約 1.8 倍。相較之下，在 E-model γ = 2 cm/MV、t<sub>ox</sub> = 3 nm 下，電壓只要降 0.3 V 就是 exp(2×1) ≈ 7.4 倍。<b>電壓的槓桿遠大於溫度</b> —— 這就是為什麼 TDDB 的第一對策永遠是降電場，而不是散熱。</div></details></div>
+<div class="pager"><a class="prev" href="tddb-3-trapsize.html"><div class="d">← 上一課 · 階段 3</div><div class="t">陷阱尺寸與 Weibull 斜率</div></a><a class="next" href="tddb-5-spec.html"><div class="d">下一課 · 階段 5 →</div><div class="t">TDDB 規格</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現；加速模型（E-model / 1-E model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+<div lang="en">
+<div class="cmp">
+<div class="col bad"><div class="h">HCI: E<sub>a</sub> &lt; 0</div>
+<div style="font-size:15.5px;line-height:1.8">Worse at low temperature (less phonon scattering → carriers travel farther and get hotter).
+<b>So a 125 °C HTOL screen doesn't catch HCI</b> — a separate low-temperature HCI test is required.</div></div>
+<div class="col good"><div class="h">TDDB: E<sub>a</sub> &gt; 0</div>
+<div style="font-size:15.5px;line-height:1.8">Worse at high temperature.
+<b>So high-temperature HTOL is an effective accelerated test for TDDB</b> — temperature and voltage can accelerate it together, which is what makes the test finish in reasonable time.</div></div>
+</div>
+<p class="note">The two mechanisms on the same chip point in opposite temperature directions — which is exactly why reliability qualification can never rely on a single temperature point.</p>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Why does a TDDB spec say "10 years at 1 ppm," while an HCI spec says "10 years, 10% I<sub>dsat</sub> degradation"?</summary><div class="a">Because the two failure modes differ. HCI is <b>continuous parameter drift</b> — every device's degradation curve nearly overlaps, so setting one parameter threshold is enough. TDDB is <b>one-shot breakdown</b> — lifetimes scatter across orders of magnitude between devices, so saying "10-year median lifetime" would be admitting that half the product fails within warranty. Only failure-rate language works.</div></details><details><summary>Using the same dataset, the 1/E model reports a lifetime 10⁵× longer than the E-model. Who's right?</summary><div class="a">Both are right within the stress range (both fit well) — the difference only shows up in the <b>extrapolated region</b>, where there's no data to settle it. The correct engineering approach isn't to pick one to believe, but to: (1) lower the stress voltage and lengthen the test to shorten the extrapolation distance; (2) use the <b>most conservative model</b> for spec decisions; (3) state the model and parameters explicitly in the report. A TDDB lifetime number with no stated model is effectively no number at all.</div></details><details><summary>Does making the test capacitor's area bigger make TDDB data more representative?</summary><div class="a">Yes, and it's good practice. A larger capacitor covers more independent blocks at once: (a) it shortens the extrapolation distance to product area, (b) it more reliably catches extrinsic defects (small capacitors often just happen to miss them), (c) it fails within the same test duration without needing as high a voltage. The cost is a shorter lifetime per device and a distribution skewed toward early failures, so you need enough samples to pin down both β and η.</div></details><details><summary>If temperature drops from 125 °C to 105 °C, roughly how much does TDDB lifetime increase? How does that compare to lowering voltage?</summary><div class="a">At E<sub>a</sub> ≈ 0.75 eV, about 1.8×. By comparison, under the E-model with γ = 2 cm/MV and t<sub>ox</sub> = 3 nm, dropping voltage by just 0.3 V gives exp(2×1) ≈ 7.4×. <b>Voltage's leverage is far greater than temperature's</b> — which is exactly why the first countermeasure for TDDB is always lowering the field, not improving heat dissipation.</div></details></div>
+<div class="pager"><a class="prev" href="tddb-3-trapsize.html"><div class="d">← Previous · Stage 3</div><div class="t">Trap Size & Weibull Slope</div></a><a class="next" href="tddb-5-spec.html"><div class="d">Next · Stage 5 →</div><div class="t">TDDB Specs</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+/* ---------- Weibull 罰款 ---------- */
+const S3={beta:3.0,tox:3.0,Vs:3.6,Vu:1.8};
+const pen=(F,b)=>Math.pow(-Math.log(1-F),1/b);
+function drawWb3(){
+  const box=$('wb3'),Wpx=box.clientWidth||420,H=278,M={l:56,r:16,t:12,b:40};
+  const iw=Wpx-M.l-M.r,ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('不同 β 的 Weibull 直線','Weibull lines for different β'));
+  const ylo=Math.log(-Math.log(1-1e-7)), yhi=Math.log(-Math.log(1-0.99));
+  const xlo=-8,xhi=1.2;
+  const X=v=>M.l+(v-xlo)/(xhi-xlo)*iw, Y=v=>M.t+ih-(v-ylo)/(yhi-ylo)*ih;
+  [1e-6,1e-5,1e-4,1e-3,1e-2,0.1,0.632,0.99].forEach(function(F){
+    const y=Y(Math.log(-Math.log(1-F)));if(y<M.t-1||y>M.t+ih+1)return;
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,
+      stroke:F===0.632?css('--axis'):css('--grid'),'stroke-width':1,
+      'stroke-dasharray':F===0.632?'4 3':''}));
+    const lab=F<1e-3?(F*1e6)+' ppm':(F*100)+'%';
+    svg.appendChild(txt(M.l-7,y,lab,{ta:'end',db:'middle',fs:10}));});
+  ticks(xlo,xhi,5).forEach(function(v){const x=X(v);if(x<M.l-1||x>M.l+iw+1)return;
+    svg.appendChild(txt(x,M.t+ih+15,v.toFixed(0),{ta:'middle',fs:10}));});
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('ln( t / t~63~ )　→','ln( t / t~63~ )　→'),{ta:'middle',fs:11}));
+  [1.5,3,5].forEach(function(b){
+    svg.appendChild(el('line',{x1:X(ylo/b),y1:Y(ylo),x2:X(yhi/b),y2:Y(yhi),
+      stroke:css('--grid2')||css('--grid'),'stroke-width':1.4,opacity:.75}));
+    svg.appendChild(txt(X(ylo/b)+3,Y(ylo)-3,'β='+b,{fs:9.5}));});
+  const b=S3.beta;
+  svg.appendChild(el('line',{x1:X(ylo/b),y1:Y(ylo),x2:X(yhi/b),y2:Y(yhi),
+    stroke:css('--e'),'stroke-width':2.6}));
+  const yp=Math.log(-Math.log(1-1e-6));
+  svg.appendChild(el('circle',{cx:X(yp/b),cy:Y(yp),r:4.5,fill:css('--crit')}));
+  svg.appendChild(txt(X(yp/b)+8,Y(yp),'1 ppm',{db:'middle',fs:11,fw:700,fill:css('--crit')}));
+  box.innerHTML='';box.appendChild(svg);
+}
+function upd3a(){
+  const b=S3.beta;
+  $('vB3').textContent='β = '+b.toFixed(1);
+  $('t50').textContent=pen(0.5,b).toFixed(3);
+  $('t1k').innerHTML=expH(pen(1e-3,b));
+  $('t1p').innerHTML=expH(pen(1e-6,b));
+  $('n3').innerHTML=L(
+    'β = '+b.toFixed(1)+' 大約對應 t<sub>ox</sub> ≈ '+b.toFixed(1)+' nm。'+
+    '想保證 1 ppm，你只能用中位數壽命的 <b>'+(pen(1e-6,b)*100).toPrecision(2)+'%</b>。',
+    'β = '+b.toFixed(1)+' corresponds to roughly t<sub>ox</sub> ≈ '+b.toFixed(1)+' nm.'+
+    ' To guarantee 1 ppm, you only get to use <b>'+(pen(1e-6,b)*100).toPrecision(2)+'%</b> of the median lifetime.'
+  );
+  $('pg1').innerHTML=L(
+    '代入 F = 10<sup>−6</sup>、β = <span class="num">'+b.toFixed(1)+'</span>：<br>'+
+    '[−ln(1−10<sup>−6</sup>)]<sup>1/'+b.toFixed(1)+'</sup> = (10<sup>−6</sup>)<sup>1/'+b.toFixed(1)+'</sup> = '+
+    '<span class="num">'+expH(pen(1e-6,b))+'</span>　'+
+    '→ 1 ppm 壽命只有 t<sub>63</sub> 的這個比例',
+    'Plug in F = 10<sup>−6</sup>, β = <span class="num">'+b.toFixed(1)+'</span>:<br>'+
+    '[−ln(1−10<sup>−6</sup>)]<sup>1/'+b.toFixed(1)+'</sup> = (10<sup>−6</sup>)<sup>1/'+b.toFixed(1)+'</sup> = '+
+    '<span class="num">'+expH(pen(1e-6,b))+'</span>　'+
+    '→ the 1-ppm lifetime is only this fraction of t<sub>63</sub>'
+  );
+  const A1=1e-4,A2=0.5;
+  $('pg2').innerHTML=L(
+    '舉例：測試電容 <span class="num">1×10⁻⁴ cm²</span> → 產品閘極總面積 <span class="num">0.5 cm²</span>（5000 倍）<br>'+
+    '(A₁/A₂)<sup>1/β</sup> = (1/5000)<sup>1/'+b.toFixed(1)+'</sup> = <span class="num">'+
+    expH(Math.pow(A1/A2,1/b))+'</span>　→ 壽命再打這個折<br>'+
+    '<b>兩道外推相乘＝'+expH(pen(1e-6,b)*Math.pow(A1/A2,1/b))+
+    '　也就是說，量到 t<sub>63</sub> 一小時，只換到使用端 '+
+    fmtYears(3600*pen(1e-6,b)*Math.pow(A1/A2,1/b))+' 的保證。</b>',
+    'Example: test capacitor <span class="num">1×10⁻⁴ cm²</span> → product total gate area <span class="num">0.5 cm²</span> (5000×)<br>'+
+    '(A₁/A₂)<sup>1/β</sup> = (1/5000)<sup>1/'+b.toFixed(1)+'</sup> = <span class="num">'+
+    expH(Math.pow(A1/A2,1/b))+'</span>　→ lifetime takes this additional discount<br>'+
+    '<b>Multiply the two extrapolations together = '+expH(pen(1e-6,b)*Math.pow(A1/A2,1/b))+
+    '　in other words, measuring t<sub>63</sub> = one hour only buys you a '+
+    fmtYears(3600*pen(1e-6,b)*Math.pow(A1/A2,1/b))+' guarantee at the use end.</b>'
+  );
+  drawWb3();
+}
+$('rB3').addEventListener('input',function(e){S3.beta=parseFloat(e.target.value);upd3a();});
+
+/* ---------- 加速模型分歧 ---------- */
+const GAM=2.0, GPAR=300, NPOW=30, TA=3600;
+function tE(V,tx){return TA*Math.exp(-GAM*(Eox(V,tx)-Eox(S3.Vs,tx)));}
+function tI(V,tx){return TA*Math.exp(GPAR*(1/Eox(V,tx)-1/Eox(S3.Vs,tx)));}
+function tP(V){return TA*Math.pow(V/S3.Vs,-NPOW);}
+function drawAcc(){
+  const box=$('acc3'),Wpx=box.clientWidth||760,H=320,M={l:70,r:18,t:14,b:44};
+  const iw=Wpx-M.l-M.r,ih=H-M.t-M.b;
+  const svg=el('svg',{viewBox:'0 0 '+Wpx+' '+H,width:'100%',height:H,role:'img'});
+  svg.setAttribute('aria-label',L('三種加速模型的壽命外推比較','Lifetime extrapolation comparison across three acceleration models'));
+  const tx=S3.tox, vlo=Math.min(S3.Vu,1)*0.9, vhi=S3.Vs*1.06;
+  const vals=[tE(S3.Vu,tx),tI(S3.Vu,tx),tP(S3.Vu)].filter(v=>isFinite(v)&&v>0);
+  let lo=Math.min.apply(null,vals.concat([TA])), hi=Math.max.apply(null,vals.concat([TA]));
+  lo=Math.max(lo,1e-2); hi=Math.max(hi,lo*10);
+  const y0=Math.log10(lo)-0.4, y1=Math.log10(hi)+0.4;
+  const X=v=>M.l+(v-vlo)/(vhi-vlo)*iw, Y=t=>M.t+ih-(Math.log10(Math.max(t,1e-30))-y0)/(y1-y0)*ih;
+  for(let e=Math.ceil(y0);e<=Math.floor(y1);e++){
+    const y=Y(Math.pow(10,e));
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:y,y2:y,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(M.l-7,y,pw10(e),{ta:'end',db:'middle',fs:10}));}
+  ticks(vlo,vhi,6).forEach(function(v){const x=X(v);if(x<M.l-1||x>M.l+iw+1)return;
+    svg.appendChild(txt(x,M.t+ih+15,v.toFixed(1),{ta:'middle',fs:10}));});
+  /* 十年線 */
+  const TENY=10*365.25*86400;
+  if(Math.log10(TENY)>y0&&Math.log10(TENY)<y1){
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(TENY),y2:Y(TENY),
+      stroke:css('--good'),'stroke-width':1.6,'stroke-dasharray':'7 4'}));
+    svg.appendChild(txt(M.l+iw-4,Y(TENY)-5,L('10 年','10 yr'),{ta:'end',fs:11,fw:700,fill:css('--good')}));}
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('閘極電壓 V （V）','Gate voltage V (V)'),{ta:'middle',fs:11}));
+  svg.appendChild(txt(15,M.t+ih/2,L('t~63~ （秒，對數）','t~63~ (s, log)'),{ta:'middle',fs:11,rot:-90}));
+  const cid='clipAcc';
+  const defs=el('defs',{}); const cp=el('clipPath',{id:cid});
+  cp.appendChild(el('rect',{x:M.l,y:M.t,width:iw,height:ih}));
+  defs.appendChild(cp); svg.appendChild(defs);
+  const gC=el('g',{'clip-path':'url(#'+cid+')'});
+  const CL=[css('--e'),css('--h'),css('--a')||css('--nit')];
+  [[tE,'E-model'],[tP,'冪次律 V^-n'],[tI,'1/E model']].forEach(function(pair,i){
+    const fn=pair[0]; let d='';
+    for(let k=0;k<=90;k++){const v=vlo+(vhi-vlo)*k/90;
+      const t=(fn===tP)?tP(v):fn(v,tx);
+      if(!isFinite(t)||t<=0)continue;
+      const yy=Y(t); if(yy<M.t-40||yy>M.t+ih+40){d+=(d?' L ':'M ')+X(v).toFixed(1)+' '+Math.max(M.t-30,Math.min(M.t+ih+30,yy)).toFixed(1);continue;}
+      d+=(d?' L ':'M ')+X(v).toFixed(1)+' '+yy.toFixed(1);}
+    gC.appendChild(el('path',{d:d,fill:'none',stroke:CL[i],'stroke-width':2.2,
+      'stroke-linejoin':'round'}));
+  });
+  svg.appendChild(gC);
+  /* 校正點 */
+  svg.appendChild(el('circle',{cx:X(S3.Vs),cy:Y(TA),r:5,fill:css('--crit')}));
+  svg.appendChild(txt(X(S3.Vs)-9,Math.min(Y(TA)+19,M.t+ih-6),L('← 校正點 ','← Calibration point ')+S3.Vs.toFixed(1)+' V / '+L('1 小時','1 hr'),
+    {ta:'end',fs:11,fw:700,fill:css('--crit')}));
+  svg.appendChild(el('line',{x1:X(S3.Vu),x2:X(S3.Vu),y1:M.t,y2:M.t+ih,
+    stroke:css('--axis'),'stroke-width':1.2,'stroke-dasharray':'4 3'}));
+  svg.appendChild(txt(X(S3.Vu)+4,M.t+11,L('使用 ','Use ')+S3.Vu.toFixed(2)+' V',{fs:10.5,fw:650}));
+  box.innerHTML='';box.appendChild(svg);
+}
+function upd3b(){
+  const tx=S3.tox;
+  $('vTx').textContent=tx.toFixed(1)+' nm';
+  $('vVs').textContent=S3.Vs.toFixed(1)+' V ('+Eox(S3.Vs,tx).toFixed(1)+' MV/cm)';
+  $('vVu').textContent=S3.Vu.toFixed(2)+' V ('+Eox(S3.Vu,tx).toFixed(1)+' MV/cm)';
+  const e=tE(S3.Vu,tx),p=tP(S3.Vu),i=tI(S3.Vu,tx);
+  $('aE').textContent=fmtYears(e);$('aP').textContent=fmtYears(p);$('aI').textContent=fmtYears(i);
+  const mx=Math.max(e,p,i),mn=Math.min(e,p,i);
+  if(mx/mn>1e4)$('aR').innerHTML=expH(mx/mn);else $('aR').textContent=Math.round(mx/mn).toLocaleString('en-US');
+  const T1=125+273.15,T2=105+273.15;
+  $('pg3').innerHTML=L(
+    '舉例：E<sub>a</sub> = 0.75 eV，從 125 °C 外推到 105 °C：<br>'+
+    'exp[0.75/k<sub>B</sub> · (1/'+T2.toFixed(0)+' − 1/'+T1.toFixed(0)+')] = <span class="num">'+
+    Math.exp(0.75/KB*(1/T2-1/T1)).toFixed(2)+'</span> 倍壽命<br>'+
+    '<b>降 20 °C 只換到約 '+Math.exp(0.75/KB*(1/T2-1/T1)).toFixed(1)+
+    ' 倍 —— 溫度的槓桿遠比電壓小，這也是為什麼降壓永遠是第一對策。</b>',
+    'Example: E<sub>a</sub> = 0.75 eV, extrapolating from 125 °C to 105 °C:<br>'+
+    'exp[0.75/k<sub>B</sub> · (1/'+T2.toFixed(0)+' − 1/'+T1.toFixed(0)+')] = <span class="num">'+
+    Math.exp(0.75/KB*(1/T2-1/T1)).toFixed(2)+'</span>× lifetime<br>'+
+    '<b>Dropping 20 °C only buys about '+Math.exp(0.75/KB*(1/T2-1/T1)).toFixed(1)+
+    '× — temperature\'s leverage is far smaller than voltage\'s, which is why lowering voltage is always the first countermeasure.</b>'
+  );
+  drawAcc();
+}
+['rTx','rVs','rVu'].forEach(function(id,k){
+  $(id).addEventListener('input',function(e){
+    const v=parseFloat(e.target.value);
+    if(id==='rTx')S3.tox=v; else if(id==='rVs')S3.Vs=v; else S3.Vu=v;
+    if(S3.Vu>S3.Vs-0.2){S3.Vu=Math.max(0.6,S3.Vs-0.2);$('rVu').value=S3.Vu;}
+    upd3b();});});
+function refreshLegend3(){
+  $('lg3').innerHTML=
+    '<span><i class="sw" style="background:'+css('--e')+'"></i>'+L('E-model（保守）','E-model (conservative)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--h')+'"></i>'+L('冪次律 V<sup>−n</sup>','Power law V<sup>−n</sup>')+'</span>'+
+    '<span><i class="sw" style="background:'+(css('--a')||css('--nit'))+'"></i>'+L('1/E model（樂觀）','1/E model (optimistic)')+'</span>'+
+    '<span><i class="sw" style="background:'+css('--good')+'"></i>'+L('十年門檻','ten-year threshold')+'</span>';
+}
+refreshLegend3();
+window.__rebuild=function(){refreshLegend3();upd3a();upd3b();};
+upd3a();upd3b();
+
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

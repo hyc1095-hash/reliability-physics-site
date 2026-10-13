@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="TDDB（介電層時效崩潰）可靠度物理循序教學：滲流模型、Weibull 統計、面積縮放、加速模型、JEDEC 規格與防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="課程地圖 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從滲流直覺到壽命外推，完整理解閘極氧化層的時效崩潰。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M6 7 L26 7' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M6 25 L26 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M14 7 L18 14 L13 17 L18 25' stroke='%23e34948' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>課程地圖 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">TDDB · 介電層時效崩潰</span><div class="steps"><a href="tddb.html" aria-current="page"><span class="n">0</span>課程地圖</a><a href="tddb-1-intuition.html"><span class="n">1</span>直覺</a><a href="tddb-2-percolation.html"><span class="n">2</span>滲流模型</a><a href="tddb-3-trapsize.html"><span class="n">3</span>陷阱尺寸</a><a href="tddb-4-model.html"><span class="n">4</span>統計與外推</a><a href="tddb-5-spec.html"><span class="n">5</span>TDDB 規格</a><a href="tddb-6-fix.html"><span class="n">6</span>如何防治</a><a href="tddb-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:0%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">互動教材 · 不需要先修過半導體元件物理</p>
+<h1>介電層時效崩潰（TDDB）<br>從滲流直覺到壽命外推</h1>
+<p class="lede">同一顆閘極氧化層，即使電壓從沒超過規格上限，用久了還是可能突然短路——這就是 TDDB（Time-Dependent Dielectric Breakdown，介電層時效崩潰）。
+它跟 HCI 那種「參數慢慢漂移」完全不同：崩潰前幾乎沒有預兆，一崩潰就是硬短路。
+這份教材把它拆成七個階段：先靠一個比喻建立直覺，再看真正在跑的滲流模擬，然後是統計與外推、業界規格，最後給你一個可以隨便調的壽命模型玩到懂為止。
+<b>每一頁都短，一次只講一件事，卡住了隨時可以往回翻。</b></p>
+
+<div class="card"><h3 style="margin-top:0">30 秒版本</h3>
+<p>把氧化層想成一片薄薄的絕緣磚牆，電子每次穿隧通過，都有一個很小的機率在牆裡留下一個「壞掉的磚塊」（缺陷）。
+壞磚塊會隨機出現、越積越多，大部分時候彼此不相連，牆仍然擋得住電流。</p>
+<p style="margin-bottom:0"><b>但只要有一串壞磚塊剛好從閘極一路連到矽基板，電流就找到了一條現成的捷徑，瞬間貫穿——這就是崩潰的瞬間。</b>
+這個「隨機累積、直到連成一條路」的過程叫<b>滲流（percolation）</b>，整個 TDDB 教材幾乎都在講這件事的後果：
+既然哪一顆先連通是隨機的，那麼同一批、同樣製程、同樣應力條件的元件，壞掉的時間點就會散開成一個統計分布，
+而不是所有元件在同一秒一起壞掉。</p></div>
+
+<div class="two" style="margin-top:16px">
+<div class="card" style="margin:0"><div class="lv" style="color:var(--h);font-size:13px;font-weight:750;letter-spacing:.06em">HCI</div>
+<h3 style="margin:2px 0 6px">連續漂移</h3>
+<p class="note" style="margin:0">參數一點一點變差，工程師人為畫一條線（例如漂移 10%、V<sub>t</sub> 偏移 50 mV）宣告失效。
+每顆元件的退化曲線幾乎重疊，<b>統計離散度不是重點，物理機制才是</b>。</p></div>
+<div class="card" style="margin:0"><div class="lv" style="color:var(--e);font-size:13px;font-weight:750;letter-spacing:.06em">TDDB</div>
+<h3 style="margin:2px 0 6px">一次性崩潰</h3>
+<p class="note" style="margin:0">元件在崩潰前幾乎沒有徵兆，然後突然短路，沒有中間地帶。
+同一批元件壞掉的時間差很多，<b>統計分布本身就是重點</b>——你要保證的是「十年後、百萬顆裡只有一顆壞」，而不是「平均多久會壞」。</p></div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="tddb-1-intuition.html"><div class="no">1</div>
+  <div><div class="t">直覺：絕緣層為什麼會「用久了就破」</div>
+  <div class="d">不用公式，先靠磚牆比喻建立感覺，再看電子穿隧、缺陷生成，以及「隨機連成一條路」這件事為什麼本質上是機率問題。</div>
+  <div class="g">學完你會知道：<b>崩潰是一次統計事件，不是磨損到某個極限</b></div>
+  <div class="meta">約 6 分鐘 · 1 個互動</div></div></a>
+<a class="mapcard" href="tddb-2-percolation.html"><div class="no">2</div>
+  <div><div class="t">滲流模型：看缺陷真的連成一條路</div>
+  <div class="d">真正在跑的蒙地卡羅滲流模擬。缺陷一顆顆隨機長出來，直到貫穿路徑形成。
+  同時跑上百顆虛擬電容，<b>Weibull 分布會自己在你眼前長出來，不是套公式套出來的</b>。</div>
+  <div class="g">學完你會知道：<b>Weibull 斜率 β ≈ t<sub>ox</sub>/a₀ 是滲流幾何直接算出來的後果</b></div>
+  <div class="meta">約 10 分鐘 · 蒙地卡羅動畫</div></div></a>
+<a class="mapcard" href="tddb-3-trapsize.html"><div class="no">3</div>
+  <div><div class="t">陷阱尺寸與 Weibull 斜率：β 裡面藏了兩個參數</div>
+  <div class="d">階段 2 的 a₀ = 1 nm 是哪裡來的？文獻萃取出的陷阱尺寸從 0.4 nm 到 3 nm 都有。
+  把 β 拆成 m·(t<sub>ox</sub>/a₀) 之後你會看到：<b>光是這個參數的分歧，就能讓 ppm 壽命差十個數量級</b>。</div>
+  <div class="g">學完你會知道：<b>只量 β 對 t<sub>ox</sub> 的斜率，本質上分不開 m 和 a₀</b></div>
+  <div class="meta">約 12 分鐘 · 2 個互動 · 含文獻對照表</div></div></a>
+<a class="mapcard" href="tddb-4-model.html"><div class="no">4</div>
+  <div><div class="t">統計與外推：Weibull 圖、面積效應、加速模型</div>
+  <div class="d">Weibull 圖怎麼看、為什麼面積越大越容易壞（面積縮放）、E-model 與 1/E-model 這兩種加速模型為什麼外推到使用電壓時會愈差愈遠。</div>
+  <div class="g">學完你會知道：<b>β 越小，外推到低失效率時的懲罰就越殘酷</b></div>
+  <div class="meta">約 12 分鐘 · 3 個互動</div></div></a>
+<a class="mapcard" href="tddb-5-spec.html"><div class="no">5</div>
+  <div><div class="t">TDDB 規格：JESD35 / JESD92 與車規</div>
+  <div class="d">JEDEC 定義了哪些測試、要報告什麼量；商規與車規的判定準則差在哪；
+  以及為什麼 TDDB 的規格語言是「失效率」而不是「參數變化 10%」。</div>
+  <div class="g">學完你會知道：<b>TDDB 的規格是用 ppm 與信心水準說話，不是用平均壽命</b></div>
+  <div class="meta">約 10 分鐘 · 含來源查證狀態</div></div></a>
+<a class="mapcard" href="tddb-6-fix.html"><div class="no">6</div>
+  <div><div class="t">如何防治</div>
+  <div class="d">製程（氮化、high-k、退火、antenna rule）、元件（厚氧、面積控制）、
+  電路（降壓、cascode、上電時序）三個層級的對策與各自的代價。</div>
+  <div class="g">學完你會知道：<b>TDDB 的第一對策永遠是降低氧化層電場</b></div>
+  <div class="meta">約 10 分鐘</div></div></a>
+<a class="mapcard" href="tddb-7-playground.html"><div class="no">7</div>
+  <div><div class="t">可調模型：壽命外推放手玩</div>
+  <div class="d">t<sub>ox</sub>、電壓、溫度、面積、目標失效率、加速模型全部可調，即時看十年壽命判定會怎麼變。</div>
+  <div class="g">學完你會知道：<b>換一個加速模型，壽命結論可以差好幾個數量級</b></div>
+  <div class="meta">開放探索</div></div></a>
+</div>
+
+<h2>先備知識</h2>
+<p>只要知道這三件事就能開始，不需要半導體物理的正式訓練：</p>
+<table><thead><tr><th class="nw">需要知道</th><th>大概到什麼程度</th></tr></thead><tbody>
+<tr><td class="nw">閘極電容結構</td><td>閘極 / 氧化層 / 矽基板堆疊起來，其實就是一個平行板電容；氧化層是中間的絕緣體</td></tr>
+<tr><td class="nw">電場的概念</td><td>E<sub>ox</sub> = V / t<sub>ox</sub>。同樣的電壓，絕緣層越薄，電場就越強</td></tr>
+<tr><td class="nw">機率的基本感覺</td><td>「每次嘗試都有機率 p 會成功」；不需要學過 Weibull 分布，教材會從頭講起</td></tr>
+</tbody></table>
+<p class="note">如果你已經看過 HCI 模組，會發現兩者的頁面結構長得一樣，但<b>物理機制與統計行為完全不同</b>——
+一個是連續漂移、一個是一次性崩潰，這個對比本身就是很好的學習素材，建議直接兩邊對照著看。</p>
+
+<div class="pager"><a class="next" href="tddb-1-intuition.html"><div class="d">下一課 · 階段 1 →</div><div class="t">直覺</div></a></div>
+<div class="foot"><b>模型範圍</b>：滲流以簡化的立方格點模型模擬，Weibull 斜率由模擬本身湧現，不是套入既定公式；加速模型（E-model / 1/E-model / 冪次律）採文獻常見形式與參數量級。<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Interactive coursework · no prior semiconductor device physics required</p>
+<h1>Time-Dependent Dielectric Breakdown (TDDB)<br>from percolation intuition to lifetime extrapolation</h1>
+<p class="lede">Even a gate oxide that has never once been driven above its rated voltage can still suddenly short out after enough time in service — that's TDDB (Time-Dependent Dielectric Breakdown).
+It's fundamentally different from HCI's slow parameter drift: there's almost no warning before breakdown, and once it happens, it's a hard short.
+This course breaks it into seven stages: start with an analogy to build intuition, watch a real percolation simulation run in front of you, then move through statistics and extrapolation, industry specs, and finish with a fully tunable lifetime model to play with until it clicks.
+<b>Every page is short and covers exactly one idea — you can always flip back.</b></p>
+
+<div class="card"><h3 style="margin-top:0">The 30-second version</h3>
+<p>Think of the oxide as a thin brick wall of insulation. Every time an electron tunnels through, there's a small chance it leaves behind one "broken brick" (a defect) somewhere in the wall.
+Broken bricks appear randomly and pile up over time; most of the time they're scattered and disconnected, so the wall still blocks current.</p>
+<p style="margin-bottom:0"><b>But the instant a chain of broken bricks happens to connect all the way from the gate to the silicon substrate, current finds a ready-made shortcut straight through — that instant is breakdown.</b>
+This "random accumulation until a path connects" process is called <b>percolation</b>, and nearly this entire course is about the consequences of that one fact:
+since which device connects first is random, an entire batch of identical devices under identical stress will fail at scattered times that form a statistical distribution —
+not all at the same instant.</p></div>
+
+<div class="two" style="margin-top:16px">
+<div class="card" style="margin:0"><div class="lv" style="color:var(--h);font-size:13px;font-weight:750;letter-spacing:.06em">HCI</div>
+<h3 style="margin:2px 0 6px">Continuous drift</h3>
+<p class="note" style="margin:0">A parameter degrades bit by bit, and engineers draw an arbitrary line (e.g. 10% drift, or a 50 mV V<sub>t</sub> shift) and call that "failed."
+Every device's degradation curve nearly overlaps the others — <b>statistical spread isn't the point here; the physical mechanism is</b>.</p></div>
+<div class="card" style="margin:0"><div class="lv" style="color:var(--e);font-size:13px;font-weight:750;letter-spacing:.06em">TDDB</div>
+<h3 style="margin:2px 0 6px">One-shot breakdown</h3>
+<p class="note" style="margin:0">A device shows almost no warning signs, then suddenly shorts — there's no in-between state.
+Failure times within the same batch scatter widely, so <b>the statistical distribution itself is the whole point</b> — what you have to guarantee is "only one in a million fails after ten years," not "the average time to fail."</p></div>
+</div>
+
+<div class="map">
+<a class="mapcard" href="tddb-1-intuition.html"><div class="no">1</div>
+  <div><div class="t">Intuition: why insulation "wears out and breaks"</div>
+  <div class="d">No formulas — start with the brick-wall analogy for a feel, then see how tunneling creates defects, and why "randomly connecting into a path" is fundamentally a probability problem.</div>
+  <div class="g">You'll walk away knowing: <b>breakdown is a single statistical event, not wearing down to some limit</b></div>
+  <div class="meta">~6 min · 1 interactive</div></div></a>
+<a class="mapcard" href="tddb-2-percolation.html"><div class="no">2</div>
+  <div><div class="t">Percolation model: watch defects actually connect into a path</div>
+  <div class="d">A real Monte Carlo percolation simulation. Defects appear one at a time at random, until a path connects all the way through.
+  Run hundreds of virtual capacitors at once and <b>watch the Weibull distribution emerge on its own — not plugged in from a formula</b>.</div>
+  <div class="g">You'll walk away knowing: <b>the Weibull slope β ≈ t<sub>ox</sub>/a₀ falls straight out of percolation geometry</b></div>
+  <div class="meta">~10 min · Monte Carlo animation</div></div></a>
+<a class="mapcard" href="tddb-3-trapsize.html"><div class="no">3</div>
+  <div><div class="t">Trap size and the Weibull slope: β hides two parameters</div>
+  <div class="d">Where did Stage 2's a₀ = 1 nm come from? Extracted trap sizes in the literature run from 0.4 nm to 3 nm.
+  Split β into m·(t<sub>ox</sub>/a₀) and you see it: <b>that one disagreement alone can move the ppm lifetime by ten orders of magnitude</b>.</div>
+  <div class="g">You'll walk away knowing: <b>the β-vs-t<sub>ox</sub> slope alone fundamentally cannot separate m from a₀</b></div>
+  <div class="meta">~12 min · 2 interactives · with a literature comparison table</div></div></a>
+<a class="mapcard" href="tddb-4-model.html"><div class="no">4</div>
+  <div><div class="t">Statistics & extrapolation: Weibull plots, area scaling, acceleration models</div>
+  <div class="d">How to read a Weibull plot, why bigger area means a device fails sooner (area scaling), and why the E-model and 1/E-model acceleration models diverge further and further apart as you extrapolate down to use voltage.</div>
+  <div class="g">You'll walk away knowing: <b>the smaller β is, the more brutal the penalty for extrapolating to low failure rates</b></div>
+  <div class="meta">~12 min · 3 interactives</div></div></a>
+<a class="mapcard" href="tddb-5-spec.html"><div class="no">5</div>
+  <div><div class="t">TDDB specs: JESD35 / JESD92 and automotive grade</div>
+  <div class="d">Which tests JEDEC defines and what they report; how commercial-grade and automotive-grade pass/fail criteria differ;
+  and why TDDB specs speak in "failure rate," not "10% parameter change."</div>
+  <div class="g">You'll walk away knowing: <b>TDDB specs are written in ppm and confidence level, not mean lifetime</b></div>
+  <div class="meta">~10 min · sources verified inline</div></div></a>
+<a class="mapcard" href="tddb-6-fix.html"><div class="no">6</div>
+  <div><div class="t">Mitigation</div>
+  <div class="d">Countermeasures at three levels — process (nitridation, high-k, annealing, antenna rules), device (thicker oxide, area control),
+  and circuit (voltage derating, cascode, power-up sequencing) — each with its own cost.</div>
+  <div class="g">You'll walk away knowing: <b>the first countermeasure for TDDB is always lowering the oxide field</b></div>
+  <div class="meta">~10 min</div></div></a>
+<a class="mapcard" href="tddb-7-playground.html"><div class="no">7</div>
+  <div><div class="t">Tunable model: go play with lifetime extrapolation</div>
+  <div class="d">t<sub>ox</sub>, voltage, temperature, area, target failure rate, and acceleration model are all tunable — watch the ten-year lifetime verdict update live.</div>
+  <div class="g">You'll walk away knowing: <b>swap one acceleration model and the lifetime conclusion can shift by orders of magnitude</b></div>
+  <div class="meta">open-ended</div></div></a>
+</div>
+
+<h2>What you need going in</h2>
+<p>Just these three things — no formal semiconductor physics background required:</p>
+<table><thead><tr><th class="nw">What to know</th><th>How well</th></tr></thead><tbody>
+<tr><td class="nw">Gate capacitor structure</td><td>Gate / oxide / silicon substrate stacked together is just a parallel-plate capacitor; the oxide is the insulator in between</td></tr>
+<tr><td class="nw">The idea of an electric field</td><td>E<sub>ox</sub> = V / t<sub>ox</sub>. Same voltage, thinner insulator → stronger field</td></tr>
+<tr><td class="nw">A basic feel for probability</td><td>"Each attempt has some probability p of succeeding" — no need to already know Weibull distributions, the course builds it from scratch</td></tr>
+</tbody></table>
+<p class="note">If you've already been through the HCI module, you'll notice the page structure looks the same, but <b>the physical mechanism and statistical behavior are completely different</b> —
+one is continuous drift, the other is one-shot breakdown. That contrast is itself great material for learning; it's worth reading the two side by side.</p>
+
+<div class="pager"><a class="next" href="tddb-1-intuition.html"><div class="d">Next · Stage 1 →</div><div class="t">Intuition</div></a></div>
+<div class="foot"><b>Model scope</b>: percolation is simulated with a simplified cubic lattice model, and the Weibull slope emerges from the simulation itself rather than being plugged in from a formula; acceleration models (E-model / 1/E-model / power law) use commonly cited literature forms and parameter magnitudes. <b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="tddb_core_model.js"></script>
+  <script>
+(function(){
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

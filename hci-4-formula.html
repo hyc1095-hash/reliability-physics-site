@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MOSFET 熱載子注入（HCI）可靠度物理循序教學：從直覺、機制、模型、公式到可調式元件模型。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 4：公式階梯 · 半導體可靠度物理 · 互動教材">
+<meta property="og:description" content="從零開始理解 MOSFET 熱載子注入的可靠度物理，五個循序階段，最後可以自己調參數玩模型。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 4：公式階梯 · 半導體可靠度物理 · 互動教材</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">HCI · 熱載子注入</span><div class="steps"><a href="hci.html"><span class="n">0</span>課程地圖</a><a href="hci-1-intuition.html"><span class="n">1</span>直覺</a><a href="hci-2-mechanism.html"><span class="n">2</span>物理機制</a><a href="hci-3-model.html"><span class="n">3</span>物理模型</a><a href="hci-4-formula.html" aria-current="page"><span class="n">4</span>公式階梯</a><a href="hci-5-spec.html"><span class="n">5</span>HCI 規格</a><a href="hci-6-fix.html"><span class="n">6</span>如何防治</a><a href="hci-7-playground.html"><span class="n">7</span>可調模型</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:57%"></i></div></div>
+<div class="wrap ">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 4 / 6 · 公式階梯</p>
+<h1>從 I = qnvA 一路爬到損傷模型</h1>
+<p class="lede">這一頁刻意<b>從最基礎的電流公式開始</b>。每一級都建立在上一級之上，
+每條式子都附符號表、白話解釋與代入示範。如果某一級你已經很熟，直接跳過就好。</p>
+
+<div class="tldr"><div class="t">四級階梯</div>
+<p style="margin:0">L0 電流是什麼 → L1 MOSFET 的電流 → L2 汲極端的電場 → L3 損傷模型。
+<b>L3 的每一項，都只是把 L0–L2 的東西組合起來。</b></p></div>
+
+<div class="rungs">
+  <div class="rung"><div class="n" style="color:var(--gtext)">L0 · 熱身</div>
+    <div class="t">電流是什麼</div><div class="d">I = qnvA、v = µE。高中到大一的程度</div></div>
+  <div class="rung"><div class="n" style="color:var(--e)">L1 · 基礎</div>
+    <div class="t">MOSFET 的電流</div><div class="d">線性區、飽和區、V<sub>dsat</sub>。大學電子學</div></div>
+  <div class="rung"><div class="n" style="color:var(--warn)">L2 · 進階</div>
+    <div class="t">汲極端的電場</div><div class="d">l、E(y)、E<sub>m</sub>。階段 3 講過的複習</div></div>
+  <div class="rung"><div class="n" style="color:var(--h)">L3 · 目標</div>
+    <div class="t">損傷模型</div><div class="d">λ(T)、I<sub>sub</sub>、N<sub>it</sub>、m、E<sub>a</sub></div></div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l0">L0 · 熱身</div>
+<h2>電流到底是什麼</h2>
+<p>所有半導體電流公式都是同一件事的變形：<b>電流 = 有多少電荷 × 它們跑多快</b>。</p>
+
+<div class="fx">
+<div class="big">I <span class="op">=</span> q <span class="op">·</span> n <span class="op">·</span> v <span class="op">·</span> A</div>
+<table class="symtab"><tbody>
+<tr><td>I</td><td>電流</td><td>A（安培）</td></tr>
+<tr><td>q</td><td>基本電荷</td><td>1.6 × 10⁻¹⁹ C</td></tr>
+<tr><td>n</td><td>載子密度</td><td>每立方公分有幾顆電子</td></tr>
+<tr><td>v</td><td>漂移速度</td><td>電子平均往前跑多快</td></tr>
+<tr><td>A</td><td>截面積</td><td>電流通過的面積</td></tr>
+</tbody></table>
+<p class="why"><b>白話：</b>水管裡的水流量 = 水的濃度 × 流速 × 管子粗細。電流一模一樣。</p>
+</div>
+
+<div class="fx">
+<div class="big">v <span class="op">=</span> µ <span class="op">·</span> E</div>
+<table class="symtab"><tbody>
+<tr><td>µ</td><td>遷移率</td><td>cm²/V·s，「同樣的電場能推多快」</td></tr>
+<tr><td>E</td><td>電場</td><td>V/cm</td></tr>
+</tbody></table>
+<p class="why"><b>白話：</b>電場推電子，但電子一直被晶格撞（就是階段 1 講的散射），
+所以不會一直加速，而是達到一個穩定的平均速度。µ 就是這個「推力換速度」的比例常數。
+<br><b>兩式合起來：</b> I = q·n·µ·E·A —— 這就是歐姆定律的微觀版本。
+<b style="color:var(--h)">注意最後一項：電流正比於電場。這件事到了高場區會壞掉</b> —— 見 L1 最後一格。</p>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l1">L1 · 基礎</div>
+<h2>MOSFET 的電流</h2>
+<p>MOSFET 只是把上面的東西套進一個特殊幾何：載子被閘極吸到表面形成一層薄薄的通道。
+所以要問兩件事：<b>閘極吸來多少電荷？電場推它們跑多快？</b></p>
+
+<div class="fx">
+<div class="big">Q<sub>inv</sub> <span class="op">=</span> C<sub>ox</sub> <span class="op">·</span> ( V<sub>G</sub> <span class="op">−</span> V<sub>t</sub> )
+&nbsp;&nbsp;<span class="op">,</span>&nbsp;&nbsp; C<sub>ox</sub> <span class="op">=</span> ε<sub>ox</sub> / t<sub>ox</sub></div>
+<table class="symtab"><tbody>
+<tr><td>Q<sub>inv</sub></td><td>反轉層電荷密度</td><td>C/cm²，單位面積吸來多少電荷</td></tr>
+<tr><td>C<sub>ox</sub></td><td>閘極氧化層電容</td><td>F/cm²</td></tr>
+<tr><td>V<sub>t</sub></td><td>臨界電壓</td><td>開始形成通道所需的閘壓</td></tr>
+<tr><td>V<sub>G</sub> − V<sub>t</sub></td><td>過驅動電壓 V<sub>gt</sub></td><td>超過門檻多少，決定吸來多少電荷</td></tr>
+</tbody></table>
+<p class="why"><b>白話：</b>閘極 + 氧化層 + 通道就是一個平行板電容。給它超過 V<sub>t</sub> 的電壓，
+它就在下面存一層電荷。<b>氧化層越薄（t<sub>ox</sub> 小）→ 電容越大 → 同樣電壓吸來越多電荷 → 電流越大。</b>
+這是縮小 t<sub>ox</sub> 的動機 —— 但階段 3 說過，它同時讓 HCI 惡化。</p>
+</div>
+
+<div class="fx">
+<div class="big">I<sub>D</sub> <span class="op">=</span> (W/L) <span class="op">·</span> µ C<sub>ox</sub>
+<span class="op">[</span> ( V<sub>G</sub> − V<sub>t</sub> ) V<sub>D</sub> <span class="op">−</span> V<sub>D</sub>²/2 <span class="op">]</span></div>
+<p class="why"><b>這是線性區（三極管區）的電流。</b>怎麼來的？沿通道每一點的電荷是
+Q(y) = C<sub>ox</sub>(V<sub>G</sub> − V<sub>t</sub> − V(y))，因為通道電位 V(y) 從源極的 0 升到汲極的 V<sub>D</sub>，
+<b>越靠近汲極，閘極對通道的「有效驅動」越弱、電荷越少</b>。沿通道積分就得到這條式子。
+<br>V<sub>D</sub> 很小時 V<sub>D</sub>²/2 可以忽略 → I<sub>D</sub> ≈ (W/L)µC<sub>ox</sub>V<sub>gt</sub>·V<sub>D</sub>，
+<b>電流正比於 V<sub>D</sub>，元件就像一個電阻</b>。這就是 R<sub>on</sub> 的由來。</p>
+</div>
+
+<div class="fx">
+<div class="big">V<sub>D</sub> <span class="op">=</span> V<sub>G</sub> − V<sub>t</sub> &nbsp;&nbsp;<span class="op">⟹</span>&nbsp;&nbsp;
+汲極端電荷歸零 &nbsp;<span class="op">⟹</span>&nbsp; <b>夾止（pinch-off）</b></div>
+<p class="why"><b>這是整個 HCI 故事的起點。</b>把 V<sub>D</sub> 一直加大，汲極端的有效驅動
+V<sub>G</sub> − V<sub>t</sub> − V(y) 會先歸零。那一點之後通道就沒有反轉層了 —— 這就是階段 2 步驟 2 看到的夾止。
+<br>再加更多電壓，<b>多出來的部分全部落在夾止區這一小段上</b>。強電場、熱載子、HCI，全都從這裡開始。
+<br>長通道時 V<sub>dsat</sub> = V<sub>G</sub> − V<sub>t</sub>。飽和電流則是把上式代回去：
+I<sub>D,sat</sub> = (W/2L)·µC<sub>ox</sub>·(V<sub>G</sub>−V<sub>t</sub>)²。</p>
+</div>
+
+<div class="fx">
+<div class="big">V<sub>dsat</sub> <span class="op">=</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 8px">V<sub>gt</sub> · E<sub>sat</sub>L</span>
+<span style="display:block;padding:0 8px">V<sub>gt</sub> + E<sub>sat</sub>L</span></span>
+&nbsp;&nbsp;<span class="op">,</span>&nbsp;&nbsp; E<sub>sat</sub> <span class="op">=</span> 2v<sub>sat</sub> / µ</div>
+<table class="symtab"><tbody>
+<tr><td>v<sub>sat</sub></td><td>飽和速度</td><td>≈ 1 × 10⁷ cm/s，電子跑不過的上限</td></tr>
+<tr><td>E<sub>sat</sub></td><td>速度飽和的臨界電場</td><td>超過它，v = µE 就不成立了</td></tr>
+</tbody></table>
+<p class="why"><b>為什麼需要這條修正？</b>因為 L0 的 v = µE 假設速度可以無限上升，但實際上電子最快只能跑到 v<sub>sat</sub>。
+短通道元件很容易就超過 E<sub>sat</sub>，這時 <b>V<sub>dsat</sub> 會比 V<sub>G</sub>−V<sub>t</sub> 小很多</b>，
+夾止提早發生，夾止區的壓降 V<sub>D</sub>−V<sub>dsat</sub> 就更大 —— HCI 更嚴重。
+<br>兩個極限值得記：L 很長時 E<sub>sat</sub>L ≫ V<sub>gt</sub>，V<sub>dsat</sub> → V<sub>gt</sub>（回到長通道結果）；
+L 很短時 V<sub>dsat</sub> → E<sub>sat</sub>L，<b>與 V<sub>G</sub> 幾乎無關</b>。</p>
+</div>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 4 / 6 · Formula Ladder</p>
+<h1>Climbing from I = qnvA to the damage model</h1>
+<p class="lede">This page deliberately <b>starts from the most basic current equation</b>. Each level builds on the one before,
+and every equation comes with a symbol table, a plain-language explanation, and a worked example. Already comfortable with a level? Skip straight past it.</p>
+
+<div class="tldr"><div class="t">Four rungs</div>
+<p style="margin:0">L0 what current is → L1 the MOSFET's current → L2 the field at the drain → L3 the damage model.
+<b>Every term in L3 is just L0–L2 combined together.</b></p></div>
+
+<div class="rungs">
+  <div class="rung"><div class="n" style="color:var(--gtext)">L0 · Warm-up</div>
+    <div class="t">What current is</div><div class="d">I = qnvA, v = µE. High-school to intro college level</div></div>
+  <div class="rung"><div class="n" style="color:var(--e)">L1 · Basics</div>
+    <div class="t">The MOSFET's current</div><div class="d">Linear region, saturation, V<sub>dsat</sub>. Undergraduate electronics</div></div>
+  <div class="rung"><div class="n" style="color:var(--warn)">L2 · Intermediate</div>
+    <div class="t">The field at the drain</div><div class="d">l, E(y), E<sub>m</sub>. A recap of Stage 3</div></div>
+  <div class="rung"><div class="n" style="color:var(--h)">L3 · Destination</div>
+    <div class="t">The damage model</div><div class="d">λ(T), I<sub>sub</sub>, N<sub>it</sub>, m, E<sub>a</sub></div></div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l0">L0 · Warm-up</div>
+<h2>What current actually is</h2>
+<p>Every semiconductor current equation is a variation on the same idea: <b>current = how much charge × how fast it moves</b>.</p>
+
+<div class="fx">
+<div class="big">I <span class="op">=</span> q <span class="op">·</span> n <span class="op">·</span> v <span class="op">·</span> A</div>
+<table class="symtab"><tbody>
+<tr><td>I</td><td>Current</td><td>A (amperes)</td></tr>
+<tr><td>q</td><td>Elementary charge</td><td>1.6 × 10⁻¹⁹ C</td></tr>
+<tr><td>n</td><td>Carrier density</td><td>electrons per cubic centimeter</td></tr>
+<tr><td>v</td><td>Drift velocity</td><td>how fast electrons move on average</td></tr>
+<tr><td>A</td><td>Cross-sectional area</td><td>the area current flows through</td></tr>
+</tbody></table>
+<p class="why"><b>Plain language:</b> flow rate in a pipe = water concentration × flow speed × pipe cross-section. Current is exactly the same idea.</p>
+</div>
+
+<div class="fx">
+<div class="big">v <span class="op">=</span> µ <span class="op">·</span> E</div>
+<table class="symtab"><tbody>
+<tr><td>µ</td><td>Mobility</td><td>cm²/V·s — "how fast the same field can push"</td></tr>
+<tr><td>E</td><td>Electric field</td><td>V/cm</td></tr>
+</tbody></table>
+<p class="why"><b>Plain language:</b> the field pushes electrons, but they keep getting knocked around by the lattice (the scattering from Stage 1),
+so they don't keep accelerating forever — they settle into a steady average speed. µ is the proportionality constant that converts "push" into "speed."
+<br><b>Combining both equations:</b> I = q·n·µ·E·A — the microscopic version of Ohm's law.
+<b style="color:var(--h)">Notice the last term: current is proportional to the field. That breaks down at high field</b> — see the last box in L1.</p>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l1">L1 · Basics</div>
+<h2>The MOSFET's current</h2>
+<p>A MOSFET just drops the ideas above into a specific geometry: carriers get pulled to the surface by the gate, forming a thin channel.
+So there are two questions to ask: <b>how much charge does the gate pull in? How fast does the field push it along?</b></p>
+
+<div class="fx">
+<div class="big">Q<sub>inv</sub> <span class="op">=</span> C<sub>ox</sub> <span class="op">·</span> ( V<sub>G</sub> <span class="op">−</span> V<sub>t</sub> )
+&nbsp;&nbsp;<span class="op">,</span>&nbsp;&nbsp; C<sub>ox</sub> <span class="op">=</span> ε<sub>ox</sub> / t<sub>ox</sub></div>
+<table class="symtab"><tbody>
+<tr><td>Q<sub>inv</sub></td><td>Inversion-layer charge density</td><td>C/cm², how much charge is pulled in per unit area</td></tr>
+<tr><td>C<sub>ox</sub></td><td>Gate oxide capacitance</td><td>F/cm²</td></tr>
+<tr><td>V<sub>t</sub></td><td>Threshold voltage</td><td>the gate voltage needed to start forming a channel</td></tr>
+<tr><td>V<sub>G</sub> − V<sub>t</sub></td><td>Overdrive voltage V<sub>gt</sub></td><td>how far past threshold — sets how much charge gets pulled in</td></tr>
+</tbody></table>
+<p class="why"><b>Plain language:</b> gate + oxide + channel is just a parallel-plate capacitor. Apply a voltage above V<sub>t</sub>
+and it stores a layer of charge underneath. <b>Thinner oxide (smaller t<sub>ox</sub>) → higher capacitance → more charge pulled in at the same voltage → more current.</b>
+That's the motivation for shrinking t<sub>ox</sub> — but as Stage 3 showed, it also makes HCI worse.</p>
+</div>
+
+<div class="fx">
+<div class="big">I<sub>D</sub> <span class="op">=</span> (W/L) <span class="op">·</span> µ C<sub>ox</sub>
+<span class="op">[</span> ( V<sub>G</sub> − V<sub>t</sub> ) V<sub>D</sub> <span class="op">−</span> V<sub>D</sub>²/2 <span class="op">]</span></div>
+<p class="why"><b>This is the current in the linear (triode) region.</b> Where does it come from? The charge at each point along the channel is
+Q(y) = C<sub>ox</sub>(V<sub>G</sub> − V<sub>t</sub> − V(y)); since the channel potential V(y) rises from 0 at the source to V<sub>D</sub> at the drain,
+<b>the closer to the drain, the weaker the gate's "effective drive" on the channel, and the less charge there is</b>. Integrating along the channel gives this equation.
+<br>When V<sub>D</sub> is small, V<sub>D</sub>²/2 is negligible → I<sub>D</sub> ≈ (W/L)µC<sub>ox</sub>V<sub>gt</sub>·V<sub>D</sub>,
+<b>current proportional to V<sub>D</sub> — the device behaves like a resistor</b>. That's where R<sub>on</sub> comes from.</p>
+</div>
+
+<div class="fx">
+<div class="big">V<sub>D</sub> <span class="op">=</span> V<sub>G</sub> − V<sub>t</sub> &nbsp;&nbsp;<span class="op">⟹</span>&nbsp;&nbsp;
+charge at the drain hits zero &nbsp;<span class="op">⟹</span>&nbsp; <b>pinch-off</b></div>
+<p class="why"><b>This is where the whole HCI story begins.</b> Keep raising V<sub>D</sub>, and the effective drive at the drain,
+V<sub>G</sub> − V<sub>t</sub> − V(y), hits zero first. Past that point, there's no inversion layer left — the pinch-off you saw in Stage 2, Step 2.
+<br>Add still more voltage, and <b>all of the extra drops across this one short pinch-off stretch</b>. Strong field, hot carriers, HCI — it all starts right here.
+<br>For a long channel, V<sub>dsat</sub> = V<sub>G</sub> − V<sub>t</sub>. The saturation current comes from plugging that back in:
+I<sub>D,sat</sub> = (W/2L)·µC<sub>ox</sub>·(V<sub>G</sub>−V<sub>t</sub>)².</p>
+</div>
+
+<div class="fx">
+<div class="big">V<sub>dsat</sub> <span class="op">=</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 8px">V<sub>gt</sub> · E<sub>sat</sub>L</span>
+<span style="display:block;padding:0 8px">V<sub>gt</sub> + E<sub>sat</sub>L</span></span>
+&nbsp;&nbsp;<span class="op">,</span>&nbsp;&nbsp; E<sub>sat</sub> <span class="op">=</span> 2v<sub>sat</sub> / µ</div>
+<table class="symtab"><tbody>
+<tr><td>v<sub>sat</sub></td><td>Saturation velocity</td><td>≈ 1 × 10⁷ cm/s, the hard ceiling on electron speed</td></tr>
+<tr><td>E<sub>sat</sub></td><td>Velocity-saturation critical field</td><td>past this, v = µE no longer holds</td></tr>
+</tbody></table>
+<p class="why"><b>Why is this correction needed?</b> Because L0's v = µE assumes speed can rise without limit, but electrons actually top out at v<sub>sat</sub>.
+Short-channel devices easily exceed E<sub>sat</sub>, and when they do, <b>V<sub>dsat</sub> ends up much smaller than V<sub>G</sub>−V<sub>t</sub></b>,
+pinch-off happens earlier, and the pinch-off voltage drop V<sub>D</sub>−V<sub>dsat</sub> ends up larger — HCI gets worse.
+<br>Two limits worth remembering: for a long L, E<sub>sat</sub>L ≫ V<sub>gt</sub>, so V<sub>dsat</sub> → V<sub>gt</sub> (back to the long-channel result);
+for a short L, V<sub>dsat</sub> → E<sub>sat</sub>L, <b>almost independent of V<sub>G</sub></b>.</p>
+</div>
+</div>
+
+<div class="card">
+<h3 style="margin-top:0"><span lang="zh-Hant">動手看：I<sub>sub</sub>–V<sub>D</sub> 與 V<sub>dsat</sub></span><span lang="en">Try it: I<sub>D</sub>–V<sub>D</sub> and V<sub>dsat</sub></span></h3>
+<p class="cap"><span lang="zh-Hant">虛線是 V<sub>dsat</sub> 的軌跡 —— 它左邊是線性區（式 1.3），右邊是飽和區。
+把 L 調短，看虛線怎麼往左移、飽和來得多早。</span><span lang="en">The dashed line traces V<sub>dsat</sub> — to its left is the linear region (Eq. 1.3), to its right is saturation.
+Shorten L and watch the dashed line move left, saturating earlier.</span></p>
+<div class="ctrls">
+  <div class="ctrl"><label for="rL1"><span lang="zh-Hant">通道長度 L</span><span lang="en">Channel length L</span></label>
+    <div class="row"><input type="range" id="rL1" min="-1.52" max="0.3" step="0.005" value="0">
+    <span class="val" id="vL1">—</span></div></div>
+  <div class="ctrl"><label for="rTox1"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+    <div class="row"><input type="range" id="rTox1" min="0.18" max="1.78" step="0.005" value="1.301">
+    <span class="val" id="vTox1">—</span></div></div>
+</div>
+<div class="legend" id="legIV" style="margin-top:12px"></div>
+<div id="cIV"></div>
+</div>
+
+<div lang="zh-Hant">
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l2">L2 · 進階</div>
+<h2>汲極端的電場（階段 3 的複習）</h2>
+<p>知道夾止區的壓降是 V<sub>D</sub> − V<sub>dsat</sub> 之後，還缺一件事：<b>它被擠在多短的距離裡？</b></p>
+
+<div class="fx">
+<div class="big">l <span class="op">=</span> √( 3 <span class="op">·</span> t<sub>ox</sub> <span class="op">·</span> x<sub>j</sub> )</div>
+<p class="why"><b>特徵長度。</b>電力線往閘極與基板漏出去的尺度。3 來自 ε<sub>Si</sub>/ε<sub>ox</sub> ≈ 3。
+<b>式子裡沒有 L</b> —— 這是階段 3 的重點。</p>
+<div class="plug" id="pl2a"></div>
+</div>
+
+<div class="fx">
+<div class="big">E<sub>m</sub> <span class="op">≈</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 8px">V<sub>D</sub> − V<sub>dsat</sub></span>
+<span style="display:block;padding:0 8px">l</span></span></div>
+<p class="why"><b>峰值電場 = 壓降 ÷ 特徵長度。</b>就這麼簡單。
+（完整式是 E<sub>m</sub> = √(E<sub>sat</sub>² + ((V<sub>D</sub>−V<sub>dsat</sub>)/l)²)，但通常第二項遠大於第一項。）
+<br>注意這裡怎麼把 L1 接上來：<b>V<sub>dsat</sub> 來自 L1 的元件公式，l 來自幾何。兩個一除就是電場。</b></p>
+<div class="plug" id="pl2b"></div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l3">L3 · 目標</div>
+<h2>損傷模型</h2>
+<p>有了 E<sub>m</sub>，剩下的全部是階段 1 那個「qλE 對上能量門檻」的量化版。</p>
+
+<div class="fx">
+<div class="big">λ(T) <span class="op">=</span> λ<sub>0</sub> <span class="op">·</span> tanh( E<sub>p</sub> / 2kT )</div>
+<p class="why"><b>整個模型裡溫度唯一的入口。</b>λ<sub>0</sub> ≈ 10.4 nm，E<sub>p</sub> ≈ 0.063 eV（矽的光學聲子能量）。
+高溫 → 聲子多 → 電子容易被撞 → λ 短。</p>
+<div class="plug" id="pl3a"></div>
+</div>
+
+<div class="fx">
+<div class="big">B <span class="op">=</span> φ / (q<span class="op">·</span>λ)</div>
+<p class="why"><b>把「能量門檻」翻譯成「電場門檻」。</b>階段 1 的三道門檻各自對應一個 B：
+<br>B<sub>i</sub>（游離，φ<sub>i</sub>=1.3 eV）· B<sub>g</sub>（進閘極，φ<sub>b</sub>=3.1 eV）· B<sub>it</sub>（打斷 Si–H，φ<sub>it</sub>=3.7 eV）。
+<br>B 越大代表越難發生。因為 B ∝ 1/λ，<b>溫度升高會讓三個 B 一起變大</b> —— 這就是負活化能的來源。</p>
+<div class="plug" id="pl3b"></div>
+</div>
+
+<div class="fx">
+<div class="big">α<sub>i</sub>(E) <span class="op">=</span> A<sub>i</sub> <span class="op">·</span> e<sup>−B<sub>i</sub>/E</sup>
+&nbsp;&nbsp;<span class="op">⟹</span>&nbsp;&nbsp;
+I<sub>sub</sub>/I<sub>D</sub> <span class="op">=</span> ∫<sub>0</sub><sup>ΔL</sup> α<sub>i</sub>(E(y)) dy</div>
+<p class="why"><b>α<sub>i</sub> = 電子每走 1 cm 平均造成幾次游離。</b>那個 e<sup>−B/E</sup> 就是階段 1 賽道動畫裡的「運氣」。
+沿高場區積分，就得到可以從外部量到的 I<sub>sub</sub>/I<sub>D</sub>。
+<br>因為 α<sub>i</sub> 隨 E 指數上升、而 E(y) 又是 cosh，<b>這個積分幾乎全由最後幾十奈米貢獻</b> —— 損傷局部化的數學來源。</p>
+<div class="plug" id="pl3c"></div>
+</div>
+
+<div class="fx">
+<div class="big">dN<sub>it</sub>/dt <span class="op">∝</span> ( I<sub>D</sub>/W ) <span class="op">·</span> e<sup>−B<sub>it</sub>/E<sub>m</sub></sup></div>
+<p class="why"><b>真正在乎的東西。</b>「有多少電子在嘗試」（I<sub>D</sub>/W）×「每個成功打斷 Si–H 的機率」（指數項）。
+前者線性、後者指數 —— 所以後者主導一切。這也是階段 1 那句「HCI 是電場問題不是電流問題」的數學表達。</p>
+</div>
+
+<h3>把兩條式子相除，m 就掉出來了</h3>
+<div class="card">
+<div class="plug" style="background:none;padding:0;font-size:16px;line-height:2.3">
+ln( I<sub>sub</sub>/I<sub>D</sub> ) = −B<sub>i</sub>/E<sub>m</sub> + 常數<br>
+ln( dN<sub>it</sub>/dt ÷ (I<sub>D</sub>/W) ) = −B<sub>it</sub>/E<sub>m</sub> + 常數<br>
+<span style="color:var(--ink2)">兩式相除，E<sub>m</sub> 消掉 ⟹</span>
+&nbsp; dN<sub>it</sub>/dt ∝ (I<sub>D</sub>/W) · ( I<sub>sub</sub>/I<sub>D</sub> )<sup>B<sub>it</sub>/B<sub>i</sub></sup>
+</div>
+<div class="key" style="margin:14px 0 0"><div class="t">這就是教科書上的 Age function</div>
+<p style="margin:0">而那個「大約等於 3 的經驗指數」m，其實是
+<b>m = B<sub>it</sub>/B<sub>i</sub> = (φ<sub>it</sub>/qλ) ÷ (φ<sub>i</sub>/qλ) = φ<sub>it</sub>/φ<sub>i</sub>
+= <span class="num" id="mval">—</span></b>。λ 完全消掉了。
+<br><br><b>m 是兩個能量門檻的比值，不是配出來的參數。</b>
+這也解釋了為什麼不同文獻的 m 落在 2.5–4 之間 —— 因為大家用的 φ 值不一樣。</p></div>
+</div>
+
+<h3>最後一步：活化能為什麼是負的</h3>
+<div class="fx">
+<div class="big">dN<sub>it</sub>/dt <span class="op">∝</span> (I<sub>D</sub>/W) <span class="op">·</span>
+exp<span class="op">[</span> − φ<sub>it</sub> / ( q <span class="op">·</span> λ(T) <span class="op">·</span> E<sub>m</sub> ) <span class="op">]</span></div>
+<p class="why">把 λ(T) 代進去，溫度的角色就一目了然：<b>T ↑ → λ ↓ → 分母變小 → 指數的負值變大 → 損傷率下降。</b>
+寫成 Arrhenius 形式 rate ∝ e<sup>−E<sub>a</sub>/kT</sup>，得到的 E<sub>a</sub> 就是負的。</p>
+</div>
+</div>
+
+<div lang="en">
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l2">L2 · Intermediate</div>
+<h2>The field at the drain (a recap of Stage 3)</h2>
+<p>Now that you know the pinch-off region's voltage drop is V<sub>D</sub> − V<sub>dsat</sub>, one thing is still missing: <b>how short a distance is it squeezed into?</b></p>
+
+<div class="fx">
+<div class="big">l <span class="op">=</span> √( 3 <span class="op">·</span> t<sub>ox</sub> <span class="op">·</span> x<sub>j</sub> )</div>
+<p class="why"><b>Characteristic length.</b> The length scale over which field lines leak into the gate and substrate. The 3 comes from ε<sub>Si</sub>/ε<sub>ox</sub> ≈ 3.
+<b>There's no L in the equation</b> — the whole point of Stage 3.</p>
+<div class="plug" id="pl2a-en"></div>
+</div>
+
+<div class="fx">
+<div class="big">E<sub>m</sub> <span class="op">≈</span>
+<span style="display:inline-block;text-align:center;vertical-align:middle">
+<span style="display:block;border-bottom:1.5px solid currentColor;padding:0 8px">V<sub>D</sub> − V<sub>dsat</sub></span>
+<span style="display:block;padding:0 8px">l</span></span></div>
+<p class="why"><b>Peak field = voltage drop ÷ characteristic length.</b> That simple.
+(The full form is E<sub>m</sub> = √(E<sub>sat</sub>² + ((V<sub>D</sub>−V<sub>dsat</sub>)/l)²), but the second term usually dominates.)
+<br>Notice how this connects back to L1: <b>V<sub>dsat</sub> comes from L1's device equations, l comes from geometry. Divide one by the other and you get the field.</b></p>
+<div class="plug" id="pl2b-en"></div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--grid);margin:30px 0">
+<div class="lvl l3">L3 · Destination</div>
+<h2>The damage model</h2>
+<p>With E<sub>m</sub> in hand, everything left is just the quantitative version of Stage 1's "qλE versus an energy threshold."</p>
+
+<div class="fx">
+<div class="big">λ(T) <span class="op">=</span> λ<sub>0</sub> <span class="op">·</span> tanh( E<sub>p</sub> / 2kT )</div>
+<p class="why"><b>The only place temperature enters the whole model.</b> λ<sub>0</sub> ≈ 10.4 nm, E<sub>p</sub> ≈ 0.063 eV (silicon's optical phonon energy).
+Higher temperature → more phonons → electrons scatter more easily → shorter λ.</p>
+<div class="plug" id="pl3a-en"></div>
+</div>
+
+<div class="fx">
+<div class="big">B <span class="op">=</span> φ / (q<span class="op">·</span>λ)</div>
+<p class="why"><b>Translating an "energy threshold" into a "field threshold."</b> Stage 1's three thresholds each get their own B:
+<br>B<sub>i</sub> (ionization, φ<sub>i</sub>=1.3 eV) · B<sub>g</sub> (into the gate, φ<sub>b</sub>=3.1 eV) · B<sub>it</sub> (breaks Si–H, φ<sub>it</sub>=3.7 eV).
+<br>A larger B means it's harder to happen. Since B ∝ 1/λ, <b>raising temperature makes all three B's grow together</b> — the origin of the negative activation energy.</p>
+<div class="plug" id="pl3b-en"></div>
+</div>
+
+<div class="fx">
+<div class="big">α<sub>i</sub>(E) <span class="op">=</span> A<sub>i</sub> <span class="op">·</span> e<sup>−B<sub>i</sub>/E</sup>
+&nbsp;&nbsp;<span class="op">⟹</span>&nbsp;&nbsp;
+I<sub>sub</sub>/I<sub>D</sub> <span class="op">=</span> ∫<sub>0</sub><sup>ΔL</sup> α<sub>i</sub>(E(y)) dy</div>
+<p class="why"><b>α<sub>i</sub> = the average number of ionization events an electron causes per cm traveled.</b> That e<sup>−B/E</sup> is exactly the "luck" from Stage 1's track animation.
+Integrating along the high-field region gives the externally measurable I<sub>sub</sub>/I<sub>D</sub>.
+<br>Because α<sub>i</sub> rises exponentially with E, and E(y) is itself a cosh, <b>this integral is dominated almost entirely by the last few tens of nanometers</b> — the mathematical source of the damage's locality.</p>
+<div class="plug" id="pl3c-en"></div>
+</div>
+
+<div class="fx">
+<div class="big">dN<sub>it</sub>/dt <span class="op">∝</span> ( I<sub>D</sub>/W ) <span class="op">·</span> e<sup>−B<sub>it</sub>/E<sub>m</sub></sup></div>
+<p class="why"><b>The thing you actually care about.</b> "How many electrons are attempting it" (I<sub>D</sub>/W) × "the probability each one successfully breaks a Si–H bond" (the exponential term).
+The former is linear, the latter exponential — so the exponential dominates everything. This is the mathematical expression of Stage 1's "HCI is a field problem, not a current problem."</p>
+</div>
+
+<h3>Divide the two equations, and m falls right out</h3>
+<div class="card">
+<div class="plug" style="background:none;padding:0;font-size:16px;line-height:2.3">
+ln( I<sub>sub</sub>/I<sub>D</sub> ) = −B<sub>i</sub>/E<sub>m</sub> + constant<br>
+ln( dN<sub>it</sub>/dt ÷ (I<sub>D</sub>/W) ) = −B<sub>it</sub>/E<sub>m</sub> + constant<br>
+<span style="color:var(--ink2)">Divide the two equations, E<sub>m</sub> cancels out ⟹</span>
+&nbsp; dN<sub>it</sub>/dt ∝ (I<sub>D</sub>/W) · ( I<sub>sub</sub>/I<sub>D</sub> )<sup>B<sub>it</sub>/B<sub>i</sub></sup>
+</div>
+<div class="key" style="margin:14px 0 0"><div class="t">This is the textbook Age function</div>
+<p style="margin:0">And that "empirical exponent roughly equal to 3," m, turns out to be
+<b>m = B<sub>it</sub>/B<sub>i</sub> = (φ<sub>it</sub>/qλ) ÷ (φ<sub>i</sub>/qλ) = φ<sub>it</sub>/φ<sub>i</sub>
+= <span class="num" id="mval-en">—</span></b>. λ cancels out completely.
+<br><br><b>m is the ratio of two energy thresholds, not a fitted parameter.</b>
+That also explains why different papers report m somewhere between 2.5 and 4 — everyone uses slightly different φ values.</p></div>
+</div>
+
+<h3>Last step: why the activation energy is negative</h3>
+<div class="fx">
+<div class="big">dN<sub>it</sub>/dt <span class="op">∝</span> (I<sub>D</sub>/W) <span class="op">·</span>
+exp<span class="op">[</span> − φ<sub>it</sub> / ( q <span class="op">·</span> λ(T) <span class="op">·</span> E<sub>m</sub> ) <span class="op">]</span></div>
+<p class="why">Plug in λ(T), and temperature's role becomes obvious: <b>T ↑ → λ ↓ → the denominator shrinks → the negative exponent grows larger → the damage rate falls.</b>
+Written in Arrhenius form, rate ∝ e<sup>−E<sub>a</sub>/kT</sup>, the resulting E<sub>a</sub> comes out negative.</p>
+</div>
+</div>
+
+<div class="card">
+  <div class="ctrls">
+    <div class="ctrl"><label for="rVD4"><span lang="zh-Hant">汲極電壓 V<sub>D</sub></span><span lang="en">Drain voltage V<sub>D</sub></span></label>
+      <div class="row"><input type="range" id="rVD4" min="1.5" max="10" step="0.05" value="5">
+      <span class="val" id="vVD4">—</span></div></div>
+    <div class="ctrl"><label for="rTox4"><span lang="zh-Hant">氧化層厚度 t<sub>ox</sub></span><span lang="en">Oxide thickness t<sub>ox</sub></span></label>
+      <div class="row"><input type="range" id="rTox4" min="0.18" max="1.78" step="0.005" value="1.301">
+      <span class="val" id="vTox4">—</span></div></div>
+  </div>
+  <div class="legend" id="legA" style="margin-top:12px"></div>
+  <div id="cA4"></div>
+  <p class="note" id="a4note" style="margin-top:8px"></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>整條鏈的關係圖</h2>
+<table>
+<thead><tr><th class="nw">級</th><th class="nw">式子</th><th class="nw">輸入</th><th class="nw">輸出</th><th>一句話</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>L0</b></td><td class="nw">I = qnvA · v = µE</td><td class="nw">E</td><td class="nw">I</td><td>所有電流公式的祖先</td></tr>
+<tr><td class="nw"><b>L1</b></td><td class="nw">Q<sub>inv</sub>、I<sub>D</sub>、V<sub>dsat</sub></td><td class="nw">V<sub>G</sub>, V<sub>D</sub>, t<sub>ox</sub>, L</td>
+  <td class="nw">I<sub>D</sub>, V<sub>dsat</sub></td><td>把 L0 套進 MOSFET 幾何。<b>V<sub>dsat</sub> 是接到 HCI 的橋</b></td></tr>
+<tr><td class="nw"><b>L2</b></td><td class="nw">l、E<sub>m</sub></td><td class="nw">t<sub>ox</sub>, x<sub>j</sub>, V<sub>D</sub>−V<sub>dsat</sub></td>
+  <td class="nw">E<sub>m</sub></td><td>壓降 ÷ 特徵長度</td></tr>
+<tr><td class="nw"><b>L3</b></td><td class="nw">λ、B、α<sub>i</sub>、N<sub>it</sub></td><td class="nw">E<sub>m</sub>, T, φ</td>
+  <td class="nw">I<sub>sub</sub>, 損傷率, m, E<sub>a</sub></td><td>階段 1 的「qλE 對門檻」的量化版</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>檢查你懂了嗎</h3><details><summary>式 1.3 裡那個 −V<sub>D</sub>²/2 是哪來的？</summary><div class="a">來自「通道電位沿路上升」。沿通道每一點的反轉層電荷是 Q(y) = C<sub>ox</sub>(V<sub>G</sub> − V<sub>t</sub> − V(y))，越靠近汲極、V(y) 越高、電荷越少。把 Q(y) 沿通道積分，第一項給出 V<sub>gt</sub>V<sub>D</sub>，電荷遞減的修正就給出 −V<sub>D</sub>²/2。<br><br>把 V<sub>D</sub> 一直加大到 V<sub>gt</sub>，這兩項剛好抵消一半 —— 汲極端的電荷正好歸零，<b>那就是夾止</b>。</div></details><details><summary>為什麼短通道元件的 V<sub>dsat</sub> 幾乎與 V<sub>G</sub> 無關？</summary><div class="a">看式 1.6：V<sub>dsat</sub> = V<sub>gt</sub>·E<sub>sat</sub>L/(V<sub>gt</sub> + E<sub>sat</sub>L)。當 L 很短，E<sub>sat</sub>L ≪ V<sub>gt</sub>，分母被 V<sub>gt</sub> 主導，整個式子 → E<sub>sat</sub>L。<br><br>物理上：短通道時電子早在通道中段就已經跑到速度上限，再加閘壓也快不起來。<b>後果：夾止區的壓降 V<sub>D</sub>−V<sub>dsat</sub> 幾乎等於 V<sub>D</sub>，HCI 特別嚴重。</b></div></details><details><summary>L0 說 v = µE，但 L1 最後又說這條會壞掉。到底哪個對？</summary><div class="a">兩個都對，只是適用範圍不同。E ≪ E<sub>sat</sub> 時 v = µE 成立（低場）；E 接近或超過 E<sub>sat</sub> 時速度飽和在 v<sub>sat</sub>，v = µE 會高估。<br><br>這是很好的一課：<b>每條公式都有適用範圍</b>。式 1.6 的存在就是為了把這件事縫進 MOSFET 模型裡。同樣地，L2 的 pseudo-2D 假設「高場區 ≪ 通道長度」，ΔL/L 太大時也會失準。</div></details><details><summary>為什麼 m 的推導裡 λ 會消掉？這代表什麼？</summary><div class="a">因為 B<sub>i</sub> 和 B<sub>it</sub> 都正比於 1/λ，相除時 λ 就約掉了。<br><br>意義很重要：<b>m 與溫度無關。</b>溫度會改變 I<sub>sub</sub> 也會改變損傷率，但「兩者之間的冪次關係」不會變。所以你可以在一個溫度萃取 m，用在其他溫度 —— 這正是 Age function 在工程上好用的原因。</div></details><details><summary>如果我只記得一條式子，該記哪條？</summary><div class="a"><b>E<sub>m</sub> ≈ (V<sub>D</sub> − V<sub>dsat</sub>) / l</b>。<br><br>它同時把三件事接在一起：左邊 V<sub>dsat</sub> 來自 L1 的元件物理（跟 V<sub>G</sub>、L、µ 有關）、分母 l 來自製程幾何（t<sub>ox</sub>、x<sub>j</sub>）、而它的輸出 E<sub>m</sub> 是 L3 每一條指數式的分母。把這條記住，你就能對任何參數變化做出正確的定性判斷。</div></details></div>
+<div class="pager"><a class="prev" href="hci-3-model.html"><div class="d">← 上一課 · 階段 3</div><div class="t">物理模型</div></a><a class="next" href="hci-5-spec.html"><div class="d">下一課 · 階段 5 →</div><div class="t">HCI 規格</div></a></div>
+<div class="foot"><b>模型範圍</b>：橫向電場採 Ko / Hu 的 pseudo-2D 解，游離係數採 Chynoweth 形式，λ(T) 採 Crowell–Sze 的聲子散射修正。目的是把因果鏈可視化，<b>不是校準過的元件模型，也不能取代 TCAD</b>；GIDL、基板偏壓、self-heating、2D 摻雜分布、以及先進節點的冷載子（MVE）機制均未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤，你輸入的參數不會離開這台裝置。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<h2>The whole chain, at a glance</h2>
+<table>
+<thead><tr><th class="nw">Level</th><th class="nw">Equations</th><th class="nw">Inputs</th><th class="nw">Outputs</th><th>In one line</th></tr></thead>
+<tbody>
+<tr><td class="nw"><b>L0</b></td><td class="nw">I = qnvA · v = µE</td><td class="nw">E</td><td class="nw">I</td><td>The ancestor of every current equation</td></tr>
+<tr><td class="nw"><b>L1</b></td><td class="nw">Q<sub>inv</sub>, I<sub>D</sub>, V<sub>dsat</sub></td><td class="nw">V<sub>G</sub>, V<sub>D</sub>, t<sub>ox</sub>, L</td>
+  <td class="nw">I<sub>D</sub>, V<sub>dsat</sub></td><td>Drops L0 into the MOSFET's geometry. <b>V<sub>dsat</sub> is the bridge to HCI</b></td></tr>
+<tr><td class="nw"><b>L2</b></td><td class="nw">l, E<sub>m</sub></td><td class="nw">t<sub>ox</sub>, x<sub>j</sub>, V<sub>D</sub>−V<sub>dsat</sub></td>
+  <td class="nw">E<sub>m</sub></td><td>Voltage drop ÷ characteristic length</td></tr>
+<tr><td class="nw"><b>L3</b></td><td class="nw">λ, B, α<sub>i</sub>, N<sub>it</sub></td><td class="nw">E<sub>m</sub>, T, φ</td>
+  <td class="nw">I<sub>sub</sub>, damage rate, m, E<sub>a</sub></td><td>The quantitative version of Stage 1's "qλE versus threshold"</td></tr>
+</tbody>
+</table>
+<div class="quiz"><h3>Check your understanding</h3><details><summary>Where does the −V<sub>D</sub>²/2 in Eq. 1.3 come from?</summary><div class="a">From "the channel potential rises along its length." The inversion-layer charge at each point along the channel is Q(y) = C<sub>ox</sub>(V<sub>G</sub> − V<sub>t</sub> − V(y)); the closer to the drain, the higher V(y) is, and the less charge there is. Integrating Q(y) along the channel, the first term gives V<sub>gt</sub>V<sub>D</sub>, and the correction for that decreasing charge gives −V<sub>D</sub>²/2.<br><br>Keep raising V<sub>D</sub> all the way to V<sub>gt</sub>, and these two terms exactly cancel by half — the charge at the drain hits exactly zero, <b>and that's pinch-off</b>.</div></details><details><summary>Why is a short-channel device's V<sub>dsat</sub> nearly independent of V<sub>G</sub>?</summary><div class="a">Look at Eq. 1.6: V<sub>dsat</sub> = V<sub>gt</sub>·E<sub>sat</sub>L/(V<sub>gt</sub> + E<sub>sat</sub>L). When L is short, E<sub>sat</sub>L ≪ V<sub>gt</sub>, the denominator is dominated by V<sub>gt</sub>, and the whole expression → E<sub>sat</sub>L.<br><br>Physically: in a short channel, electrons already hit their speed limit partway through the channel, so more gate voltage can't push them any faster. <b>Consequence: the pinch-off voltage drop V<sub>D</sub>−V<sub>dsat</sub> ends up nearly equal to V<sub>D</sub>, and HCI gets especially severe.</b></div></details><details><summary>L0 says v = µE, but L1 then says this breaks down. Which one is right?</summary><div class="a">Both are, they just apply in different ranges. When E ≪ E<sub>sat</sub>, v = µE holds (low field); when E is near or above E<sub>sat</sub>, velocity saturates at v<sub>sat</sub>, and v = µE overestimates it.<br><br>A good lesson here: <b>every equation has a range where it applies</b>. Eq. 1.6 exists specifically to stitch that fact into the MOSFET model. Likewise, L2's pseudo-2D model assumes "the high-field region ≪ the channel length," and it also breaks down when ΔL/L gets too large.</div></details><details><summary>Why does λ cancel out in the derivation of m — and what does that mean?</summary><div class="a">Because both B<sub>i</sub> and B<sub>it</sub> are proportional to 1/λ, so λ cancels when you divide one by the other.<br><br>The significance matters: <b>m is independent of temperature.</b> Temperature changes both I<sub>sub</sub> and the damage rate, but the "power-law relationship between the two" stays fixed. That means you can extract m at one temperature and use it at another — exactly why the Age function is so useful in practice.</div></details><details><summary>If I only remember one equation, which should it be?</summary><div class="a"><b>E<sub>m</sub> ≈ (V<sub>D</sub> − V<sub>dsat</sub>) / l</b>.<br><br>It ties three things together at once: V<sub>dsat</sub> on the left comes from L1's device physics (depends on V<sub>G</sub>, L, µ), the denominator l comes from process geometry (t<sub>ox</sub>, x<sub>j</sub>), and its output E<sub>m</sub> is the denominator in every one of L3's exponentials. Remember this one equation, and you can correctly reason qualitatively about the effect of any parameter change.</div></details></div>
+<div class="pager"><a class="prev" href="hci-3-model.html"><div class="d">← Previous · Stage 3</div><div class="t">Physical Model</div></a><a class="next" href="hci-5-spec.html"><div class="d">Next · Stage 5 →</div><div class="t">HCI Specs</div></a></div>
+<div class="foot"><b>Model scope</b>: the lateral field uses the Ko/Hu pseudo-2D solution, the ionization coefficient uses the Chynoweth form, and λ(T) uses the Crowell–Sze phonon-scattering correction. The goal is to visualize the causal chain — <b>this is not a calibrated device model and cannot substitute for TCAD</b>; GIDL, substrate bias, self-heating, 2D doping profiles, and advanced-node cold-carrier (MVE) mechanisms are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking; parameters you enter never leave this device. For education only, verify independently before relying on it.</div>
+</div>
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script src="hci_core_model.js"></script>
+  <script>
+(function(){
+var D={tox:20,xj:200,L:1.0,VD:5.0,VG:2.5,Tc:25,Vt0:0.7,W:10};
+var D1={L:1.0,tox:20};
+function mk(o){return model(Object.assign({},P,D,o||{}));}
+function mk1(o){return model(Object.assign({},P,D,{L:D1.L,tox:D1.tox},o||{}));}
+
+/* ---- L1 互動：ID-VD ---- */
+function drawIV(){
+  var W=1000,H=330,Mg={t:16,r:70,b:48,l:92},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var VDmax=6, VGs=[1.2,1.9,2.6,3.3,4.0], COL=['--seq1','--seq2','--seq3','--seq4','--seq5'];
+  var NX=200, curves=VGs.map(function(VG,i){
+    return {VG:VG,col:css(COL[i]),
+      pts:Array.from({length:NX+1},function(_,j){var v=VDmax*j/NX;return {x:v,y:mk1({VG:VG,VD:v}).ID};}),
+      vdsat:mk1({VG:VG,VD:VDmax}).Vdsat};});
+  var ymax=Math.max.apply(null,curves.map(function(c){return c.pts[NX].y;}))*1.08;
+  var X=function(v){return Mg.l+iw*v/VDmax;}, Y=function(v){return Mg.t+ih*(1-v/ymax);};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  ticks(0,ymax,5).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),fmtEng(v,'A',1),{ta:'end',db:'middle'}));});
+  ticks(0,VDmax,6).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+16,v.toFixed(0)+' V',{ta:'middle'}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-6,'V~D~ (V)',{ta:'middle',fs:12,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,L('I~D~','I~D~'),{ta:'middle',fs:12,fill:css('--ink2'),db:'middle',rot:-90}));
+  /* Vdsat 軌跡 */
+  var d2='';
+  for(var k=0;k<=60;k++){var VG=0.7+ (4.6-0.7)*k/60; var mm=mk1({VG:VG,VD:VDmax});
+    if(mm.Vdsat<=VDmax) d2+=(d2?'L':'M')+X(mm.Vdsat).toFixed(2)+' '+Y(Math.min(mm.ID,ymax)).toFixed(2);}
+  svg.appendChild(el('path',{d:d2,fill:'none',stroke:css('--h'),'stroke-width':2,'stroke-dasharray':'6 4'}));
+  var labs=[];
+  curves.forEach(function(c){
+    var d='';c.pts.forEach(function(q){d+=(d?'L':'M')+X(q.x).toFixed(2)+' '+Y(Math.min(q.y,ymax)).toFixed(2);});
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:c.col,'stroke-width':2.2}));
+    labs.push({y:Math.min(Math.max(Y(c.pts[NX].y),Mg.t+6),Mg.t+ih),VG:c.VG});
+    if(c.vdsat<VDmax) svg.appendChild(el('circle',{cx:X(c.vdsat),cy:Y(Math.min(mk1({VG:c.VG,VD:c.vdsat}).ID,ymax)),
+      r:4.5,fill:css('--h'),stroke:css('--surface'),'stroke-width':1.8}));
+  });
+  labs.sort(function(a,b){return a.y-b.y;});
+  for(var i=1;i<labs.length;i++) if(labs[i].y-labs[i-1].y<14) labs[i].y=labs[i-1].y+14;
+  labs.forEach(function(it){svg.appendChild(txt(Mg.l+iw+6,it.y,'V~G~='+it.VG,{db:'middle',fs:11,fill:css('--ink2')}));});
+  var mid=Math.floor(curves.length/2);
+  svg.appendChild(txt(Mg.l+iw*0.13,Mg.t+ih-14,L('線性區','Linear region'),{ta:'middle',fs:12,fw:700,fill:css('--ink2')}));
+  svg.appendChild(txt(Mg.l+iw*0.78,Mg.t+22,L('飽和區','Saturation region'),{ta:'middle',fs:12,fw:700,fill:css('--ink2')}));
+  $('cIV').innerHTML='';$('cIV').appendChild(svg);
+  var m1=mk1({VG:2.6,VD:VDmax});
+  $('legIV').innerHTML='<span><i class="sw" style="background:'+css('--seq4')+'"></i>'+L('I<sub>D</sub>–V<sub>D</sub>（不同 V<sub>G</sub>）','I<sub>D</sub>–V<sub>D</sub> (varying V<sub>G</sub>)')+'</span>'+
+    '<span style="color:'+css('--h')+'"><i class="sw" style="background:'+css('--h')+'"></i><span style="color:var(--ink2)">'+L('V<sub>dsat</sub> 軌跡（線性區 / 飽和區的分界）','V<sub>dsat</sub> trajectory (the linear/saturation boundary)')+'</span></span>'+
+    '<span style="color:var(--ink)">'+L('V<sub>G</sub>=2.6 V 時 V<sub>dsat</sub> = ','At V<sub>G</sub>=2.6 V, V<sub>dsat</sub> = ')+'<b>'+m1.Vdsat.toFixed(2)+' V</b>'+
+    L('（長通道近似值 V<sub>G</sub>−V<sub>t</sub> = '+(2.6-m1.Vt).toFixed(2)+' V）',' (long-channel approximation V<sub>G</sub>−V<sub>t</sub> = '+(2.6-m1.Vt).toFixed(2)+' V)')+'</span>';
+}
+
+/* ---- 代入示範 ---- */
+function plugs(){
+  var M=mk(); var n=function(v){return '<span class="num">'+v+'</span>';};
+  $('pl2a').innerHTML='<b>代入：</b>√( 3 × '+n(D.tox.toFixed(1)+' nm')+' × '+n(D.xj.toFixed(0)+' nm')+' ) = '+
+    n(fmtEng(M.l*1e-2,'m',2));
+  $('pl2a-en').innerHTML='<b>Plugging in:</b> √( 3 × '+n(D.tox.toFixed(1)+' nm')+' × '+n(D.xj.toFixed(0)+' nm')+' ) = '+
+    n(fmtEng(M.l*1e-2,'m',2));
+  $('pl2b').innerHTML='<b>代入：</b>( '+n(D.VD.toFixed(2)+' V')+' − '+n(M.Vdsat.toFixed(2)+' V')+' ) ÷ '+
+    n(fmtEng(M.l*1e-2,'m',2))+' = '+n(fmtEng(M.Em,'V/cm',2))+
+    ' &nbsp;<span style="color:var(--ink2)">（完整式給 '+fmtEng(M.Em,'V/cm',2)+'，差別可忽略）</span>';
+  $('pl2b-en').innerHTML='<b>Plugging in:</b> ( '+n(D.VD.toFixed(2)+' V')+' − '+n(M.Vdsat.toFixed(2)+' V')+' ) ÷ '+
+    n(fmtEng(M.l*1e-2,'m',2))+' = '+n(fmtEng(M.Em,'V/cm',2))+
+    ' &nbsp;<span style="color:var(--ink2)">(the full form gives '+fmtEng(M.Em,'V/cm',2)+' — the difference is negligible)</span>';
+  $('pl3a').innerHTML='<b>代入 T = '+n((D.Tc+273.15).toFixed(0)+' K')+'：</b>10.4 nm × tanh( 0.063 / '+
+    n((2*K*M.T).toFixed(4))+' ) = '+n((M.lam*1e7).toFixed(2)+' nm')+
+    ' &nbsp;<span style="color:var(--ink2)">（125 °C 時降到 '+(LAM0*Math.tanh(EP/(2*K*398.15))*1e7).toFixed(2)+' nm）</span>';
+  $('pl3a-en').innerHTML='<b>Plugging in T = '+n((D.Tc+273.15).toFixed(0)+' K')+':</b> 10.4 nm × tanh( 0.063 / '+
+    n((2*K*M.T).toFixed(4))+' ) = '+n((M.lam*1e7).toFixed(2)+' nm')+
+    ' &nbsp;<span style="color:var(--ink2)">(drops to '+(LAM0*Math.tanh(EP/(2*K*398.15))*1e7).toFixed(2)+' nm at 125 °C)</span>';
+  $('pl3b').innerHTML='<b>代入：</b>B<sub>i</sub> = '+n(fmtEng(M.Bi,'V/cm',2))+' · B<sub>g</sub> = '+
+    n(fmtEng(M.Bg,'V/cm',2))+' · B<sub>it</sub> = '+n(fmtEng(M.Bit,'V/cm',2));
+  $('pl3b-en').innerHTML='<b>Plugging in:</b> B<sub>i</sub> = '+n(fmtEng(M.Bi,'V/cm',2))+' · B<sub>g</sub> = '+
+    n(fmtEng(M.Bg,'V/cm',2))+' · B<sub>it</sub> = '+n(fmtEng(M.Bit,'V/cm',2));
+  $('pl3c').innerHTML='<b>代入：</b>在 E<sub>m</sub> = '+n(fmtEng(M.Em,'V/cm',2))+' 處 α<sub>i</sub> = '+
+    n(fmtEng(AI*Math.exp(-M.Bi/M.Em),'1/cm',1))+'，沿 ΔL = '+n(fmtEng(M.dL*1e-2,'m',1))+
+    ' 積分得 I<sub>sub</sub>/I<sub>D</sub> = '+n(sci(M.isubRatio));
+  $('pl3c-en').innerHTML='<b>Plugging in:</b> at E<sub>m</sub> = '+n(fmtEng(M.Em,'V/cm',2))+', α<sub>i</sub> = '+
+    n(fmtEng(AI*Math.exp(-M.Bi/M.Em),'1/cm',1))+'; integrating along ΔL = '+n(fmtEng(M.dL*1e-2,'m',1))+
+    ' gives I<sub>sub</sub>/I<sub>D</sub> = '+n(sci(M.isubRatio));
+  $('mval').textContent=M.m.toFixed(2)+' （= '+P.phi_it+' / '+P.phi_i+'）';
+  $('mval-en').textContent=M.m.toFixed(2)+' (= '+P.phi_it+' / '+P.phi_i+')';
+}
+
+/* ---- Arrhenius ---- */
+function drawA(){
+  var W=1000,H=280,Mg={t:16,r:40,b:52,l:92},iw=W-Mg.l-Mg.r,ih=H-Mg.t-Mg.b;
+  var lo=-40,hi=200,N=60,dat=[];
+  for(var i=0;i<=N;i++){var tc=lo+(hi-lo)*i/N; dat.push({tc:tc,invT:1000/(tc+273.15),r:mk({Tc:tc}).rate});}
+  var rs=dat.map(function(d){return d.r;}).filter(function(v){return v>0;});
+  if(!rs.length){$('cA4').innerHTML='<p class="note">'+L('目前偏壓沒有夾止區，損傷率為零 —— 把 V<sub>D</sub> 調高。','No pinch-off at the current bias, so the damage rate is zero — raise V<sub>D</sub>.')+'</p>';
+    $('legA').innerHTML='';$('a4note').innerHTML='';return;}
+  var rmax=Math.max.apply(null,rs), rmin=Math.min.apply(null,rs);
+  var yhi=Math.pow(10,Math.ceil(Math.log10(rmax))), ylo=Math.pow(10,Math.floor(Math.log10(Math.max(rmin,rmax/1e8))));
+  var xlo=Math.min.apply(null,dat.map(function(d){return d.invT;})), xhi=Math.max.apply(null,dat.map(function(d){return d.invT;}));
+  var X=function(v){return Mg.l+iw*(v-xlo)/(xhi-xlo);};
+  var Y=function(v){return Mg.t+ih*(1-Math.log10(Math.min(Math.max(v,ylo),yhi)/ylo)/Math.log10(yhi/ylo));};
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H});
+  decTicks(ylo,yhi).forEach(function(v){svg.appendChild(el('line',{x1:Mg.l,x2:Mg.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(Mg.l-9,Y(v),'1e'+Math.round(Math.log10(v)),{ta:'end',db:'middle'}));});
+  ticks(xlo,xhi,5).forEach(function(v){svg.appendChild(el('line',{x1:X(v),x2:X(v),y1:Mg.t,y2:Mg.t+ih,stroke:css('--grid'),'stroke-width':1}));
+    svg.appendChild(txt(X(v),Mg.t+ih+15,v.toFixed(1),{ta:'middle'}));
+    svg.appendChild(txt(X(v),Mg.t+ih+29,(1000/v-273.15).toFixed(0)+'°C',{ta:'middle',fs:10}));});
+  axes(svg,Mg,iw,ih);
+  svg.appendChild(txt(Mg.l+iw/2,H-6,'1000 / T   (1/K)',{ta:'middle',fs:12,fill:css('--ink2')}));
+  svg.appendChild(txt(16,Mg.t+ih/2,L('損傷率（對數）','Damage rate (log)'),{ta:'middle',fs:12,fill:css('--ink2'),db:'middle',rot:-90}));
+  var d='';dat.forEach(function(q){if(q.r>0)d+=(d?'L':'M')+X(q.invT).toFixed(2)+' '+Y(q.r).toFixed(2);});
+  svg.appendChild(el('path',{d:d,fill:'none',stroke:css('--seq4'),'stroke-width':2.4}));
+  var M=mk(), Ea=activationEnergy(Object.assign({},P,D));
+  svg.appendChild(txt(Mg.l+10,Mg.t+20,'E~a~ = '+(isFinite(Ea)?Ea.toFixed(3):'—')+' eV',
+    {fs:16,fw:750,fill:isFinite(Ea)&&Ea<0?css('--gtext'):css('--ink2')}));
+  $('cA4').innerHTML='';$('cA4').appendChild(svg);
+  $('legA').innerHTML='<span><i class="sw" style="background:'+css('--seq4')+'"></i>'+L('損傷率 vs 1000/T','damage rate vs 1000/T')+'</span>'+
+    '<span style="color:var(--ink)">E<sub>m</sub> = <b>'+fmtEng(M.Em,'V/cm',2)+'</b> · '+L('指數','exponent')+' B<sub>it</sub>/E<sub>m</sub> = <b>'+
+    (M.Bit/M.Em).toFixed(1)+'</b></span>';
+  $('a4note').innerHTML = L(
+    '<b>觀察：</b>把 V<sub>D</sub> 拉高或 t<sub>ox</sub> 調薄，E<sub>m</sub> 上升、指數 B<sub>it</sub>/E<sub>m</sub> 變小，'+
+      '|E<sub>a</sub>| 就跟著變小（曲線變平）。<b>「HCI 的 E<sub>a</sub>」不是固定數字，它隨偏壓與製程而變</b> —— '+
+      '報告時一定要一起寫下量測條件。典型範圍 −0.1 ~ −0.3 eV。這件事在下一頁（規格）會變成一個很實際的陷阱。',
+    '<b>Observation:</b> raise V<sub>D</sub> or thin down t<sub>ox</sub>, and E<sub>m</sub> rises while the exponent B<sub>it</sub>/E<sub>m</sub> shrinks, '+
+      'so |E<sub>a</sub>| shrinks along with it (the curve flattens). <b>"HCI\'s E<sub>a</sub>" isn\'t a fixed number — it depends on bias and process</b> — '+
+      'always report it together with the measurement conditions. Typical range is −0.1 to −0.3 eV. This turns into a very real trap on the next page (specs).'
+  );
+}
+function all4(){plugs();drawIV();drawA();}
+$('rL1').addEventListener('input',function(e){D1.L=Math.pow(10,parseFloat(e.target.value));
+  $('vL1').textContent=D1.L<0.1?(D1.L*1000).toFixed(0)+' nm':D1.L.toFixed(2)+' µm';drawIV();});
+$('rTox1').addEventListener('input',function(e){D1.tox=Math.pow(10,parseFloat(e.target.value));
+  $('vTox1').textContent=D1.tox.toFixed(1)+' nm';drawIV();});
+$('rVD4').addEventListener('input',function(e){D.VD=parseFloat(e.target.value);$('vVD4').textContent=D.VD.toFixed(2)+' V';all4();});
+$('rTox4').addEventListener('input',function(e){D.tox=Math.pow(10,parseFloat(e.target.value));
+  $('vTox4').textContent=D.tox.toFixed(1)+' nm';all4();});
+$('vL1').textContent=D1.L.toFixed(2)+' µm'; $('vTox1').textContent=D1.tox.toFixed(1)+' nm';
+$('vVD4').textContent=D.VD.toFixed(2)+' V'; $('vTox4').textContent=D.tox.toFixed(1)+' nm';
+window.__rebuild=all4; all4();
+
+})();
+
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>

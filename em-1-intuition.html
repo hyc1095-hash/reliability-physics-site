@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="電遷移的電子風力直覺：為什麼原子會沿電流方向淨位移，陰極端空洞、陽極端突起。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 1 · 直覺 · 電遷移">
+<meta property="og:description" content="電子風力如何讓金屬原子淨位移，決定陰極空洞與陽極突起。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 1 · 直覺 · 電遷移 · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">EM · 電遷移</span><div class="steps"><a href="em.html"><span class="n">0</span>課程地圖</a><a href="em-1-intuition.html" aria-current="page"><span class="n">1</span>直覺</a><a href="em-2-model.html"><span class="n">2</span>Black 方程式與材料</a><a href="em-3-blech.html"><span class="n">3</span>Blech 長度</a><a href="em-4-spec.html"><span class="n">4</span>統計與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:20%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 1 / 4 · 直覺</p>
+<h1>電子風把原子吹走</h1>
+<p class="lede">EM 不是熱效應。是導電電子跟金屬晶格原子不斷碰撞，把動量交給原子，
+在夠高的電流密度下，這股「風」足以讓原子沿電流方向淨移動。</p>
+
+<div class="tldr"><div class="t">一分鐘版</div>
+<p>原子從陰極端（電子流入端）被推向陽極端（電子流出端）。陰極端因此越來越空洞，
+最後斷路；陽極端則可能因原子堆積擠出突起，碰到旁邊的線就短路。<b>失效位置幾乎都在陰極端</b>。</p></div>
+
+<h2>「風」是怎麼吹的</h2>
+<p>金屬導線裡的原子被離子核的靜電力（direct force）往電子流的反方向拉，
+同時被大量高速電子的動量碰撞（electron wind force）往電子流方向推。
+在正常金屬（Al、Cu）裡，<b>electron wind force 遠大於 direct force</b>，
+淨效果是原子被推著跟電子跑同一個方向 —— 也就是跟傳統電流方向相反。</p>
+
+<div class="key"><div class="t">關鍵直覺</div>
+<p style="margin:0">原子搬家的方向 = 電子流動的方向（不是傳統電流方向）。
+陰極（電子流出金屬進入下一段的那一端）被掏空，陽極端被原子堆積。</p></div>
+
+<h2>互動：電流密度怎麼決定風力大小</h2>
+</div>
+
+<div lang="en">
+<p class="eyebrow">Stage 1 / 4 · Intuition</p>
+<h1>The electron wind blows atoms away</h1>
+<p class="lede">EM isn't a thermal effect. Conducting electrons keep colliding with the atoms of the metal lattice, handing over momentum,
+and at a high enough current density, that "wind" is strong enough to produce a net drift of atoms along the current direction.</p>
+
+<div class="tldr"><div class="t">The 1-minute version</div>
+<p>Atoms get pushed from the cathode end (where electrons flow in) toward the anode end (where electrons flow out). The cathode end grows emptier and emptier,
+eventually opening the circuit; the anode end may pile atoms up into a hillock that shorts to a neighboring line. <b>Failure almost always happens at the cathode end.</b></p></div>
+
+<h2>How the "wind" actually blows</h2>
+<p>Atoms in a metal wire are pulled against the electron-flow direction by the electrostatic pull of the ion cores (the direct force),
+while simultaneously being pushed along the electron-flow direction by momentum transfer from the huge number of fast-moving electrons (the electron wind force).
+In ordinary metals (Al, Cu), <b>the electron wind force vastly outweighs the direct force</b>,
+so the net effect is that atoms get pushed along with the electrons — i.e., opposite to the direction of conventional current.</p>
+
+<div class="key"><div class="t">The key intuition</div>
+<p style="margin:0">The direction atoms move = the direction electrons flow (not the direction of conventional current).
+The cathode (the end where electrons leave this segment of metal for the next) gets hollowed out; the anode end accumulates atoms.</p></div>
+
+<h2>Interactive: how current density sets the wind strength</h2>
+</div>
+
+<div class="card">
+  <div class="bigslider">
+    <label for="rJ"><span lang="zh-Hant">電流密度 J（MA/cm²）</span><span lang="en">Current density J (MA/cm²)</span></label>
+    <input type="range" id="rJ" min="0.5" max="12" step="0.1" value="3">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+      <span class="val" id="vJ">—</span>
+      <span class="note" id="hintJ">—</span>
+    </div>
+  </div>
+  <div class="tiles" style="margin-top:14px">
+    <div class="tile"><div class="k"><span lang="zh-Hant">相對電子風力</span><span lang="en">Relative electron wind force</span></div><div class="v" id="tWind">—</div></div>
+    <div class="tile"><div class="k"><span lang="zh-Hant">相對原子漂移速度</span><span lang="en">Relative atomic drift velocity</span></div><div class="v" id="tDrift">—</div></div>
+    <div class="tile hl"><div class="k"><span lang="zh-Hant">相對失效機率（∝ J²，Black n=2）</span><span lang="en">Relative failure probability (∝ J², Black n=2)</span></div><div class="v" id="tFail">—</div></div>
+  </div>
+  <p class="note" lang="zh-Hant" style="margin-top:10px">這裡只做<b>比例關係</b>示意（風力 ∝ J，漂移速度 ∝ J，n=2 時失效率 ∝ J²），
+  不是校準過的絕對值。真實的力平衡還牽涉電阻率 ρ 與有效電荷數 Z*（見階段 2）。</p>
+  <p class="note" lang="en" style="margin-top:10px">This is only an illustration of the <b>proportional relationship</b> (wind force ∝ J, drift velocity ∝ J, and at n=2 the failure rate ∝ J²),
+  not a calibrated absolute value. The real force balance also involves the resistivity ρ and the effective charge number Z* (see Stage 2).</p>
+</div>
+
+<div lang="zh-Hant">
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼失效幾乎都發生在陰極端，不是陽極端？</summary>
+<div class="a">陰極端是原子被「搬走」的那一端 —— 原子濃度持續下降直到形成空洞、電流路徑被截斷，
+這是一個<b>會自我加劇</b>的過程（空洞讓局部電流密度更集中，加速空洞成長）。
+陽極端雖然原子堆積、可能形成突起造成短路，但這通常需要更長時間，也不是每次都會碰到鄰線。</div></details>
+<details><summary>為什麼說 EM「不是熱效應」？</summary>
+<div class="a">溫度在 EM 裡的角色是<b>加速擴散</b>（透過 Arrhenius 的 exp(−E<sub>a</sub>/kT) 項），
+但驅動原子淨位移方向的是電流帶來的動量傳遞，不是溫度梯度本身。這跟自我發熱在 HCI 裡的角色不一樣 ——
+自我發熱對 EM 是單純加速，沒有 HCI 那種「方向相反」的複雜性。</div></details>
+<details><summary>Al 跟 Cu 的失效模式為什麼會不一樣？</summary>
+<div class="a">兩者主要擴散路徑不同：Al 幾乎完全靠<b>晶界擴散</b>（因為 Al 表面會生成緻密氧化層，
+封住表面擴散路徑）；Cu 的表面／介面不容易形成保護性氧化層，
+所以 Cu/覆蓋層介面反而常常是比晶界更弱的路徑 —— 這件事直接決定了下一階段材料活化能表的結構。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em.html"><div class="d">← 回課程地圖</div><div class="t">電遷移</div></a><a class="next" href="em-2-model.html"><div class="d">下一課 · 階段 2 →</div><div class="t">Black 方程式與材料</div></a></div>
+<div class="foot"><b>模型範圍</b>：本模組的 Black 方程式與 Blech length 計算採文獻常見量級的代表值，<b>不是任何製程的實測資料</b>；材料活化能表已逐項附來源，分歧處兩個都列。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。電流擁擠（current crowding）、應力誘發空洞化（SIV）、先進封裝层級 EM（RDL／凸塊）未納入。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Why does failure almost always happen at the cathode end, not the anode?</summary>
+<div class="a">The cathode end is where atoms get "carried away" — the atom concentration keeps dropping until a void forms and the current path is cut,
+and this is a <b>self-accelerating</b> process (the void concentrates local current density further, speeding up its own growth).
+The anode end does accumulate atoms and may form a hillock that shorts, but that usually takes longer and doesn't always happen to reach a neighboring line.</div></details>
+<details><summary>Why is EM said to be "not a thermal effect"?</summary>
+<div class="a">Temperature's role in EM is to <b>accelerate diffusion</b> (through the Arrhenius term exp(−E<sub>a</sub>/kT)),
+but what drives the direction of net atomic displacement is momentum transfer from the current, not a temperature gradient itself. That's different from self-heating's role in HCI —
+for EM, self-heating is a pure accelerant, without the "opposite direction" complexity HCI has.</div></details>
+<details><summary>Why do Al and Cu fail differently?</summary>
+<div class="a">Their dominant diffusion paths differ: Al relies almost entirely on <b>grain-boundary diffusion</b> (because Al forms a dense native oxide on its surface,
+sealing off the surface diffusion path); Cu's surface/interface doesn't easily form a protective oxide,
+so the Cu/capping-layer interface is often actually a weaker path than the grain boundary — this single fact directly shapes the structure of the material activation-energy table in the next stage.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="em.html"><div class="d">← Back to course map</div><div class="t">Electromigration</div></a><a class="next" href="em-2-model.html"><div class="d">Next · Stage 2 →</div><div class="t">Black Equation & Materials</div></a></div>
+<div class="foot"><b>Model scope</b>: this module's Black-equation and Blech-length calculations use representative literature-scale values — <b>not measured data from any specific process</b>; the material activation-energy table cites sources item by item, and lists both values where the literature disagrees. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules. Current crowding, stress-induced voiding (SIV), and advanced-packaging-level EM (RDL / bumps) are not included.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+<script>
+(function(){
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+var rJ=document.getElementById('rJ');
+function upd(){
+  var J=parseFloat(rJ.value);
+  document.getElementById('vJ').textContent=J.toFixed(1)+' MA/cm²';
+  var hint=L('一般數位邏輯線','Typical digital-logic line');
+  if(J>8) hint=L('高電流密度 · 先進節點局部區域可見','High current density · seen in localized spots on advanced nodes');
+  else if(J>4) hint=L('中高電流密度 · 需認真做 EM 設計規則檢查','Medium-high current density · needs a serious EM design-rule check');
+  document.getElementById('hintJ').textContent=hint;
+  var ref=3;
+  document.getElementById('tWind').textContent=(J/ref).toFixed(2)+'×';
+  document.getElementById('tDrift').textContent=(J/ref).toFixed(2)+'×';
+  document.getElementById('tFail').textContent=Math.pow(J/ref,2).toFixed(2)+'×';
+}
+rJ.addEventListener('input',upd);
+window.__rebuild=upd;
+upd();
+})();
+</script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>

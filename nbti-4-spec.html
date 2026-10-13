@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NBTI 對數常態外推、與 TDDB 氮化對策的直接衝突、製程與電路層防治對策。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 4 · 判準與防治">
+<meta property="og:description" content="NBTI 防治對策為什麼常跟 TDDB 對策互相打架，如何聯合最佳化。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 4 · 判準與防治 · NBTI/PBTI</title>
+<link rel="stylesheet" href="core.css">
+</head>
+<body>
+
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-spec.html" aria-current="page"><span class="n">4</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:80%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 4 / 4 · 判準、外推與防治</p>
+<h1>對數常態外推，以及跟 TDDB 打架的對策</h1>
+
+<h2>統計外推：同一套代數，不同的物理理由要記清楚</h2>
+<p>NBTI 同樣採用對數常態外推，沿用本站 TDDB／HCI 章節的同一套外推式
+<code>t(F) = t50 · exp(σ · z(F))</code>。物理理由是乘性退化本質（單顆元件連續參數漂移），
+跟 HCI 是同一類；但 NBTI 特有的是：外推用的時間指數 n 必須來自
+<b>應力中（stress-phase，例如 OTF）</b>擬合的值，不能拿恢復後量到的殘餘 ΔV<sub>t</sub> 去反推 ——
+這是階段 3 恢復陷阱在外推環節的直接後果。</p>
+
+<h2>防治對策，以及跟 TDDB 的直接衝突</h2>
+<div class="fixcard proc"><div class="lv">製程層</div><h4>降低界面態密度、氘退火</h4>
+<p>提升初始界面品質（更乾淨的介面處理）、氘退火（氘取代氫鈍化 Si 懸鍵，Si-D 鍵斷裂活化能較高，
+理論上更耐應力）。</p>
+<div class="tradeoff"><b>代價</b>：氘退火製程整合複雜度高，且效果在某些疊層上不如平面元件明顯。</div></div>
+
+<div class="cmp" style="margin:14px 0">
+<div class="col bad"><div class="h" style="color:var(--h)">氮化（提升 k、抗 TDDB）</div>
+<p style="margin:0;font-size:15.5px">介電層氮化是提升 TDDB 抗性的標準做法之一（見 TDDB 章節），
+但氮原子本身會增加界面附近可被電洞捕獲的陷阱位置，<b>使 NBTI 劣化加劇</b>。</p></div>
+<div class="col good"><div class="h" style="color:var(--gtext)">降低氮化（抗 NBTI）</div>
+<p style="margin:0;font-size:15.5px">降低氮濃度或改變氮分布輪廓能減緩 NBTI，但同時犧牲一部分 TDDB 抗性
+—— 兩個機制的製程對策方向直接相反，必須聯合最佳化，不能各自獨立最佳化。</p></div>
+</div>
+
+<div class="fixcard ckt"><div class="lv">電路層</div><h4>降低靜態負偏壓佔比、主動輪替偏壓極性</h4>
+<p>避免電路設計讓特定 pMOS 長時間固定在深負偏壓（例如某些低功耗待機模式下的偏壓策略調整）；
+對高風險節點考慮週期性切換偏壓極性，讓元件有機會落入恢復窗口。</p>
+<div class="tradeoff"><b>代價</b>：電路複雜度增加，且並非所有拓樸都有偏壓極性可切換的空間。</div></div>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>為什麼氮化對 TDDB 有利、對 NBTI 不利，是同一個物理量在起作用嗎？</summary>
+<div class="a">不完全是同一個物理量，但有共同的根源：氮原子取代部分氧原子後，介電層的鍵結網絡改變，
+一方面提高了介電層本身抵抗缺陷生成、進而抵抗貫穿路徑形成的能力（對 TDDB 有利），
+另一方面在 Si/介電層界面附近，氮相關的鍵結環境更容易形成可被電洞捕獲的陷阱前驅物
+（對 NBTI 不利）。兩者共用「介電層鍵結網絡被氮改變」這個起點，但下游影響的失效機制不同。</div></details>
+<details><summary>如果我的產品 TDDB 判準很寬鬆、NBTI 判準很嚴格，製程選擇上應該怎麼想？</summary>
+<div class="a">這種情況下可以考慮往<b>降低氮化</b>的方向調整，用犧牲一部分（原本就寬鬆的）TDDB 裕度
+去換取 NBTI 的改善。但要注意：TDDB 判準寬鬆可能只是在目前的使用條件與壽命目標下寬鬆，
+調整製程後必須重新驗證 TDDB 判準是否仍然滿足，不能只看單一機制的相對裕度就下決定 ——
+這正是「聯合最佳化」的實務意涵。</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-3-recovery.html"><div class="d">← 上一課 · 階段 3</div><div class="t">恢復與量測陷阱</div></a><a class="next" href="index.html"><div class="d">回到 →</div><div class="t">所有可靠度機制</div></a></div>
+<div class="foot"><b>模型範圍</b>：R-D 時間律採擴散限制段的冪次律外觀，未實作完整反應-擴散耦合微分方程；恢復動力學僅作文字說明，無可調曲線工具；PBTI（nMOS 電子穿隧機制）未展開，僅並列標題。統計外推沿用 HCI／TDDB 模組同一套對數常態代數。<br><b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<!-- ============ ENGLISH ============ -->
+<div lang="en">
+<p class="eyebrow">Stage 4 / 4 · Criteria, Extrapolation & Mitigation</p>
+<h1>Lognormal extrapolation, and a countermeasure that fights TDDB</h1>
+
+<h2>Statistical extrapolation: the same algebra, but keep the different physical reason straight</h2>
+<p>NBTI likewise uses lognormal extrapolation, reusing this site's TDDB/HCI chapters' same extrapolation formula
+<code>t(F) = t50 · exp(σ · z(F))</code>. The physical reason is its multiplicative-degradation nature (continuous parameter drift in a single device),
+the same category as HCI; but what's unique to NBTI is that the time exponent n used for extrapolation must come from a value
+fitted <b>during stress (the stress-phase, e.g. OTF)</b> — it can't be back-calculated from the residual ΔV<sub>t</sub> measured after recovery has already happened —
+this is the direct consequence of Stage 3's recovery trap showing up in the extrapolation step.</p>
+
+<h2>Mitigation, and its direct conflict with TDDB</h2>
+<div class="fixcard proc"><div class="lv">Process layer</div><h4>Lowering interface-trap density, deuterium annealing</h4>
+<p>Improving initial interface quality (cleaner interface processing); deuterium annealing (deuterium replaces hydrogen in passivating Si dangling bonds — the Si-D bond has a higher breaking activation energy,
+which is theoretically more stress-resistant).</p>
+<div class="tradeoff"><b>Cost</b>: deuterium annealing adds process-integration complexity, and its effect is less pronounced on some stacks than on planar devices.</div></div>
+
+<div class="cmp" style="margin:14px 0">
+<div class="col bad"><div class="h" style="color:var(--h)">Nitridation (raises k, resists TDDB)</div>
+<p style="margin:0;font-size:15.5px">Dielectric nitridation is one of the standard ways to improve TDDB resistance (see the TDDB chapter),
+but the nitrogen atoms themselves add hole-trappable trap sites near the interface, <b>worsening NBTI degradation</b>.</p></div>
+<div class="col good"><div class="h" style="color:var(--gtext)">Reducing nitridation (resists NBTI)</div>
+<p style="margin:0;font-size:15.5px">Lowering the nitrogen concentration or changing its distribution profile eases NBTI, but sacrifices some TDDB resistance in the process
+— the two mechanisms' process countermeasures point in directly opposite directions, so they must be jointly optimized, not optimized independently.</p></div>
+</div>
+
+<div class="fixcard ckt"><div class="lv">Circuit layer</div><h4>Reducing time spent under static negative bias, actively alternating bias polarity</h4>
+<p>Avoiding circuit designs that leave a specific pMOS fixed at deep negative bias for long stretches (e.g. adjusting bias strategy under certain low-power standby modes);
+for high-risk nodes, consider periodically flipping bias polarity so the device gets a chance to fall into a recovery window.</p>
+<div class="tradeoff"><b>Cost</b>: added circuit complexity, and not every topology has room to flip bias polarity.</div></div>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>Nitridation helps TDDB and hurts NBTI — is it the same physical quantity acting in both cases?</summary>
+<div class="a">Not exactly the same physical quantity, but they share a common root: once nitrogen atoms replace some oxygen atoms, the dielectric's bonding network changes.
+On one hand, this raises the dielectric's own ability to resist defect generation and, in turn, resist the formation of a percolation path (good for TDDB);
+on the other hand, near the Si/dielectric interface, the nitrogen-related bonding environment more readily forms trap precursors that holes can capture
+(bad for NBTI). Both effects share the same starting point — "the dielectric's bonding network is altered by nitrogen" — but the downstream failure mechanisms they affect are different.</div></details>
+<details><summary>If my product's TDDB criterion has plenty of margin but the NBTI criterion is tight, how should that shape the process choice?</summary>
+<div class="a">In that case it's worth considering a shift toward <b>less nitridation</b>, trading away some of the (already ample) TDDB margin to buy an NBTI improvement.
+But be careful: a loose TDDB criterion may only be loose under the current use condition and lifetime target — after changing the process, TDDB must be re-verified to confirm it's still met.
+You can't make the call just by looking at one mechanism's relative margin in isolation — that's exactly what "joint optimization" means in practice.</div></details>
+</div>
+
+<div class="pager"><a class="prev" href="nbti-3-recovery.html"><div class="d">← Previous · Stage 3</div><div class="t">Recovery & Measurement Traps</div></a><a class="next" href="index.html"><div class="d">Back to →</div><div class="t">All reliability mechanisms</div></a></div>
+<div class="foot"><b>Model scope</b>: the R-D time law uses the power-law appearance of the diffusion-limited regime, without implementing the full reaction-diffusion coupled differential equations; recovery dynamics are described in text only, with no tunable curve tool; PBTI (the nMOS electron-tunneling mechanism) is not expanded — only its heading is listed alongside NBTI's. Statistical extrapolation reuses the same lognormal algebra as the HCI / TDDB modules.<br><b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+
+<script src="numin_core.js"></script>
+</body>
+</html>
