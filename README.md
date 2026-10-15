@@ -1,6 +1,6 @@
 # 半導體可靠度物理 · 互動教材
 
-純靜態網站。30 個 HTML 檔，全部自給自足：**沒有任何外部資源請求、沒有後端、沒有 cookie、沒有追蹤**。
+純靜態網站。31 個 HTML 檔，全部自給自足：**沒有任何外部資源請求、沒有後端、沒有 cookie、沒有追蹤**。
 所有互動模型都在瀏覽器本機即時計算。
 
 ## 結構
@@ -32,7 +32,8 @@ index.html              首頁（機制選單 + HCI vs TDDB 對照表）
 │  ├─ nbti-1-intuition  階段 1：直覺（靜態偏壓，不是電流；與 HCI 對照表）
 │  ├─ nbti-2-mechanism  階段 2：物理機制與 R-D 模型（Si-H 斷裂、時間指數 n 理論 vs 實測）
 │  ├─ nbti-3-recovery   階段 3：恢復動力學與量測陷阱（OTF、ultra-fast I-V）
-│  └─ nbti-4-spec       階段 4：判準、外推與防治（與 TDDB 氮化對策的衝突）
+│  ├─ nbti-4-nexponent  階段 4：時間指數 n 之爭（R-D 理論三種擴散物種、Alam/Mahapatra vs Grasser/Kaczer 兩陣營公案）
+│  └─ nbti-5-spec       階段 5：判準、外推與防治（與 TDDB 氮化對策的衝突）
 ├─ em.html              電遷移（EM）課程地圖
 │  ├─ em-1-intuition    階段 1：直覺（電子風力、陰極空洞／陽極突起）
 │  ├─ em-2-model        階段 2：Black 方程式 + 材料活化能表（Al／Al-Cu／Cu 介電質-cap／Cu 金屬-cap／W）
@@ -77,7 +78,7 @@ python3 build_hub.py       # 首頁
 ```
 共用資源：`core_css.txt`（樣式）、`core_model.js`（HCI 物理核心）、`core_viz2.js`（MOSFET 剖面圖）、`mat_data.js`（已查證的材料與結構資料）。
 
-**注意**：`nbti-*.html`、`em-*.html`、`coupling.html`、`tddb-3-trapsize.html` 這 12 個檔案是後續手動加入的內容，
+**注意**：`nbti-*.html`、`em-*.html`、`coupling.html`、`tddb-3-trapsize.html` 這 13 個檔案是後續手動加入的內容，
 沿用既有頁面抽出的共用 CSS（與 `core_css.txt` 同一套 class 規則），但**尚未整合進
 `build_course.py` / `build_tddb.py` 這類產生器腳本** —— 目前 `buildall.sh` 不會重新產生這幾頁，
 修改時需直接編輯對應 HTML。互動模型（R-D 時間律、Black 方程式、Blech 長度、自我發熱耦合）為簡化教學模型，
@@ -103,3 +104,23 @@ tddb-6-playground.html → tddb-7-playground.html （階段 6 → 7）
 `tddb_core_model.js` 的 `beta_of(tox, a0, m)` 已擴充成可指定陷阱尺寸與陷阱生成冪次，
 省略後兩個參數時行為與舊版完全相同（a₀ = 1 nm、m = 1），因此階段 7 的可調模型不受影響。
 階段 3 本身改用 `beta_raw()`（不夾 β ≥ 1.05 的下限），因為 t_ox < a₀ 時 β 本來就該退化到 m。
+
+### NBTI 階段 4（時間指數 n 之爭）與階段重新編號
+
+`nbti-4-nexponent.html` 是後來加入的一頁，主題是 **時間指數 n 的理論值（H / H₂ / H⁺ 三種擴散物種）與實測值之間的落差，
+以及 Alam/Mahapatra（Purdue、IIT Bombay）與 Grasser/Kaczer（TU Wien、imec）兩個陣營至今未完全和解的學術公案**
+（量測延遲如何系統性改變擬合出的 n、兩陣營各自的證據與立場、以及這對 10 年壽命外推的實際影響）。
+加入這一頁時，NBTI 模組從 4 階段變成 5 階段，原本的 spec 頁檔名與顯示編號一起往後移：
+
+```
+nbti-4-spec.html → nbti-5-spec.html （階段 4 → 5）
+```
+
+全站的連結、導覽列、進度條、`sitemap.xml`、`index.html` 的階段數都已同步更新。
+**這 5 個 NBTI 檔案均未整合進任何產生器腳本**（本來就是手動維護的初版內容，見上一段），修改時請直接編輯 HTML。
+
+跟 TDDB 階段 3（陷阱尺寸）不同的是，NBTI 這個公案**沒有單一的「正確答案」**——
+頁面刻意呈現兩個陣營的對立證據與立場，而不是把其中一方包裝成最終結論。
+NBTI 模組的其餘 4 頁（1、2、3、5）在加入這一頁之前**完全沒有外部文獻引用或查證狀態表**，
+只有 `nbti-4-nexponent.html` 這一頁依照 TDDB 階段 3 的規格逐字核對了 2 篇論文全文（Alam et al. 2007、Grasser et al. 2007）
+加 1 篇書目核對（Reisinger et al. 2006）。其餘 4 頁的模型範圍聲明維持不變，尚待未來比照同一標準補強。

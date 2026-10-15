@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="NBTI 時間指數 n 的理論值（H、H₂、H⁺ 三種擴散物種）與實測值之間的落差，以及 Alam/Mahapatra 與 Grasser/Kaczer 兩個陣營至今仍未完全和解的學術公案。">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="階段 4：時間指數 n 之爭 · NBTI/PBTI">
+<meta property="og:description" content="n 不是一個數，是一場從 pre-2003 吵到現在的公案。同一批數據，量測延遲不同，擬合出的 n 可以差一倍。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Ccircle cx='11' cy='19' r='3' fill='%23fff'/%3E%3Cpath d='M15 17 L26 8' stroke='%23eb6834' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M4 25 L28 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>階段 4：時間指數 n 之爭 · NBTI/PBTI · 半導體可靠度物理</title>
+<link rel="stylesheet" href="core.css">
+  <style>
+button{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 15px;
+  font:inherit;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink);transition:.15s}
+button:hover{border-color:var(--e);color:var(--e)}
+.outline li{margin:7px 0}
+.litab{font-size:15px}
+.litab td,.litab th{vertical-align:top}
+.litab .cite{font-size:14px;color:var(--ink2);display:block;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="nav"><div class="in"><a class="brand" href="index.html"><svg width='22' height='22' viewBox='0 0 32 32' aria-hidden='true'><rect width='32' height='32' rx='7' fill='#2a78d6'/><circle cx='11' cy='19' r='3' fill='#fff'/><path d='M15 17 L26 8' stroke='#eb6834' stroke-width='3' stroke-linecap='round'/><path d='M4 25 L28 25' stroke='#fff' stroke-width='2.5' stroke-linecap='round'/></svg> 可靠度物理</a><span class="modtag">NBTI · 偏壓溫度不穩定性</span><div class="steps"><a href="nbti.html"><span class="n">0</span>課程地圖</a><a href="nbti-1-intuition.html"><span class="n">1</span>直覺</a><a href="nbti-2-mechanism.html"><span class="n">2</span>機制與 R-D 模型</a><a href="nbti-3-recovery.html"><span class="n">3</span>恢復與量測陷阱</a><a href="nbti-4-nexponent.html" aria-current="page"><span class="n">4</span>n 之爭</a><a href="nbti-5-spec.html"><span class="n">5</span>判準與防治</a></div><button class="tg" id="themeBtn" title="切換深色 / 淺色">◐</button><button class="tg" id="langBtn" title="Switch language / 切換語言">中 / EN</button></div><div class="prog"><i style="width:80%"></i></div></div>
+<div class="wrap">
+
+<div lang="zh-Hant">
+<p class="eyebrow">階段 4 / 5</p>
+<h1>時間指數 n 之爭：<br>半導體可靠度文獻裡吵最久的一個數字</h1>
+<p class="lede">階段 2 告訴你 R-D 模型推導出 n = 1/6（H₂ 擴散）或 1/4（H 原子擴散），實測落在 0.15–0.25。
+這一頁要告訴你更麻煩的事：<b>這個「落差」不是誤差，是一場從 2003 年前吵到現在、兩個重量級陣營至今沒有完全和解的公案</b>。
+吵的不是誰比較會做實驗，而是<b>同一組數字可以同時支持「R-D 模型對了」跟「R-D 模型從根本上解釋不了」兩種結論</b>。
+看完這頁你會知道：為什麼階段 3 講的量測陷阱，不只是「量測比較麻煩」而已——它曾經讓整個領域誤判了十年的擴散機制。</p>
+
+<div class="tldr"><div class="t">本頁大綱</div>
+<ol class="outline" style="margin:0;padding-left:20px">
+<li><b>n 不是一個數，是一場公案</b> —— H、H₂、H⁺ 三種擴散物種給出三個理論值，pre-2003 文獻自己先打架</li>
+<li><b>量測延遲怎麼把 n「做」出來</b> —— 同一顆元件，量測方法不同，擬合出的 n 可以差到兩倍</li>
+<li><b>兩個陣營，同一個數字，兩種解讀</b> —— Alam/Mahapatra 說「公案已解」，Grasser/Kaczer 說「數字對不代表模型對」</li>
+<li><b>互動：同一筆實驗室數據，兩種 n 假設，十年後差多少</b></li>
+<li><b>這對你的意義</b> —— 為什麼外推用的 n 只能來自應力期間的數據</li>
+</ol></div>
+</div>
+<div lang="en">
+<p class="eyebrow">Stage 4 / 5</p>
+<h1>The battle over the time exponent n:<br>the longest-running argument in reliability-physics literature</h1>
+<p class="lede">Stage 2 told you the R-D model predicts n = 1/6 (H₂ diffusion) or 1/4 (atomic H diffusion), and measurements land around 0.15–0.25.
+This page tells you something messier: <b>that "gap" isn't measurement error — it's an academic dispute running from before 2003 to today, between two heavyweight camps that still haven't fully reconciled</b>.
+The argument isn't about who's better at running experiments. It's that <b>the same set of numbers can be read as both "the R-D model is right" and "the R-D model fundamentally can't explain this"</b>.
+By the end of this page you'll see why Stage 3's measurement trap isn't just "measurement is a bit annoying" — it once sent an entire field down the wrong diffusing-species conclusion for the better part of a decade.</p>
+
+<div class="tldr"><div class="t">Page outline</div>
+<ol class="outline" style="margin:0;padding-left:20px">
+<li><b>n isn't one number, it's an unfinished dispute</b> — H, H₂, and H⁺ give three different theoretical values, and pre-2003 literature already contradicted itself</li>
+<li><b>How measurement delay "manufactures" n</b> — same device, different measurement method, and the fitted n can differ by 2×</li>
+<li><b>Two camps, one number, two readings</b> — Alam/Mahapatra say "the dispute is resolved"; Grasser/Kaczer say "agreeing numerically doesn't mean the model is right"</li>
+<li><b>Interactive: same lab data, two n assumptions, how far apart after ten years</b></li>
+<li><b>What this means for you</b> — why the n used for extrapolation can only come from data taken during stress</li>
+</ol></div>
+</div>
+
+<div lang="zh-Hant">
+<h2>① n 不是一個數，是一場公案</h2>
+<p>R-D 模型的核心邏輯很簡單：介面 Si-H 鍵斷裂（反應）放出氫物種，氫物種往閘極介電層內部擴散。
+<b>n 的理論值完全由「哪一種氫物種在擴散」決定</b>，不同物種給出完全不同的指數：</p>
+
+<table class="symtab"><tbody>
+<tr><td>H⁺（質子）</td><td>n = 1/2</td><td>漂移而非擴散主導；<b>這個指數從未在 NBTI 實測中出現過</b></td></tr>
+<tr><td>H（原子）</td><td>n = 1/4</td><td>pre-2003 文獻的「經典」指數，大量實測與此量級相符</td></tr>
+<tr><td>H₂（分子）</td><td>n = 1/6 ≈ 0.167</td><td>擴散較慢，指數較小</td></tr>
+</tbody></table>
+
+<p>問題出在：n 的理論值指向一種物種，但<b>另一個獨立量到的物理量——活化能——指向另一種物種</b>。
+Alam 等人在他們的回顧論文裡把這個矛盾講得非常白：</p>
+
+<div class="eq" style="text-align:left"><span class="lbl">pre-2003 NBTI 文獻的核心難題</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“This is the core dilemma of pre-2003 NBTI literature: the time-exponent in Eq. (3) suggests atomic H diffusion,
+while temperature activation suggests H₂ diffusion.”</i></p>
+<span class="say" style="margin-top:8px">翻成白話：<b>量到的時間指數 n≈0.25 說是氫原子在擴散；量到的活化能 E<sub>A</sub>≈0.5 eV 卻說是氫分子在擴散。
+兩個獨立量到的數字，指向兩個互斥的機制</b>——這不是哪個量錯了，是整套詮釋架構本身就有裂縫。</span></div>
+
+<p>而 n = 1/2（質子漂移）的下場更乾脆——理論predict 得出來，但從來沒人量到過：</p>
+<div class="key"><div class="t">一個乾淨的反例</div>
+<i>“The n = 1/2 regime has also never been seen in NBTI measurements, leading one to conclude that NBTI degradation
+through proton transport is unlikely.”</i> —— 三個候選物種，先刪掉一個。剩下 H 跟 H₂ 兩個候選，
+而這兩個候選又被 n 與 E<sub>A</sub> 兩個獨立量測互相矛盾地指向。<b>這就是階段 2 那個「理論 vs 實測落差」真正的來歷</b>：
+不是測不準，是 2003 年之前整個領域對「哪個物種在擴散」這件事本身就沒有一致答案。</div>
+</div>
+<div lang="en">
+<h2>① n isn't one number, it's an unfinished dispute</h2>
+<p>The R-D model's core logic is simple: Si-H bonds break at the interface (reaction), releasing hydrogen species that diffuse into the gate dielectric.
+<b>The theoretical value of n is entirely determined by which hydrogen species is doing the diffusing</b>, and different species give completely different exponents:</p>
+
+<table class="symtab"><tbody>
+<tr><td>H⁺ (proton)</td><td>n = 1/2</td><td>Drift-dominated rather than diffusion; <b>this exponent has never shown up in NBTI measurements</b></td></tr>
+<tr><td>H (atomic)</td><td>n = 1/4</td><td>The "classic" pre-2003 exponent, matched by a large body of measurements at that order of magnitude</td></tr>
+<tr><td>H₂ (molecular)</td><td>n = 1/6 ≈ 0.167</td><td>Slower diffusion, smaller exponent</td></tr>
+</tbody></table>
+
+<p>The problem: the theoretical value of n points to one species, but <b>another independently measured quantity — the activation energy — points to a different one</b>.
+Alam et al. put this contradiction bluntly in their review paper:</p>
+
+<div class="eq" style="text-align:left"><span class="lbl">The core dilemma of pre-2003 NBTI literature</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“This is the core dilemma of pre-2003 NBTI literature: the time-exponent in Eq. (3) suggests atomic H diffusion,
+while temperature activation suggests H₂ diffusion.”</i></p>
+<span class="say" style="margin-top:8px">In plain terms: the measured time exponent n≈0.25 says atomic hydrogen is diffusing; the measured activation energy E<sub>A</sub>≈0.5 eV
+says it's molecular hydrogen. <b>Two independently measured numbers point to two mutually exclusive mechanisms</b> — neither measurement is wrong;
+the whole interpretive framework had a crack in it.</span></div>
+
+<p>And n = 1/2 (proton drift) met an even cleaner fate — predicted by theory, but never once measured:</p>
+<div class="key"><div class="t">One clean counter-example</div>
+<i>“The n = 1/2 regime has also never been seen in NBTI measurements, leading one to conclude that NBTI degradation
+through proton transport is unlikely.”</i> — one of three candidate species eliminated outright. That leaves H and H₂,
+and those two are the ones pointed at contradictorily by two independent measurements, n and E<sub>A</sub>.
+<b>This is where Stage 2's "theory-vs-measurement gap" actually comes from</b>: it isn't measurement noise —
+before 2003, the field itself had no consistent answer to "which species is diffusing" in the first place.</div>
+</div>
+
+<div lang="zh-Hant">
+<h2>② 量測延遲怎麼把 n「做」出來</h2>
+<p>階段 3 講過：移除應力到開始量測之間的延遲，會讓訊號系統性地回復掉一部分。
+這一頁要把這件事跟 n 接起來——<b>量測延遲不只是讓數字偏小，還會系統性地改變你擬合出來的 n 值本身</b>。
+Grasser 等人整理了文獻裡的實測 n 值，分成兩群：</p>
+
+<div class="eq"><span class="lbl">同一個物理量，兩種量測方式，兩個 n</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“Experimental results obtained with delayed measurements show a linear increase of the exponent with temperature
+[…] with values around 0.2 – 0.3. In contrast, temperature-independent exponents in the range 0.07 – 0.2 have been
+extracted from recent delay-free measurements.”</i></p>
+<span class="say" style="margin-top:8px"><b>有延遲的傳統量測</b>：n 隨溫度線性上升，落在 0.2–0.3，而且「隨溫度變化」這件事本身就很可疑——
+一個真正由擴散動力學決定的指數，不應該對量測方法的延遲時間這麼敏感。
+<b>無延遲（on-the-fly）量測</b>：n 落在 0.07–0.2，且<b>不隨溫度變化</b>——更像是在量一個真正的物理常數。</span></div>
+
+<p>Alam 等人的立場更進一步：他們認為 n≈0.25 這個「經典」指數本身<b>就是量測延遲造出來的假象</b>：</p>
+<div class="key"><div class="t">「經典值」被改判為測量假象</div>
+<i>“In fact, n ≈ 0.25 is not robust exponent, as indicated by the saturation of NBTI degradation observed by experiments […]
+identification of NBTI with H-diffusion is actually accidental and reflects measurement-delay induced relaxation of underlying
+degradation generated by H₂ diffusion. The diffusing specie is H₂ with consistent values of n ≈ 0.16.”</i>
+—— 換句話說：<b>n≈0.25 不是因為氫原子真的在擴散，是因為傳統量測延遲把 H₂ 擴散的真實曲線「切」出一個看起來像 n=1/4 的形狀</b>。
+把延遲效應扣掉，氫分子擴散（n≈0.16）才是正確答案——這是 Alam/Mahapatra 陣營的結論。</div>
+</div>
+<div lang="en">
+<h2>② How measurement delay "manufactures" n</h2>
+<p>Stage 3 explained that the delay between removing stress and starting measurement lets the signal systematically recover away part of itself.
+This page connects that to n directly — <b>measurement delay doesn't just shrink the number, it systematically changes the fitted n value itself</b>.
+Grasser et al. summarized the measured n values in the literature into two groups:</p>
+
+<div class="eq"><span class="lbl">Same physical quantity, two measurement methods, two n's</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“Experimental results obtained with delayed measurements show a linear increase of the exponent with temperature
+[…] with values around 0.2 – 0.3. In contrast, temperature-independent exponents in the range 0.07 – 0.2 have been
+extracted from recent delay-free measurements.”</i></p>
+<span class="say" style="margin-top:8px"><b>Conventional delayed measurement</b>: n rises linearly with temperature, landing at 0.2–0.3 — and that temperature dependence is itself suspicious,
+since an exponent truly set by diffusion kinetics shouldn't be this sensitive to the measurement method's delay time.
+<b>Delay-free (on-the-fly) measurement</b>: n lands at 0.07–0.2 and <b>doesn't vary with temperature</b> — far more consistent with measuring a genuine physical constant.</span></div>
+
+<p>Alam et al. go a step further: they argue the "classic" n≈0.25 exponent is itself <b>an artifact manufactured by measurement delay</b>:</p>
+<div class="key"><div class="t">The "classic value" downgraded to a measurement artifact</div>
+<i>“In fact, n ≈ 0.25 is not robust exponent, as indicated by the saturation of NBTI degradation observed by experiments […]
+identification of NBTI with H-diffusion is actually accidental and reflects measurement-delay induced relaxation of underlying
+degradation generated by H₂ diffusion. The diffusing specie is H₂ with consistent values of n ≈ 0.16.”</i>
+— in other words: <b>n≈0.25 isn't real evidence that atomic hydrogen is diffusing; conventional measurement delay "cuts" the true H₂-diffusion curve
+into a shape that merely looks like n=1/4</b>. Strip out the delay artifact and molecular H₂ diffusion (n≈0.16) is the right answer —
+that's the Alam/Mahapatra camp's conclusion.</div>
+</div>
+
+<div lang="zh-Hant">
+<h2>③ 兩個陣營，同一個數字，兩種解讀</h2>
+<p>到這裡故事看起來快要收尾了：延遲量測的 n≈0.25 是假象，無延遲的 n≈0.15–0.16 才是真相，剛好吻合 H₂-RD 模型的理論預測 1/6——
+<b>皆大歡喜，R-D 模型獲勝</b>。但 Grasser、Kaczer 這邊（TU Wien / imec）不同意這個收尾方式。
+他們也分析了同一批被認為「無延遲」的超快量測數據，發現就算把延遲效應修正到趨近於零，擬合出來的指數依然落在 n≈0.15：</p>
+
+<div class="eq" style="text-align:left"><span class="lbl">數字對了，不代表模型對了</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“The fact that some OTF measurements and the corrected MSM measurements give exponents of around n = 0.15,
+which is close to the value predicted by the H₂ based RD model (n = 1/6), should not let one arrive at the conclusion
+that the RD model is consequently reasonable.”</i></p>
+<span class="say" style="margin-top:8px">Grasser 的理由不是「這個數字錯了」，而是<b>「這個數字對，不代表背後的模型對」</b>：
+R-D 模型在<b>應力階段</b>推導出 n=1/6，靠的是正反應（Si-H 斷裂）與逆反應（氫物種回填鈍化）之間一個很精細的平衡——
+拿掉逆反應，單純正反應會直接給出 n=1。但換到<b>恢復階段</b>（移除應力後），同一套逆反應機制卻完全對不上實測：</span></div>
+
+<p class="note" style="margin:10px 0 0"><i>“It has been clearly shown […] that the RD model predicts 80% of the relaxation to occur within 3 decades,
+while in reality relaxation is observed to span more than 10 decades.”</i>
+—— 模型說恢復應該在 3 個十進位的時間內完成八成，實測卻要跨 10 個十進位以上才恢復完。
+<b>一個在應力階段「湊巧」給出正確指數、卻在恢復階段差了 7 個數量級的模型，數字對不對已經不是重點了。</b></p>
+
+<table class="litab" style="margin-top:14px"><thead><tr><th class="nw">陣營</th><th>核心主張</th><th>關鍵證據</th></tr></thead><tbody>
+<tr><td class="nw">Alam／Mahapatra<span class="cite">Purdue、IIT Bombay</span></td>
+  <td>公案已解：pre-2003 的矛盾來自量測延遲偽造出 n≈0.25；扣掉延遲，H₂ 擴散（n≈0.16）與活化能（≈0.5–0.6 eV）一致吻合</td>
+  <td>OTF 量測在多種應力條件、溫度、介電層厚度下，一致收斂到 n≈0.16（圖 7 標註「universal power-law slope」）</td></tr>
+<tr><td class="nw">Grasser／Kaczer<span class="cite">TU Wien、imec</span></td>
+  <td>數字收斂不等於模型正確：R-D 模型的恢復行為，不管怎麼延伸都無法描述實測跨 10 decades 的恢復尾巴</td>
+  <td>以「通用恢復函數」重新分析 Reisinger 等人的超快量測，證實即使修正到零延遲，n 仍落在 0.15，但恢復行為本身與 R-D 模型系統性不符</td></tr>
+</tbody></table>
+<p class="note">這場公案<b>目前沒有單一「正確答案」可以寫進教科書</b>——這正是它值得放進教材的原因：
+它示範了「兩個獨立陣營從同一批數據得出不同結論」在真實文獻裡長什麼樣子，而不是一個已經塵埃落定、可以簡化成一行公式的故事。</p>
+</div>
+<div lang="en">
+<h2>③ Two camps, one number, two readings</h2>
+<p>At this point the story looks almost wrapped up: the delayed-measurement n≈0.25 is an artifact, the delay-free n≈0.15–0.16 is the truth,
+and it happens to match the H₂-RD model's theoretical prediction of 1/6 — <b>everyone's happy, the R-D model wins</b>.
+But Grasser and Kaczer's group (TU Wien / imec) doesn't accept that ending. They analyzed the same "delay-free" ultra-fast data
+and found that even after correcting the delay effect down toward zero, the fitted exponent still lands at n≈0.15:</p>
+
+<div class="eq" style="text-align:left"><span class="lbl">Getting the number right isn't the same as getting the model right</span>
+<p style="font-size:16px;margin:0;text-align:left;line-height:1.75"><i>“The fact that some OTF measurements and the corrected MSM measurements give exponents of around n = 0.15,
+which is close to the value predicted by the H₂ based RD model (n = 1/6), should not let one arrive at the conclusion
+that the RD model is consequently reasonable.”</i></p>
+<span class="say" style="margin-top:8px">Grasser's reasoning isn't "that number is wrong" — it's <b>"that number being right doesn't mean the model behind it is right"</b>:
+the R-D model derives n=1/6 <b>during the stress phase</b> through a delicate balance between the forward reaction (Si-H breaking) and the reverse reaction
+(hydrogen species diffusing back and re-passivating) — strip out the reverse reaction and the forward reaction alone gives n=1 outright.
+But switch to the <b>relaxation phase</b> (after stress is removed), and that very same reverse-reaction mechanism fails to match measurement at all:</span></div>
+
+<p class="note" style="margin:10px 0 0"><i>“It has been clearly shown […] that the RD model predicts 80% of the relaxation to occur within 3 decades,
+while in reality relaxation is observed to span more than 10 decades.”</i>
+— the model says 80% of recovery should finish within 3 decades of time; measurement shows it takes more than 10 decades to finish recovering.
+<b>Once a model "happens" to get the right exponent during stress but misses by 7 orders of magnitude during relaxation, whether the number is right stops being the point.</b></p>
+
+<table class="litab" style="margin-top:14px"><thead><tr><th class="nw">Camp</th><th>Core claim</th><th>Key evidence</th></tr></thead><tbody>
+<tr><td class="nw">Alam / Mahapatra<span class="cite">Purdue, IIT Bombay</span></td>
+  <td>The dispute is resolved: the pre-2003 contradiction came from measurement delay manufacturing n≈0.25; strip out the delay and H₂ diffusion (n≈0.16) matches the activation energy (≈0.5–0.6 eV) consistently</td>
+  <td>OTF measurements converge on n≈0.16 across a range of stress conditions, temperatures, and dielectric thicknesses (labeled a "universal power-law slope" in their Fig. 7)</td></tr>
+<tr><td class="nw">Grasser / Kaczer<span class="cite">TU Wien, imec</span></td>
+  <td>Numerical convergence doesn't mean the model is correct: no extension of the R-D model can describe the measured relaxation tail spanning 10+ decades</td>
+  <td>Re-analyzing Reisinger et al.'s ultra-fast data with a "universal relaxation function" confirms n still lands at 0.15 even after correcting to zero delay — but the relaxation behavior itself systematically disagrees with the R-D model</td></tr>
+</tbody></table>
+<p class="note">This dispute currently <b>has no single "correct answer" you could write into a textbook</b> — and that's exactly why it belongs in this coursework:
+it shows what "two independent camps reaching different conclusions from the same data" actually looks like in real literature,
+rather than a settled story that can be reduced to one tidy formula.</p>
+</div>
+
+<div lang="zh-Hant">
+<h2>④ 互動：同一筆實驗室數據，兩種 n 假設，十年後差多少</h2>
+<p>下面固定「在應力時間 t<sub>stress</sub> 量到 ΔV<sub>t</sub> = 30 mV」這個單一量測點——這是你實驗室真的量到的數字，兩個陣營都不會反對。
+分歧只在於你拿哪個 n 去外推到 10 年：<b>「naive」滑桿代表沒有扣掉延遲效應的傳統 MSM 量測</b>，
+<b>「corrected」代表扣掉延遲效應後的 OTF／通用恢復函數修正值</b>。兩條線在量測點交會，往右延伸就分開。</p>
+</div>
+<div lang="en">
+<h2>④ Interactive: same lab data, two n assumptions, how far apart after ten years</h2>
+<p>The plot below fixes a single shared measurement point: "at stress time t<sub>stress</sub>, measured ΔV<sub>t</sub> = 30 mV" — a real lab number neither camp would dispute.
+The disagreement is only about which n you extrapolate it with to 10 years: the <b>"naive" slider stands for conventional MSM measurement without correcting for delay</b>,
+and <b>"corrected" stands for the OTF / universal-relaxation-corrected value</b>. The two lines meet at the measurement point and diverge as you extend to the right.</p>
+</div>
+
+<div class="card">
+<div class="ctrls">
+<div class="ctrl"><label for="sTs"><span lang="zh-Hant">實驗室應力時間 t<sub>stress</sub></span><span lang="en">Lab stress time t<sub>stress</sub></span></label>
+  <div class="row"><input type="range" id="sTs" min="1.5" max="5" step="0.1" value="3"><span class="val" id="vTs">1000 s</span></div></div>
+<div class="ctrl"><label for="sNaive"><span lang="zh-Hant">naive n（有延遲 MSM）</span><span lang="en">naive n (delayed MSM)</span></label>
+  <div class="row"><input type="range" id="sNaive" min="0.18" max="0.32" step="0.01" value="0.25"><span class="val" id="vNaive">0.25</span></div></div>
+<div class="ctrl"><label for="sCorr"><span lang="zh-Hant">corrected n（OTF／修正）</span><span lang="en">corrected n (OTF / corrected)</span></label>
+  <div class="row"><input type="range" id="sCorr" min="0.07" max="0.20" step="0.01" value="0.16"><span class="val" id="vCorr">0.16</span></div></div>
+</div>
+
+<div class="tiles" style="margin-top:14px">
+<div class="tile"><div class="k"><span lang="zh-Hant">naive：10 年外推 ΔV<sub>t</sub></span><span lang="en">naive: 10-yr extrapolated ΔV<sub>t</sub></span></div><div class="v" id="tNaive10">—</div></div>
+<div class="tile hl"><div class="k"><span lang="zh-Hant">corrected：10 年外推 ΔV<sub>t</sub></span><span lang="en">corrected: 10-yr extrapolated ΔV<sub>t</sub></span></div><div class="v" id="tCorr10">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">兩者比值</span><span lang="en">Ratio between the two</span></div><div class="v" id="tRatio">—</div></div>
+<div class="tile"><div class="k"><span lang="zh-Hant">外推跨越的十進位數</span><span lang="en">Decades extrapolated</span></div><div class="v" id="tDecades">—</div></div>
+</div>
+
+<div style="margin-top:14px"><svg id="svgN" viewBox="0 0 700 380" style="width:100%;height:auto;display:block" role="img" aria-label="NBTI degradation extrapolation: naive vs corrected n"></svg></div>
+<p class="cap" id="capOut" style="margin-top:8px"></p>
+<p class="verify"><b><span lang="zh-Hant">模型輸出</span><span lang="en">Model output</span></b>
+<span lang="zh-Hant">：以 ΔV<sub>t</sub> = A·t<sup>n</sup> 直接計算，A 由兩條線共用的量測點反推，<b>不是任何製程的實測資料</b>。
+30 mV 這個量測值與兩個 n 的預設滑桿位置取自文獻常見量級，不是特定元件的量測結果。</span>
+<span lang="en">: computed directly from ΔV<sub>t</sub> = A·t<sup>n</sup>, with A back-calculated from the shared measurement point — <b>not measured data from any process</b>.
+The 30 mV measurement value and the two sliders' default positions are literature-typical magnitudes, not a specific device's measurement.</span></p>
+</div>
+
+<div lang="zh-Hant">
+<h2>⑤ 這對你的意義：為什麼外推只能用應力期間的 n</h2>
+<p>這把階段 2、3、4 串成一條線：階段 2 給你 R-D 理論值；階段 3 告訴你量測延遲會系統性低估訊號；
+這一頁告訴你<b>延遲不只是讓數字變小，還會系統性地把 n 往上推</b>（因為早期數據點被恢復吃掉的比例更高，擬合出的斜率會變陡）。
+三件事合起來，變成一條清楚的工程規則：</p>
+
+<div class="key"><div class="t">外推用的 n，只能來自應力期間擬合，不能來自移除應力後的殘餘訊號反推</div>
+不管你相信 Alam／Mahapatra 的「H₂ 擴散、公案已解」，還是 Grasser／Kaczer 的「數字對、模型未必對」，
+<b>兩個陣營在這一條工程規則上沒有分歧</b>：只要量測方法本身帶有延遲，n 就會被系統性地污染往高估的方向，
+外推到 10 年的 ΔV<sub>t</sub> 就會被放大（本頁互動：naive 0.25 vs corrected 0.16，10 年外推相差超過 3 倍）。
+這正是本站階段 5（原階段 4）規格頁裡「外推用的 n 必須來自應力中 OTF 擬合值，不能拿恢復後殘餘訊號反推」這條規則的完整物理依據。</div>
+
+<div class="quiz"><h3>檢查你懂了嗎</h3>
+<details><summary>如果有人跟你說「我們量到 n=0.25，跟教科書上的 1/4 一致，所以是氫原子在擴散」，這個推論哪裡有問題？</summary>
+<div class="a">這正是 Alam 等人指出的「pre-2003 核心難題」會重演的地方。單靠 n 值吻合不能下結論——還要看這個 n 是怎麼量出來的（有沒有延遲）、
+活化能是否也同時指向同一個物種。Alam 的論點是：0.25 這個值很可能是延遲量測的假象，真正的擴散物種（H₂，n≈0.16）被量測方法蓋住了。
+單一指標（n）吻合理論值，<b>永遠不足以單獨證明機制正確</b>，這跟階段 1 不要把單一理論值當通用常數的提醒是同一件事。</div></details>
+<details><summary>Grasser 說「n=0.15 吻合 1/6，不代表 R-D 模型正確」，他的論證邏輯是什麼？</summary>
+<div class="a">他的邏輯不是否定那個數字，而是指出<b>R-D 模型能同時正確預測應力與恢復兩個階段，才算真正驗證</b>。
+應力階段的 n=1/6 來自正反應與逆反應的精細平衡；如果這個平衡是真實的物理機制，它在恢復階段（逆反應主導）也該給出吻合實測的結果。
+但實測恢復要跨 10 個十進位以上的時間，R-D 模型預測 3 個十進位內完成八成——<b>同一套逆反應假設，在它本該最擅長的恢復階段反而失準</b>，
+這讓「應力階段數字吻合」的說服力大打折扣。</div></details>
+<details><summary>工程上不想選邊站，只想先把元件做出來，應該採取什麼立場？</summary>
+<div class="a">兩個陣營都同意的部分，才是可以直接拿來用的工程結論：<b>n 必須用應力期間（OTF 或等效方法）量到的值，絕不能用移除應力後的殘餘訊號反推</b>；
+而且要向量測方法本身要可信度——延遲時間、溫度相依性要一併報告，不能只給一個裸的 n 值。
+至於「氫原子還是氫分子」、「R-D 模型對不對」這些還沒定論的問題，不影響你能不能把元件做對，但<b>如果你的團隊要發展自己的加速模型，
+最好知道業界連最基礎的擴散物種都還沒吵完</b>，不要把任何單一論文的 n 值當成放諸四海皆準的常數。</div></details>
+</div>
+
+<h2>來源與查證狀態</h2>
+<p class="note">依照「呈現的資料事實必須與來源相同」的原則，以下標明每一項的查證狀態。</p>
+<table><thead><tr><th class="nw">狀態</th><th>內容與出處</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（全文）</span></td>
+  <td><a href="https://doi.org/10.1016/j.microrel.2006.10.012">M. A. Alam, H. Kufluoglu, D. Varghese, S. Mahapatra, “A comprehensive model for PMOS NBTI degradation: Recent progress,” <i>Microelectronics Reliability</i> <b>47</b>(6), 853–862 (2007)</a>。
+  已取得全文並逐字核對：<i>“This is the core dilemma of pre-2003 NBTI literature: the time-exponent in Eq. (3) suggests atomic H diffusion, while temperature activation suggests H₂ diffusion.”</i>；
+  <i>“The n = 1/2 regime has also never been seen in NBTI measurements, leading one to conclude that NBTI degradation through proton transport is unlikely.”</i>；
+  <i>“In fact, n ≈ 0.25 is not robust exponent … identification of NBTI with H-diffusion is actually accidental and reflects measurement-delay induced relaxation of underlying degradation generated by H₂ diffusion. The diffusing specie is H₂ with consistent values of n ≈ 0.16.”</i>；
+  以及圖 7「Universal power-law slope of n ≈ 0.16 is obtained」。本頁①②節與互動的 naive/corrected 預設值（0.25／0.16）即出自此處。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 已逐字核對（全文）</span></td>
+  <td><a href="https://www.iue.tuwien.ac.at/pdf/ib_2007/CP2007_Grasser_1.pdf">T. Grasser, W. Goes, V. Sverdlov, B. Kaczer, “The Universality of NBTI Relaxation and its Implications for Modeling and Characterization,” <i>Proc. IEEE International Reliability Physics Symposium (IRPS)</i>, Phoenix, 2007, pp. 268–280</a>。
+  已取得全文並逐字核對：<i>“Experimental results obtained with delayed measurements show a linear increase of the exponent with temperature … with values around 0.2 – 0.3. In contrast, temperature-independent exponents in the range 0.07 – 0.2 have been extracted from recent delay-free measurements.”</i>；
+  <i>“We recall that a deviation of the initial data from a power-law was one of the reasons why Reisinger et al. concluded that a log-like hole-trapping component has to be superimposed to a standard H-RD power-law with exponent n = 1/4.”</i>；
+  <i>“The fact that some OTF measurements and the corrected MSM measurements give exponents of around n = 0.15, which is close to the value predicted by the H₂ based RD model (n = 1/6), should not let one arrive at the conclusion that the RD model is consequently reasonable.”</i>；
+  以及 <i>“the RD model predicts 80% of the relaxation to occur within 3 decades, while in reality relaxation is observed to span more than 10 decades.”</i>
+  本頁③節的雙陣營對照即出自此處；引用段落內提及的「Reisinger et al.」是下一條書目核對項目。</td></tr>
+<tr><td class="nw"><span class="badge warn">! 僅書目核對</span></td>
+  <td><b>以下這篇只核對了書目資料（作者、標題、會議、頁碼、DOI），全文未取得</b>，本頁對其內容的描述（「log-like 電洞捕獲疊加分量」的主張）
+  全部轉述自上列 Grasser et al. (2007) 對本文的直接引用：<br>
+  H. Reisinger, O. Blank, W. Heinrigs, A. Mühlhoff, W. Gustin, C. Schlünder, “Analysis of NBTI Degradation- and Recovery-Behavior Based on Ultra Fast V<sub>th</sub>-Measurements,”
+  <i>Proc. IEEE International Reliability Physics Symposium (IRPS)</i>, 2006, pp. 448–453.
+  <a href="https://doi.org/10.1109/RELPHY.2006.251260">DOI: 10.1109/RELPHY.2006.251260</a>。實際引用請以原文為準。</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ 模型輸出</span></td>
+  <td>④ 的互動圖與數值磚塊<b>全部是模型輸出</b>，由 ΔV<sub>t</sub> = A·t<sup>n</sup> 直接計算，<b>不含任何實測資料</b>。
+  30 mV 測量基準點與 naive／corrected 的預設 n 值取自上列文獻報告的量級，用於示範外推分歧的機制，不代表任何特定製程的實測壽命。</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="prev" href="nbti-3-recovery.html"><div class="d">← 上一課 · 階段 3</div><div class="t">恢復與量測陷阱</div></a><a class="next" href="nbti-5-spec.html"><div class="d">下一課 · 階段 5 →</div><div class="t">判準與防治</div></a></div>
+<div class="foot"><b>模型範圍</b>：本頁的 ΔV<sub>t</sub> 外推曲線由使用者指定的 n 與單一量測錨點直接計算，用於示範「n 的假設如何放大外推分歧」，
+不是任何已發表模型的完整重現；R-D 模型本身（應力與恢復兩階段的耦合微分方程）未在本站任何頁面完整實作。
+<b>本教材用於呈現物理因果與統計行為，不是校準過的製程模型，也不能取代實測與 TCAD。</b><br>
+<b>隱私</b>：純靜態頁面，全部運算在你的瀏覽器本機執行 —— 無後端、無 cookie、無追蹤。教育用途，使用者自負驗證責任。</div>
+</div>
+
+<div lang="en">
+<h2>⑤ What this means for you: why extrapolation can only use n from the stress phase</h2>
+<p>This threads Stages 2, 3, and 4 into one line: Stage 2 gave you the R-D theoretical values; Stage 3 told you measurement delay systematically underestimates the signal;
+this page tells you <b>delay doesn't just shrink the number, it systematically pushes n upward too</b> (because early data points lose a larger fraction to recovery,
+so the fitted slope comes out steeper). Put the three together and you get one clear engineering rule:</p>
+
+<div class="key"><div class="t">The n used for extrapolation can only come from fitting data taken during stress — never back-calculated from the residual signal after stress is removed</div>
+Whether you side with Alam/Mahapatra's "H₂ diffusion, the dispute is resolved" or Grasser/Kaczer's "the number being right doesn't mean the model is right,"
+<b>the two camps don't disagree on this one engineering rule</b>: as long as the measurement method itself carries a delay, n gets systematically biased upward,
+and the 10-year extrapolated ΔV<sub>t</sub> gets amplified (this page's interactive: naive 0.25 vs corrected 0.16 — the 10-year extrapolations differ by more than 3×).
+This is the full physical justification behind this site's Stage 5 (formerly Stage 4) spec page's rule that "the n used for extrapolation must come from an OTF fit taken during stress, never back-calculated from residual post-recovery signal."</div>
+
+<div class="quiz"><h3>Check your understanding</h3>
+<details><summary>If someone tells you "we measured n=0.25, which matches the textbook value of 1/4, so atomic hydrogen must be diffusing" — what's wrong with that inference?</summary>
+<div class="a">This is exactly where the "pre-2003 core dilemma" Alam et al. identified would repeat itself. Matching n alone isn't enough to conclude anything — you also need to know how that n was measured (was there a delay?)
+and whether the activation energy independently points to the same species. Alam's argument is that 0.25 is very likely a delayed-measurement artifact, and the true diffusing species (H₂, n≈0.16) was masked by the measurement method.
+A single metric (n) matching a theoretical value is <b>never sufficient on its own to prove a mechanism</b> — the same lesson Stage 1 gives about not treating a single theoretical value as a universal constant.</div></details>
+<details><summary>Grasser says "n=0.15 matching 1/6 doesn't mean the R-D model is correct" — what's the logic behind that argument?</summary>
+<div class="a">His logic isn't denying the number — it's that <b>genuine validation requires the R-D model to correctly predict both the stress phase and the relaxation phase</b>.
+The stress-phase n=1/6 comes from a delicate balance between the forward and reverse reactions; if that balance reflects real physics, it should also match measurement during relaxation (where the reverse reaction dominates).
+But measured relaxation spans more than 10 decades of time, while the R-D model predicts 80% completion within 3 decades — <b>the very same reverse-reaction assumption fails precisely where it should shine</b>,
+which substantially undercuts how persuasive the stress-phase number match really is.</div></details>
+<details><summary>If you're an engineer who just wants to build a working device without picking a side, what stance should you take?</summary>
+<div class="a">What both camps agree on is the part you can put to direct engineering use: <b>n must come from a value measured during stress (OTF or an equivalent method) — never back-calculated from residual signal after stress is removed</b>;
+and you need to demand credibility from the measurement method itself — delay time and temperature dependence should be reported alongside it, not just a bare n value.
+As for whether it's atomic or molecular hydrogen, or whether the R-D model is right — those open questions don't block you from building a working device, but <b>if your team is developing its own acceleration model,
+it's worth knowing the field hasn't even settled the most basic question of which species is diffusing</b>, so don't treat any single paper's n value as a universal constant.</div></details>
+</div>
+
+<h2>Sources and verification status</h2>
+<p class="note">Following the principle that "a presented data fact must match its source," each item's verification status is labeled below.</p>
+<table><thead><tr><th class="nw">Status</th><th>Content and source</th></tr></thead><tbody>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (full text)</span></td>
+  <td><a href="https://doi.org/10.1016/j.microrel.2006.10.012">M. A. Alam, H. Kufluoglu, D. Varghese, S. Mahapatra, “A comprehensive model for PMOS NBTI degradation: Recent progress,” <i>Microelectronics Reliability</i> <b>47</b>(6), 853–862 (2007)</a>.
+  Full text obtained and checked verbatim: <i>“This is the core dilemma of pre-2003 NBTI literature: the time-exponent in Eq. (3) suggests atomic H diffusion, while temperature activation suggests H₂ diffusion.”</i>;
+  <i>“The n = 1/2 regime has also never been seen in NBTI measurements, leading one to conclude that NBTI degradation through proton transport is unlikely.”</i>;
+  <i>“In fact, n ≈ 0.25 is not robust exponent … identification of NBTI with H-diffusion is actually accidental and reflects measurement-delay induced relaxation of underlying degradation generated by H₂ diffusion. The diffusing specie is H₂ with consistent values of n ≈ 0.16.”</i>;
+  and Fig. 7's "Universal power-law slope of n ≈ 0.16 is obtained." This page's §①②and the interactive's naive/corrected defaults (0.25 / 0.16) come from here.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Verbatim-checked (full text)</span></td>
+  <td><a href="https://www.iue.tuwien.ac.at/pdf/ib_2007/CP2007_Grasser_1.pdf">T. Grasser, W. Goes, V. Sverdlov, B. Kaczer, “The Universality of NBTI Relaxation and its Implications for Modeling and Characterization,” <i>Proc. IEEE International Reliability Physics Symposium (IRPS)</i>, Phoenix, 2007, pp. 268–280</a>.
+  Full text obtained and checked verbatim: <i>“Experimental results obtained with delayed measurements show a linear increase of the exponent with temperature … with values around 0.2 – 0.3. In contrast, temperature-independent exponents in the range 0.07 – 0.2 have been extracted from recent delay-free measurements.”</i>;
+  <i>“We recall that a deviation of the initial data from a power-law was one of the reasons why Reisinger et al. concluded that a log-like hole-trapping component has to be superimposed to a standard H-RD power-law with exponent n = 1/4.”</i>;
+  <i>“The fact that some OTF measurements and the corrected MSM measurements give exponents of around n = 0.15, which is close to the value predicted by the H₂ based RD model (n = 1/6), should not let one arrive at the conclusion that the RD model is consequently reasonable.”</i>;
+  and <i>“the RD model predicts 80% of the relaxation to occur within 3 decades, while in reality relaxation is observed to span more than 10 decades.”</i>
+  This page's §③ two-camp comparison comes from here; the "Reisinger et al." work this paper cites is the next bibliography-only entry.</td></tr>
+<tr><td class="nw"><span class="badge warn">! Bibliography only</span></td>
+  <td><b>For the paper below, only the bibliographic data (authors, title, venue, pages, DOI) were checked — full text was not obtained</b>; this page's description of its content
+  (the claim of a "log-like superimposed hole-trapping component") is relayed entirely from Grasser et al. (2007)'s direct quotation of it, above:<br>
+  H. Reisinger, O. Blank, W. Heinrigs, A. Mühlhoff, W. Gustin, C. Schlünder, “Analysis of NBTI Degradation- and Recovery-Behavior Based on Ultra Fast V<sub>th</sub>-Measurements,”
+  <i>Proc. IEEE International Reliability Physics Symposium (IRPS)</i>, 2006, pp. 448–453.
+  <a href="https://doi.org/10.1109/RELPHY.2006.251260">DOI: 10.1109/RELPHY.2006.251260</a>. Cite the original, not this page.</td></tr>
+<tr><td class="nw"><span class="badge ok">✓ Model output</span></td>
+  <td>The interactive plot and number tiles in §④ are <b>entirely model output</b>, computed directly from ΔV<sub>t</sub> = A·t<sup>n</sup>, with <b>no measured data</b>.
+  The 30 mV measurement anchor and the naive/corrected default n values are drawn from the magnitudes reported in the literature above, used to demonstrate the mechanism by which an n assumption amplifies extrapolation divergence — they do not represent a measured lifetime for any specific process.</td></tr>
+</tbody></table>
+
+<div class="pager"><a class="prev" href="nbti-3-recovery.html"><div class="d">← Previous · Stage 3</div><div class="t">Recovery & Measurement Traps</div></a><a class="next" href="nbti-5-spec.html"><div class="d">Next · Stage 5 →</div><div class="t">Criteria & Mitigation</div></a></div>
+<div class="foot"><b>Model scope</b>: this page's ΔV<sub>t</sub> extrapolation curves are computed directly from a user-specified n and a single shared measurement anchor, to demonstrate how an n assumption amplifies extrapolation divergence —
+this is not a full reproduction of any published model; the R-D model itself (the coupled stress- and relaxation-phase differential equations) is not fully implemented anywhere on this site.
+<b>This coursework is meant to show physical cause-and-effect and statistical behavior — it is not a calibrated process model and cannot substitute for measurement or TCAD.</b><br>
+<b>Privacy</b>: a purely static page — everything runs locally in your browser. No backend, no cookies, no tracking. For education only; verify independently before relying on it.</div>
+</div>
+
+</div>
+<script src="nav_core.js"></script>
+<script src="i18n_core.js"></script>
+  <script>
+(function(){"use strict";
+const NS="http://www.w3.org/2000/svg", $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function el(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function txt(x,y,s,o){o=o||{};const fs=o.fs||11;
+  const e=el('text',{x,y,'font-size':fs,fill:o.fill||css('--muted'),'text-anchor':o.ta||'start',
+    'dominant-baseline':o.db||'auto','font-weight':o.fw||400,'font-variant-numeric':'tabular-nums'});
+  e.textContent=s; return e;}
+function axes(svg,M,iw,ih){
+  svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:M.t+ih,y2:M.t+ih,stroke:css('--axis'),'stroke-width':1}));
+  svg.appendChild(el('line',{x1:M.l,x2:M.l,y1:M.t,y2:M.t+ih,stroke:css('--axis'),'stroke-width':1}));}
+
+const MEASURED=30; /* mV，兩條線共用的量測錨點 */
+const T10Y=10*365.25*24*3600; /* s */
+
+function compute(){
+  const tsExp=parseFloat($('sTs').value);
+  const nNaive=parseFloat($('sNaive').value);
+  const nCorr=parseFloat($('sCorr').value);
+  const ts=Math.pow(10,tsExp);
+  const Anaive=MEASURED/Math.pow(ts,nNaive);
+  const Acorr=MEASURED/Math.pow(ts,nCorr);
+  const v10Naive=Anaive*Math.pow(T10Y,nNaive);
+  const v10Corr=Acorr*Math.pow(T10Y,nCorr);
+  return {tsExp,ts,nNaive,nCorr,Anaive,Acorr,v10Naive,v10Corr};
+}
+
+function draw(S){
+  const svg=$('svgN'); while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const W=700,H=380,M={l:62,r:18,t:24,b:46},iw=W-M.l-M.r,ih=H-M.t-M.b;
+  const x0=1,x1=9.3; /* log10(s)：10 s 到約 20 年 */
+  const y0=0,y1=Math.max(60,Math.ceil(S.v10Naive/50)*50+30);
+  const X=v=>M.l+(v-x0)/(x1-x0)*iw, Y=v=>M.t+ih-(v-y0)/(y1-y0)*ih;
+
+  for(let d=Math.ceil(x0);d<=x1;d++){
+    svg.appendChild(el('line',{x1:X(d),x2:X(d),y1:M.t,y2:M.t+ih,stroke:css('--grid'),'stroke-width':0.6}));
+    svg.appendChild(txt(X(d),M.t+ih+16,'10'+(d===0?'':('^'+d)).replace('^',''),{ta:'middle',fs:10}));
+  }
+  /* 時間刻度用對數秒標籤，另外標出常見時間點 */
+  const marks=[[2,'100s'],[3,'1000s'],[4.5,'~1 day'],[7.5,'1 yr'],[Math.log10(T10Y),'10 yr']];
+  marks.forEach(function(m){
+    if(m[0]<x0||m[0]>x1)return;
+    svg.appendChild(txt(X(m[0]),M.t+ih+30,m[1],{ta:'middle',fs:10,fill:css('--muted')}));
+  });
+  for(let v=0;v<=y1;v+=Math.ceil(y1/6/10)*10){
+    svg.appendChild(el('line',{x1:M.l,x2:M.l+iw,y1:Y(v),y2:Y(v),stroke:css('--grid'),'stroke-width':0.6}));
+    svg.appendChild(txt(M.l-8,Y(v)+4,v,{ta:'end',fs:11}));
+  }
+  axes(svg,M,iw,ih);
+  svg.appendChild(txt(M.l+iw/2,H-6,L('應力時間（對數秒）','Stress time (log seconds)'),{ta:'middle',fs:12}));
+  svg.appendChild(txt(14,M.t+ih/2,L('|ΔV~t~| (mV)','|ΔV~t~| (mV)').replace('~t~','ₜ'),{ta:'middle',fs:12,fw:600}));
+
+  function curve(A,n,color,wid,dash){
+    let d='';
+    for(let i=0;i<=120;i++){
+      const lx=x0+(x1-x0)*i/120, t=Math.pow(10,lx), v=Math.min(y1,A*Math.pow(t,n));
+      d+=(i?'L':'M')+X(lx).toFixed(1)+' '+Y(v).toFixed(1)+' ';
+    }
+    const p=el('path',{d:d,fill:'none',stroke:color,'stroke-width':wid,'stroke-linejoin':'round'});
+    if(dash)p.setAttribute('stroke-dasharray',dash);
+    svg.appendChild(p);
+  }
+  curve(S.Anaive,S.nNaive,css('--h'),2.4,null);
+  curve(S.Acorr,S.nCorr,css('--e'),2.4,null);
+  /* 量測錨點 */
+  svg.appendChild(el('circle',{cx:X(S.tsExp),cy:Y(MEASURED),r:4.5,fill:css('--ink')}));
+  svg.appendChild(txt(X(S.tsExp)+8,Y(MEASURED)-8,L('共用量測點','shared anchor'),{fs:11,fill:css('--ink2')}));
+  /* 十年標線與兩個終點值 */
+  const x10=Math.log10(T10Y);
+  if(x10<=x1){
+    svg.appendChild(el('line',{x1:X(x10),x2:X(x10),y1:M.t,y2:M.t+ih,stroke:css('--muted'),'stroke-width':1,'stroke-dasharray':'3 3'}));
+    svg.appendChild(txt(X(x10),M.t+ih+30>H-4?H-4:M.t+ih+30,'',{}));
+    if(S.v10Naive<=y1) svg.appendChild(txt(X(x10)+6,Y(S.v10Naive)+4,S.v10Naive.toFixed(0)+' mV',{fs:11,fill:css('--h'),fw:700}));
+    if(S.v10Corr<=y1) svg.appendChild(txt(X(x10)+6,Y(S.v10Corr)+4,S.v10Corr.toFixed(0)+' mV',{fs:11,fill:css('--e'),fw:700}));
+  }
+  svg.appendChild(txt(M.l+iw-6,M.t+14,L('紅：naive　藍：corrected','red: naive   blue: corrected'),{ta:'end',fs:11,fill:css('--muted')}));
+}
+
+function upd(){
+  const S=compute();
+  $('vTs').textContent=S.ts>=1?S.ts.toExponential(0).replace('e+','×10^').replace('^0','')+' s':S.ts.toFixed(1)+' s';
+  if(S.ts<1e4) $('vTs').textContent=Math.round(S.ts)+' s';
+  $('vNaive').textContent=S.nNaive.toFixed(2);
+  $('vCorr').textContent=S.nCorr.toFixed(2);
+  $('tNaive10').textContent=S.v10Naive.toFixed(0)+' mV';
+  $('tCorr10').textContent=S.v10Corr.toFixed(0)+' mV';
+  $('tRatio').textContent=(S.v10Naive/S.v10Corr).toFixed(2)+'×';
+  $('tDecades').textContent=(Math.log10(T10Y)-S.tsExp).toFixed(1);
+
+  $('capOut').innerHTML=L(
+    '目前設定：t<sub>stress</sub> = '+Math.round(S.ts)+' s 量到 '+MEASURED+' mV。'+
+    'naive n = '+S.nNaive.toFixed(2)+' → 10 年外推 '+S.v10Naive.toFixed(0)+' mV；'+
+    'corrected n = '+S.nCorr.toFixed(2)+' → 10 年外推 '+S.v10Corr.toFixed(0)+' mV。'+
+    ' 同一筆量測數據，只因為 n 的假設不同，10 年後的 ΔV<sub>t</sub> 判斷<b>相差 '+(S.v10Naive/S.v10Corr).toFixed(1)+' 倍</b>。',
+    'Current setting: t<sub>stress</sub> = '+Math.round(S.ts)+' s measures '+MEASURED+' mV.'+
+    ' naive n = '+S.nNaive.toFixed(2)+' → 10-yr extrapolation '+S.v10Naive.toFixed(0)+' mV;'+
+    ' corrected n = '+S.nCorr.toFixed(2)+' → 10-yr extrapolation '+S.v10Corr.toFixed(0)+' mV.'+
+    ' From the exact same measured data, purely because of the n assumption, the 10-year ΔV<sub>t</sub> verdict <b>differs by '+(S.v10Naive/S.v10Corr).toFixed(1)+'×</b>.');
+
+  draw(S);
+}
+['sTs','sNaive','sCorr'].forEach(id=>$(id).addEventListener('input',upd));
+window.__rebuild=upd;
+upd();
+})();
+</script>
+<script src="numin_core.js"></script>
+</body>
+</html>
