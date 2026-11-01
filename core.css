@@ -5,6 +5,7 @@
   --seq1:#cde2fb;--seq2:#9ec5f4;--seq3:#5598e7;--seq4:#2a78d6;--seq5:#184f95;--seq6:#0d366b;
   --si:#e8e7e1;--nplus:#cfe1f6;--poly:#d5d3ca;--ox:#b9b7ad;
   --good:#0ca30c;--warn:#fab219;--crit:#d03b3b;--gtext:#006300;
+  --circuit-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M0 24 H40 V0 M70 120 V80 H120 M0 90 H30 V120 M90 0 V40 H120 M40 60 H80' fill='none' stroke='rgba(11,11,11,0.035)' stroke-width='1'/%3E%3Ccircle cx='40' cy='24' r='2' fill='rgba(11,11,11,0.035)'/%3E%3Ccircle cx='70' cy='80' r='2' fill='rgba(11,11,11,0.035)'/%3E%3Ccircle cx='30' cy='90' r='2' fill='rgba(11,11,11,0.035)'/%3E%3Ccircle cx='90' cy='40' r='2' fill='rgba(11,11,11,0.035)'/%3E%3C/svg%3E");
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:where(:not([data-theme=light])){
@@ -13,6 +14,7 @@
   --e:#3987e5;--h:#e66767;--nit:#199e70;
   --seq1:#0d366b;--seq2:#184f95;--seq3:#2a78d6;--seq4:#5598e7;--seq5:#9ec5f4;--seq6:#cde2fb;
   --si:#232322;--nplus:#1b2c40;--poly:#33322f;--ox:#4a4945;--gtext:#0ca30c;
+  --circuit-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M0 24 H40 V0 M70 120 V80 H120 M0 90 H30 V120 M90 0 V40 H120 M40 60 H80' fill='none' stroke='rgba(255,255,255,0.045)' stroke-width='1'/%3E%3Ccircle cx='40' cy='24' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='70' cy='80' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='30' cy='90' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='90' cy='40' r='2' fill='rgba(255,255,255,0.045)'/%3E%3C/svg%3E");
   color-scheme:dark;}}
 :root[data-theme=dark]{
   --surface:#1a1a19;--plane:#0d0d0d;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;
@@ -20,10 +22,12 @@
   --e:#3987e5;--h:#e66767;--nit:#199e70;
   --seq1:#0d366b;--seq2:#184f95;--seq3:#2a78d6;--seq4:#5598e7;--seq5:#9ec5f4;--seq6:#cde2fb;
   --si:#232322;--nplus:#1b2c40;--poly:#33322f;--ox:#4a4945;--gtext:#0ca30c;
+  --circuit-bg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M0 24 H40 V0 M70 120 V80 H120 M0 90 H30 V120 M90 0 V40 H120 M40 60 H80' fill='none' stroke='rgba(255,255,255,0.045)' stroke-width='1'/%3E%3Ccircle cx='40' cy='24' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='70' cy='80' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='30' cy='90' r='2' fill='rgba(255,255,255,0.045)'/%3E%3Ccircle cx='90' cy='40' r='2' fill='rgba(255,255,255,0.045)'/%3E%3C/svg%3E");
   color-scheme:dark;}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--plane);color:var(--ink);
+body{margin:0;background-color:var(--plane);background-image:var(--circuit-bg);
+  background-repeat:repeat;background-size:120px 120px;background-attachment:fixed;color:var(--ink);
   font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
   font-size:18px;line-height:1.74;-webkit-font-smoothing:antialiased}
 
